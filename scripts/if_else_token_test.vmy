@@ -1,0 +1,23 @@
+# test for if-else
+if(true){
+    print("true")
+}elif(false){
+    print("else if")
+}else{
+    print("else")
+}
+
+
+if( condition_if ) {
+    print("")
+}
+
+
+elif( condition_else_if ) {
+    print( a + b > c)
+}
+
+
+else {
+    print(x)
+}

@@ -1,0 +1,9 @@
+let a : Int = 1
+let b : Boolean = true
+let c  = "hello, word"
+
+print(a + 1 < 4 + 4)
+
+while(true){
+    print("hello, this is while loop")
+}

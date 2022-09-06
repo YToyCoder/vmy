@@ -1,0 +1,11 @@
+# negative literal test
+
+let a : Int = -1
+print("a = " ++ a)
+
+let b  = -1.0
+print("b = " ++ b )
+
+print( a + -1 + 4 * -3 )
+
+print( a - 4 )

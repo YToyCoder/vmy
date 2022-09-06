@@ -1,0 +1,29 @@
+# if-else
+
+if(true){
+    print("if is true")
+}
+
+let a : Int = 10
+
+if( a < 11 ) {
+    print("if condition is a < 11")
+}else {
+    print("if condition ( a < 11 ) else")
+}
+
+if( a > 11 ) {
+    print("if condition is a > 11")
+}
+
+elif( a == 10 ) {
+    print("elif condition(a == 10 )")
+}
+
+if( a > 12 ) {
+    print("if condition is a > 12")
+}elif( a > 11 ) {
+    print("elif condition is a > 11")
+}else {
+    print("end else")
+}

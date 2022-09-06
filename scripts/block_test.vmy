@@ -1,0 +1,8 @@
+{
+    print("hello, word")
+}
+
+while(true){
+    let a : Int = 1
+    print("while loop")
+}
