@@ -8,7 +8,13 @@ import java.util.function.Supplier;
 public class AST {
   private AST(){}
 
-  static interface ASTNode{}
+  static interface ASTNode{
+
+    default void accept(NodeVisitor visitor){
+      throw new ASTProcessingException("your should override this method");
+    }
+
+  }
   static interface Tree{}
   static interface Evaluator{
     Object eval(Tree tree);
