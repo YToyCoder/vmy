@@ -36,6 +36,21 @@ public class Scripts {
       );
   }
 
+  public static void run(String[] script_files, String evaluator_type){
+    AST.Evaluator evaluator = switch (evaluator_type){
+      case VisitingEvaluator -> new VisitingEvaluator();
+      default -> AST.evaluator(true);
+    };
+    for(String file_path : script_files)
+      do_with_file_input_scanner(
+          file_path,
+          eval(evaluator)
+      );
+  }
+
+  public static final String DefaultEvaluator   = "d";
+  public static final String VisitingEvaluator  = "v";
+
   public static void do_with_file_input_scanner(
     String file, 
     Consumer<FileInputScanner> scanner_consumer
@@ -58,7 +73,11 @@ public class Scripts {
    * @return {@link Consumer }
    */
   public static Consumer<Scripts.FileInputScanner> eval_with_scanner() {
-    return scanner -> AST.evaluator(true).eval(AST.build(scanner));
+    return eval(AST.evaluator(true));
+  }
+
+  public static Consumer<Scripts.FileInputScanner> eval(AST.Evaluator evaluator){
+    return scanner -> Objects.requireNonNull(evaluator).eval(AST.build(scanner));
   }
 
   /**

@@ -25,6 +25,10 @@ public class AST {
     public ValNode(Number _val){
       value = _val;
     }
+
+    @Override
+    public void accept(NodeVisitor visitor) {
+    }
   }
 
   static class BinaryOperatorNode implements ASTNode{
@@ -35,6 +39,11 @@ public class AST {
       OP = _op;
       left = _left;
       right = _right;
+    }
+
+    @Override
+    public void accept(NodeVisitor visitor) {
+      visitor.visitBinaryOperator(this);
     }
   }
 
@@ -86,6 +95,11 @@ public class AST {
     public int tag(){
       return tag;
     }
+
+    @Override
+    public void accept(NodeVisitor visitor) {
+      visitor.visitLiteralNode(this);
+    }
   }
 
   /**
@@ -99,11 +113,22 @@ public class AST {
     public BlockNode(List<ASTNode> _process){
       process = _process;
     }
+
+    @Override
+    public void accept(NodeVisitor visitor) {
+      visitor.visitBlockNode(this);
+    }
   }
 
   static class WhileLoop extends ConditionNode {
     public WhileLoop(ASTNode _cond, BlockNode _body){
       super(_cond, _body);
+    }
+
+
+    @Override
+    public void accept(NodeVisitor visitor) {
+      visitor.visitWhileLoop(this);
     }
   }
 
@@ -127,6 +152,11 @@ public class AST {
       variable = _variable;
       expression = expr;
     }
+
+    @Override
+    public void accept(NodeVisitor visitor) {
+      visitor.visitAssignment(this);
+    }
   }
 
   // node for Identifier , like variable-name/function-name ...
@@ -134,6 +164,11 @@ public class AST {
     final String value;
     public IdentifierNode(String _val){
       value = _val;
+    }
+
+    @Override
+    public void accept(NodeVisitor visitor) {
+      visitor.visitIdentifierNode(this);
     }
   }
 
@@ -150,6 +185,11 @@ public class AST {
 
     public DeclareNode(String _declare, IdentifierNode _identifier){
       this(_declare, _identifier, null);
+    }
+
+    @Override
+    public void accept(NodeVisitor visitor) {
+      visitor.visitDeclareNode(this);
     }
   }
 
@@ -171,6 +211,11 @@ public class AST {
       Elif = _else_conditions;
       Else = _else;
     }
+
+    @Override
+    public void accept(NodeVisitor visitor) {
+      visitor.visitIfElse(this);
+    }
   }
 
   // call expression , it should be like : print("print")
@@ -180,6 +225,11 @@ public class AST {
     public CallNode(String _identifier, ListExpression _params){
       identifier = _identifier;
       params = _params;
+    }
+
+    @Override
+    public void accept(NodeVisitor visitor) {
+      visitor.visitCallNode(this);
     }
   }
 
@@ -193,7 +243,7 @@ public class AST {
   }
 
   static class VmyAST implements Tree{
-    private ASTNode root;
+    ASTNode root;
   }
 
   // main for support old version test

@@ -21,6 +21,8 @@ public class FileInputScannerTestUtils {
   }
 
   public static Consumer<Scripts.FileInputScanner> eval_with_scanner() {
-    return scanner -> AST.evaluator(true).eval(AST.build(scanner));
+//    return scanner -> AST.evaluator(true).eval(AST.build(scanner));
+    return Scripts.eval(new VisitingEvaluator());
   }
+
 }
