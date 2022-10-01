@@ -20,18 +20,18 @@ public class AST {
     Object eval(Tree tree);
   }
 
-  private static class ValNode implements ASTNode {
+  static class ValNode implements ASTNode {
     final Number value;
     public ValNode(Number _val){
       value = _val;
     }
   }
 
-  private static class CommonNode implements ASTNode{
+  static class BinaryOperatorNode implements ASTNode{
     final String OP;
     ASTNode left;
     ASTNode right;
-    public CommonNode(final String _op, final ASTNode _left, final ASTNode _right){
+    public BinaryOperatorNode(final String _op, final ASTNode _left, final ASTNode _right){
       OP = _op;
       left = _left;
       right = _right;
@@ -77,7 +77,7 @@ public class AST {
       return val;
     }
   }
-  private static abstract class LiteralNode implements ASTNode {
+  static abstract class LiteralNode implements ASTNode {
     private final int tag;
     public LiteralNode(int _tag){
       tag = _tag;
@@ -94,14 +94,14 @@ public class AST {
    * <p>a = 1 </p>
    * <p>print(a)</p>
    */
-  private static class BlockNode implements ASTNode {
+  static class BlockNode implements ASTNode {
     List<ASTNode> process;
     public BlockNode(List<ASTNode> _process){
       process = _process;
     }
   }
 
-  private static class WhileLoop extends ConditionNode {
+  static class WhileLoop extends ConditionNode {
     public WhileLoop(ASTNode _cond, BlockNode _body){
       super(_cond, _body);
     }
@@ -119,7 +119,7 @@ public class AST {
   // like :
   //      let a : Type = 1
   //      a = 2
-  private static class AssignNode implements ASTNode {
+  static class AssignNode implements ASTNode {
     ASTNode variable;
     ASTNode expression;
 
@@ -130,7 +130,7 @@ public class AST {
   }
 
   // node for Identifier , like variable-name/function-name ...
-  private static class IdentifierNode implements ASTNode {
+  static class IdentifierNode implements ASTNode {
     final String value;
     public IdentifierNode(String _val){
       value = _val;
@@ -138,7 +138,7 @@ public class AST {
   }
 
   // node for Declaration, like let a : Type , val a : Type
-  private static class DeclareNode implements ASTNode {
+  static class DeclareNode implements ASTNode {
     final String declare;
     final String type;
     final IdentifierNode identifier;
@@ -153,7 +153,7 @@ public class AST {
     }
   }
 
-  private static class ConditionNode implements ASTNode {
+  static class ConditionNode implements ASTNode {
     final ASTNode condition;
     final BlockNode body;
     public ConditionNode(ASTNode _condition, BlockNode _body){
@@ -162,7 +162,7 @@ public class AST {
     }
   }
 
-  private static class IfElse implements ASTNode {
+  static class IfElse implements ASTNode {
     final ConditionNode TheIf;
     final List<ConditionNode> Elif;
     final ASTNode Else;
@@ -174,7 +174,7 @@ public class AST {
   }
 
   // call expression , it should be like : print("print")
-  private static class CallNode implements ASTNode{
+  static class CallNode implements ASTNode{
     final String identifier;
     final ListExpression params;
     public CallNode(String _identifier, ListExpression _params){
@@ -185,7 +185,7 @@ public class AST {
 
   // a list expression should be like this below:
   // a, b, c  or print(a, b, c)
-  private static class ListExpression implements ASTNode {
+  static class ListExpression implements ASTNode {
     final List<ASTNode> elements;
     public ListExpression(List<ASTNode> _els){
       elements = _els;
@@ -216,7 +216,7 @@ public class AST {
       ){
           final String operator = operatorStack.pop();
           final ASTNode asLeft = nodesStack.pop();
-          merge = new CommonNode(operator, asLeft, merge);
+          merge = new BinaryOperatorNode(operator, asLeft, merge);
       }
       if(!nodesStack.isEmpty() || !operatorStack.isEmpty())
         throw new ASTProcessingException("expression wrong");
@@ -419,7 +419,7 @@ public class AST {
 
         ASTNode right = nodesStack.pop();
         nodesStack.add(
-            new CommonNode(
+            new BinaryOperatorNode(
                 operatorStack.pop(), // operator
                 merge_back( /* merge the left side of operator */
                     operatorStack,
@@ -485,7 +485,7 @@ public class AST {
           throw new ASTProcessingException("*(multiply) left side not exists");
         ASTNode left = nodesStack.pop();
         recall(remains.next(), remains, operatorStack, nodesStack);
-        nodesStack.add(new CommonNode(token.value, left, nodesStack.pop()));
+        nodesStack.add(new BinaryOperatorNode(token.value, left, nodesStack.pop()));
 
       }else if(operatorEquals(Identifiers.OpenParenthesis, token)){
 
@@ -996,7 +996,7 @@ public class AST {
   }
 
   private static ASTNode mergeTwoNodes(ASTNode left, ASTNode right, String _op){
-    return new CommonNode(_op, left, right);
+    return new BinaryOperatorNode(_op, left, right);
   }
 
   private static boolean operatorEquals(final String operator, final Token token){
@@ -1124,7 +1124,7 @@ public class AST {
     Object evalsub(ASTNode node){
       if(node instanceof ValNode val){
         return val.value;
-      }else if(node instanceof CommonNode common){
+      }else if(node instanceof BinaryOperatorNode common){
         Object left = evalsub(common.left);
         Object right  = evalsub(common.right);
         if(Objects.isNull(right) || Objects.isNull(left))
@@ -1210,7 +1210,7 @@ public class AST {
         }
         return null;
 
-      } else if(node instanceof CommonNode common){
+      } else if(node instanceof BinaryOperatorNode common){
 
         return binary_op_call(
             common.OP ,
