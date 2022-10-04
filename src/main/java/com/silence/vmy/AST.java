@@ -233,6 +233,18 @@ public class AST {
     }
   }
 
+  // function declaration
+  static class FunctionNode implements ASTNode {
+    final List<DeclareNode> params;
+    final ASTNode body;
+
+    public FunctionNode(List<DeclareNode> _params, ASTNode _body){
+      params = _params;
+      body = _body;
+    }
+
+  }
+
   // a list expression should be like this below:
   // a, b, c  or print(a, b, c)
   static class ListExpression implements ASTNode {

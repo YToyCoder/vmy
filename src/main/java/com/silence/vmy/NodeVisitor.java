@@ -54,4 +54,10 @@ public interface NodeVisitor {
    * @param node
    */
   void visitIfElse(AST.IfElse node);
+
+  /**
+   * visit {@link com.silence.vmy.AST.FunctionNode}, a function declaration
+   * @param node
+   */
+  void visitFunction(AST.FunctionNode node);
 }

@@ -147,6 +147,12 @@ public class VisitingEvaluator implements AST.Evaluator, NodeVisitor{
     }
   }
 
+  @Override
+  public void visitFunction(AST.FunctionNode node) {
+    throw new RuntimeException("you should fill this function body");
+  }
+
+
   boolean eval_elif(List<AST.ConditionNode> ifEls){
     for(AST.ConditionNode el : ifEls){
       el.condition.accept(this);
