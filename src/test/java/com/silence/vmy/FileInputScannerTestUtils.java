@@ -25,4 +25,20 @@ public class FileInputScannerTestUtils {
     return Scripts.eval(new VisitingEvaluator());
   }
 
+  public static Token let_token(){
+    return declaration_token("let");
+  }
+
+  public static Token val_token(){
+    return declaration_token("val");
+  }
+
+  private static Token declaration_token(String val){
+    return new Token(Token.Declaration, val);
+  }
+
+  public static Token identifier_token(String val){
+    return new Token(Token.Identifier, val);
+  }
+
 }
