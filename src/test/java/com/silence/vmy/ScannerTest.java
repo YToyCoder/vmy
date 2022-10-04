@@ -395,4 +395,82 @@ public class ScannerTest {
     return tokens.toArray(new Token[0]);
   }
 
+  @Test
+  public void function_literal_test() {
+    Scripts.run_with_file_input_scanner(
+        """
+            function a(param : Int) : Int {
+            }
+            """,
+        false,
+        scanner -> {
+            assertEqualTo(
+                new Token[]{
+                    new Token(Token.Identifier, "function"),
+                    new Token(Token.Identifier, "a"),
+                    new Token(Token.Identifier, Identifiers.OpenParenthesis),
+                    new Token(Token.Identifier, "param"),
+                    new Token(Token.Identifier, ":"),
+                    new Token(Token.Identifier, "Int"),
+                    new Token(Token.Identifier, Identifiers.ClosingParenthesis),
+                    new Token(Token.Identifier, ":"),
+                    new Token(Token.Identifier, "Int"),
+                    new Token(Token.Identifier, "{"),
+                    new Token(Token.NewLine, "\n"),
+                    new Token(Token.Identifier, "}"),
+                    new Token(Token.NewLine, "\n")
+                },
+                to_token_arr(scanner.scan(""))
+            );
+            return null;
+        }
+    );
+  }
+
+  @Test
+  public void function_declaration_test() {
+    Scripts.run_with_file_input_scanner(
+        """
+            function a(param : Int) : Int {
+              let m : Int = 1
+              return m + param
+            }
+            """,
+        false,
+        scanner -> {
+            assertEqualTo(
+                new Token[]{
+                    new Token(Token.Identifier, "function"),
+                    new Token(Token.Identifier, "a"),
+                    new Token(Token.Identifier, Identifiers.OpenParenthesis),
+                    new Token(Token.Identifier, "param"),
+                    new Token(Token.Identifier, ":"),
+                    new Token(Token.Identifier, "Int"),
+                    new Token(Token.Identifier, Identifiers.ClosingParenthesis),
+                    new Token(Token.Identifier, ":"),
+                    new Token(Token.Identifier, "Int"),
+                    new Token(Token.Identifier, "{"),
+                    new Token(Token.NewLine, "\n"),
+                    FileInputScannerTestUtils.let_token(),
+                    FileInputScannerTestUtils.identifier_token("m"),
+                    FileInputScannerTestUtils.identifier_token(":"),
+                    FileInputScannerTestUtils.identifier_token("Int"),
+                    new Token(Token.Assignment, "="),
+                    new Token(Token.Literal, "1"),
+                    new Token(Token.NewLine, "\n"),
+                    FileInputScannerTestUtils.identifier_token("return"),
+                    FileInputScannerTestUtils.identifier_token("m"),
+                    FileInputScannerTestUtils.identifier_token("+"),
+                    FileInputScannerTestUtils.identifier_token("param"),
+                    new Token(Token.NewLine, "\n"),
+                    new Token(Token.Identifier, "}"),
+                    new Token(Token.NewLine, "\n")
+                },
+                to_token_arr(scanner.scan(""))
+            );
+            return null;
+        }
+    );
+  }
+
 }

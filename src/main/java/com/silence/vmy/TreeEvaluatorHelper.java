@@ -28,7 +28,10 @@ public class TreeEvaluatorHelper {
     try {
       can_assign(identifier_variable.getType(), Utils.get_obj_type(value));
     }catch (ASTProcessingException ast_e){
-      throw new ASTProcessingException(String.format("%s : variable name - %s , value string - %s", ast_e.getMessage(), variable_name, value.toString()));
+      throw new ASTProcessingException(String.format(
+          "%s : variable name - %s , value string - %s",
+          ast_e.getMessage(),
+          variable_name, value.toString()));
     }
     return true;
   }
