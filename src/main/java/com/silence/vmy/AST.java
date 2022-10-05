@@ -1074,7 +1074,7 @@ public class AST {
     return HANDLER;
   }
 
-  private static TokenHandler getTokenHandler(){
+  static TokenHandler getTokenHandler(){
     return getTokenHandler(null);
   }
 

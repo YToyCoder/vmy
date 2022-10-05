@@ -77,7 +77,11 @@ public class Scripts {
   }
 
   public static Consumer<Scripts.FileInputScanner> eval(AST.Evaluator evaluator){
-    return scanner -> Objects.requireNonNull(evaluator).eval(AST.build(scanner));
+    return scanner -> Objects.requireNonNull(evaluator).eval(
+        SimpleParser
+            .instance(scanner, AST.getTokenHandler(), 3)
+            .parse()
+    );
   }
 
   /**
