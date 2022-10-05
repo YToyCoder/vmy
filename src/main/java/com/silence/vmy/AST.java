@@ -359,10 +359,15 @@ public class AST {
       Stack<String> operatorStack, 
       Stack<ASTNode> nodesStack
     ){
+      try {
       if(canHandle(token, operatorStack, nodesStack))
         doHandle(token, remains, operatorStack, nodesStack);
       else if(Objects.nonNull(next))
         next.handle(token, remains, operatorStack, nodesStack);
+      }catch (Exception e){
+        e.printStackTrace();
+        throw new ASTProcessingException(String.format("%s : at token %s", e.getMessage(), token));
+      }
     }
 
     public abstract boolean canHandle(
@@ -453,6 +458,12 @@ public class AST {
               );
               break;
             }
+          case Identifiers.Concat:
+//            nodesStack.add(new BinaryOperatorNode(token.value, nodesStack.pop(), remains.next()));
+            ASTNode left = nodesStack.pop();
+            recall(remains.next(), remains, operatorStack, nodesStack);
+            nodesStack.add(new BinaryOperatorNode(token.value, left, nodesStack.pop()));
+            break;
           default:
             operatorStack.add(token.value);
             break;
@@ -1068,7 +1079,7 @@ public class AST {
   // a static instance
   private static TokenHandler HANDLER;
 
-  private static TokenHandler getTokenHandler(TokenHistoryRecorder recorder){
+  static TokenHandler getTokenHandler(TokenHistoryRecorder recorder){
     if(Objects.isNull(HANDLER))
       buildHandler(recorder);
     return HANDLER;
@@ -1210,7 +1221,7 @@ public class AST {
       }else if(node instanceof LiteralNode literal){
         return literal;
       } else
-        throw new EvaluatException("unrecognizable AST node");
+        throw new EvaluatException("unrecognizable AST node : " + node.getClass().getName());
     }
 
     Object getValue(Object obj){

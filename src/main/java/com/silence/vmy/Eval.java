@@ -55,7 +55,10 @@ public class Eval {
     return Scripts.run_with_file_input_scanner(
         expression,
         false,
-        scanner -> evaluator.eval(AST.build(scanner))
+        scanner -> evaluator.eval(
+            SimpleParser.create(scanner)
+                .parse()
+        )
     );
   }
 

@@ -58,9 +58,6 @@ public class Scripts {
 
     try(Scripts.FileInputScanner scanner = new Scripts.FileInputScanner(file)) {
       scanner_consumer.accept(scanner);
-    } catch (FileNotFoundException e) {
-      e.printStackTrace();
-      throw new RuntimeException(e);
     } catch (Exception e) {
       e.printStackTrace();
       throw new RuntimeException(e);
@@ -78,9 +75,7 @@ public class Scripts {
 
   public static Consumer<Scripts.FileInputScanner> eval(AST.Evaluator evaluator){
     return scanner -> Objects.requireNonNull(evaluator).eval(
-        SimpleParser
-            .instance(scanner, AST.getTokenHandler(), 3)
-            .parse()
+        SimpleParser.create(scanner).parse()
     );
   }
 
