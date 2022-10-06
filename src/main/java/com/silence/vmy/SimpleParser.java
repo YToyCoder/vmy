@@ -42,8 +42,18 @@ public class SimpleParser implements Parser{
     ast.root = switch (nodes.size()) {
       case 0 -> null;
       case 1 -> nodes.get(0);
-      default -> new AST.BlockNode(nodes);
+      default -> try_merge(operators, nodes);
     };
     return ast;
+  }
+
+  private AST.ASTNode try_merge(Stack<String> operators, Stack<AST.ASTNode> nodes){
+    if(operators.isEmpty())
+      return new AST.BlockNode(nodes);
+    AST.ASTNode node = nodes.pop();
+    while(!operators.isEmpty() && !nodes.isEmpty()){
+      node = new AST.BinaryOperatorNode(operators.pop(), nodes.pop(), node);
+    }
+    return node;
   }
 }
