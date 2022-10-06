@@ -1220,6 +1220,11 @@ public class AST {
         return identifier.value;
       }else if(node instanceof LiteralNode literal){
         return literal;
+      } else if(node instanceof BlockNode block){
+        for(ASTNode el : block.process){
+          evalsub(el);
+        }
+        return null;
       } else
         throw new EvaluatException("unrecognizable AST node : " + node.getClass().getName());
     }
