@@ -8,6 +8,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.BiPredicate;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 public class Utils {
@@ -310,6 +312,24 @@ public class Utils {
   public static void should_has_next_token(Scanner scanner, Supplier<RuntimeException> err_supplier){
     if(!scanner.hasNext())
       throw Objects.requireNonNull( err_supplier ).get();
+  }
+
+  public static boolean should_has_and_equal(
+    Scanner scanner, 
+    Token token, 
+    Supplier<RuntimeException> err_supplier){
+
+    should_has_next_token(scanner, err_supplier);
+    return  next_token_is(scanner, token);
+  }
+
+  public static boolean should_has_and_test(
+    Scanner scanner, 
+    Function<Token, Boolean> test, 
+    Supplier<RuntimeException> err_supplier 
+  ){
+    should_has_next_token(scanner, err_supplier);
+    return test.apply(scanner.peek());
   }
 
 }
