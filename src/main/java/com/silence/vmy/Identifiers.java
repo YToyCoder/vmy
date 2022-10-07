@@ -49,6 +49,8 @@ final public class Identifiers {
   public static final String If = "if";
   public static final String Elif = "elif";
   public static final String Else = "else";
+  public static final String Function = "function";
+  public static final String Return = "return";
 
   static{
     // set builtinOperators
