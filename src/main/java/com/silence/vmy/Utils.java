@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.BiPredicate;
+import java.util.function.Supplier;
 
 public class Utils {
   public static MethodHandle getStaticMethod(
@@ -270,6 +271,45 @@ public class Utils {
 
   public static final String get_dir_of_project(String name){
     return String.format("%s/%s", project_dir, name);
+  }
+
+  // compare two token's value and tag : preview
+  public static boolean next_token_is(Scanner scanner, Token token){
+    var next = scanner.peek();
+    return equal(next.value, token.value) && equal(next.tag, token.tag);
+  }
+
+  public static Token create_token(String identifier, int tag){
+    return new Token(tag, identifier);
+  }
+
+  public static Token OpenParenthesis(){
+    return new Token(Token.Identifier, Identifiers.OpenParenthesis);
+  }
+
+  public static Token ClosingParenthesis(){
+    return new Token(Token.Identifier, Identifiers.ClosingParenthesis);
+  }
+
+  public static Token OpenBrace(){
+    return new Token(Token.Identifier, Identifiers.OpenBrace);
+  }
+
+  public static Token ClosingBrace(){
+    return new Token(Token.Identifier, Identifiers.ClosingBrace);
+  }
+
+  public static Token Colon(){
+    return new Token(Token.Identifier, Identifiers.Colon);
+  }
+
+  public static Token Comma(){
+    return new Token(Token.Identifier, Identifiers.Comma);
+  }
+
+  public static void should_has_next_token(Scanner scanner, Supplier<RuntimeException> err_supplier){
+    if(!scanner.hasNext())
+      throw Objects.requireNonNull( err_supplier ).get();
   }
 
 }
