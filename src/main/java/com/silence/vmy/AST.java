@@ -237,10 +237,12 @@ public class AST {
   static class FunctionNode implements ASTNode {
     final List<DeclareNode> params;
     final ASTNode body;
+    final String name;
 
-    public FunctionNode(List<DeclareNode> _params, ASTNode _body){
+    public FunctionNode(String _name, List<DeclareNode> _params, ASTNode _body){
       params = _params;
       body = _body;
+      name = _name;
     }
 
   }
@@ -1124,8 +1126,79 @@ public class AST {
     }
   }
 
+  private static class FunctionDeclarationHandler extends Tool {
+
+    @Override
+    public boolean canHandle(Token token, Stack<String> operatorStack, Stack<ASTNode> nodesStack) {
+      return Objects.equals(token.value, Identifiers.Function);
+    }
+
+    @Override
+    public void doHandle(Token token, Scanner remains, Stack<String> operatorStack, Stack<ASTNode> nodesStack) {
+      String name = "";
+      // get function name
+      if(!Utils.next_token_is(remains, Utils.OpenParenthesis())){
+        name = remains.next().value;
+        if(!Utils.next_token_is(remains, Utils.OpenParenthesis()))
+          throw new ASTProcessingException("function declaration missing open Parenthesis");
+      }
+      remains.next(); // consume OpenParenthesis
+
+      List<DeclareNode> declarations; // params
+      if(Utils.next_token_is(remains, Utils.ClosingParenthesis())/* empty params */){
+        declarations = List.of(get_return_type(remains, name, token));
+      } else { /* has params */
+        declarations = new ArrayList<>(4);
+//        declarations.add(handle_param_declaration(token, remains, operatorStack, nodesStack));
+        Token loop_end_token = Utils.ClosingParenthesis();
+        Token split_token = Utils.Comma();
+        while(remains.hasNext() && !Utils.next_token_is(remains, loop_end_token)){
+          declarations.add(handle_param_declaration(remains.next(), remains, operatorStack, nodesStack));
+          if(!Utils.next_token_is(remains, loop_end_token)){
+            if(!Utils.next_token_is(remains, split_token))
+              throw new ASTProcessingException("function declaration split token should be ',' : " + token);
+            remains.next();// remove ','
+          }
+        }
+        remains.next(); // remove ')'
+        declarations.add(get_return_type(remains, name, split_token));
+      }
+
+      // get body
+      ASTNode body;
+      remove_end_of_line(remains);
+      Utils.should_has_next_token(remains, () -> new ASTProcessingException("function declaration has no body : " + token));
+      if(Utils.next_token_is(remains, Utils.OpenBrace())){
+        recall(remains.next(), remains, operatorStack, nodesStack);
+      }else 
+        throw new ASTProcessingException("error at function declaration : " + token);
+      body = nodesStack.pop();
+      nodesStack.add(new FunctionNode(name, declarations, body));
+    }
+
+    private DeclareNode handle_param_declaration(Token token, Scanner remains, Stack<String> operators, Stack<ASTNode> nodes){
+      String name = token.value;
+      Utils.should_has_and_equal(remains, Utils.Colon(), () -> new ASTProcessingException("param declaration err"));
+      remains.next(); // remove ':'
+      Utils.should_has_next_token(remains, () -> new ASTProcessingException("param has no type : " + token));
+      return new DeclareNode("", new IdentifierNode(name), remains.next().value);
+    }
+
+    // token start at ':'
+    private DeclareNode get_return_type(Scanner remains, String name, Token declaration){
+      if(!Utils.next_token_is(remains, Utils.Colon())){
+        throw new ASTProcessingException("function declaration has no return type declaration : (" + name + ")");
+      }
+      remains.next(); // remove colon
+
+      Utils.should_has_next_token(remains, () -> new ASTProcessingException("function declaration err : " + declaration));
+      return new DeclareNode("", null, remains.next().value);
+    }
+  }
+
   private static void buildHandler(TokenHistoryRecorder recorder){
     HANDLER = new HandlerBuilder()
+    .next(new FunctionDeclarationHandler())
     .next(new NumberHandler())
     .next(new OperatorHandler())
     .next(new AssignmentHandler())

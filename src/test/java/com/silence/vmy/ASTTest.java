@@ -190,4 +190,19 @@ public class ASTTest {
         FileInputScannerTestUtils.build_with_scanner()
     );
   }
+
+  @Test
+  public void function_support_test() {
+    Scripts.run_with_file_input_scanner(
+      """
+        function a(param : Int) : Int {
+          param = 1
+        }
+          """, 
+      false,
+      scanner ->
+//        Scripts.eval(new VisitingEvaluator()).accept(scanner);
+        SimpleParser.create(scanner).parse()
+      );
+  }
 }
