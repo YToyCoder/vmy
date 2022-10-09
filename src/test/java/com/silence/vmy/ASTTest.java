@@ -204,5 +204,25 @@ public class ASTTest {
 //        Scripts.eval(new VisitingEvaluator()).accept(scanner);
         SimpleParser.create(scanner).parse()
       );
+
+    Scripts.run_with_file_input_scanner(
+      """
+        function a(name: String, age : Int) : void {
+          print(\"hello\")
+        }
+          """,
+      false,
+      scanner -> SimpleParser.create(scanner).parse()
+      );
+
+    Scripts.run_with_file_input_scanner(
+      """
+        function func(name: String) : String {
+          return \"return\"
+        }
+          """,
+      false,
+      scanner -> SimpleParser.create(scanner).parse()
+    );
   }
 }
