@@ -152,6 +152,11 @@ public class VisitingEvaluator implements AST.Evaluator, NodeVisitor{
     throw new RuntimeException("you should fill this function body");
   }
 
+  @Override
+  public void visitReturn(AST.Return node) {
+    throw new RuntimeException("you should fill this function body");
+  }
+
 
   boolean eval_elif(List<AST.ConditionNode> ifEls){
     for(AST.ConditionNode el : ifEls){
