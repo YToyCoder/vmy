@@ -218,6 +218,20 @@ public class AST {
     }
   }
 
+  static class Return implements  ASTNode {
+    final ASTNode value;
+
+    public Return(ASTNode _value){
+      value = _value;
+    }
+
+    @Override
+    public void accept(NodeVisitor visitor) {
+      visitor.visitReturn(this);
+    }
+
+  }
+
   // call expression , it should be like : print("print")
   static class CallNode implements ASTNode{
     final String identifier;
@@ -243,6 +257,11 @@ public class AST {
       params = _params;
       body = _body;
       name = _name;
+    }
+
+    @Override
+    public void accept(NodeVisitor visitor) {
+      visitor.visitFunction(this);
     }
 
   }
