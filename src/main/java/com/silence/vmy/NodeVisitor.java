@@ -60,4 +60,6 @@ public interface NodeVisitor {
    * @param node
    */
   void visitFunction(AST.FunctionNode node);
+
+  void visitReturn(AST.Return node);
 }
