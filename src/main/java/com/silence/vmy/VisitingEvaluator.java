@@ -46,7 +46,10 @@ public class VisitingEvaluator implements AST.Evaluator, NodeVisitor{
       throw new EvaluatException("op(" + op + ") not support!");
     try{
         Object result = Objects.nonNull(b_op) ?
-            b_op.apply(TreeEvaluatorHelper.get_value(left, _g), TreeEvaluatorHelper.get_value(right, _g)) :
+            b_op.apply(
+                TreeEvaluatorHelper.get_value(left, runtimeContext.current_frame()),
+                TreeEvaluatorHelper.get_value(right, runtimeContext.current_frame())
+            ) :
             null;
         put_stack(result);
     }catch (OpsException e){
@@ -98,7 +101,7 @@ public class VisitingEvaluator implements AST.Evaluator, NodeVisitor{
     ){
       TreeEvaluatorHelper.assign_to(
           variable_name,
-          TreeEvaluatorHelper.get_variable(variable_name, _g),
+          TreeEvaluatorHelper.get_variable(variable_name, runtimeContext.current_frame()),
           value,
           runtimeContext.current_frame()
       );
@@ -140,7 +143,7 @@ public class VisitingEvaluator implements AST.Evaluator, NodeVisitor{
           node.params.elements.stream()
               .map(param -> {
                 param.accept(this);
-                return TreeEvaluatorHelper.get_value(get_from_stack(), _g);
+                return TreeEvaluatorHelper.get_value(get_from_stack(), runtimeContext.current_frame());
               })
               .toList()
       ));

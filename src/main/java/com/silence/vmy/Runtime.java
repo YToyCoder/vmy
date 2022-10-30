@@ -121,6 +121,9 @@ public class Runtime {
     if(is_declared(frame, name))
       throw new VmyRuntimeException(name + " is declared, can't redeclare it!");
     Variable variable = create_variable(type, mutable);
+    if(value instanceof VariableWithName namedVariable){
+      value = Runtime.get_value(namedVariable.name(), frame);
+    }
     frame.put(name, variable, value);
     return variable;
   }

@@ -5,20 +5,25 @@ import java.util.Map;
 import java.util.Objects;
 
 public class CommonFrame implements Frame{
+  private Frame parent;
 
   private ObjPool objPool = Runtime.create_pool();
   private Map<String, Runtime.Variable> variables = new HashMap<>();
 
-  private CommonFrame(){
+  private CommonFrame(Frame frame){
+    parent = frame;
   }
 
-  static CommonFrame create(){
-    return new CommonFrame();
+  static CommonFrame create(Frame frame){
+    return new CommonFrame(frame);
   }
 
   @Override
   public Runtime.Variable local(String _name) {
-    return variables.get(_name);
+    Runtime.Variable variable = null;
+    if(Objects.nonNull(parent))
+      variable = parent.local(_name);
+    return Objects.isNull(variable) ? variables.get(_name) : variable;
   }
 
   @Override
@@ -41,12 +46,15 @@ public class CommonFrame implements Frame{
           objPool.put(hash_code, value);
         head.setValue(hash_code);
       }
-      variables.putIfAbsent(name, head);
     }
+    variables.putIfAbsent(name, head);
   }
 
   @Override
   public Object get_obj(Long identity) {
-    return objPool.get(identity);
+    Object obj = null;
+    if(Objects.nonNull(parent))
+      obj = parent.get_obj(identity);
+    return Objects.isNull(obj) ? objPool.get(identity) : obj;
   }
 }

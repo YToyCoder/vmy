@@ -29,7 +29,7 @@ public class LinkedListRuntimeContext implements RuntimeContext{
 
   @Override
   public Frame new_frame() {
-    CommonFrame frame = CommonFrame.create();
+    CommonFrame frame = CommonFrame.create(frame_stack.isEmpty() ? null : frame_stack.peek());
     frame_stack.add(frame);
     return frame;
   }
