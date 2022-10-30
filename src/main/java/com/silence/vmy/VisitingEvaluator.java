@@ -5,12 +5,15 @@ import java.util.Objects;
 import java.util.Stack;
 
 public class VisitingEvaluator implements AST.Evaluator, NodeVisitor{
-  Global _g = Global.getInstance();
+  Frame _g = Global.getInstance();
   private Stack<Object> interval_op_val = new Stack<>();
+  private RuntimeContext runtimeContext = new LinkedListRuntimeContext();
+  private Object return_value;
 
   @Override
   public Object eval(AST.Tree tree) {
     if(tree instanceof AST.VmyAST ast){
+      _g = runtimeContext.new_frame();
       ast.root.accept(this);
       return get_from_stack();
     }else
@@ -86,15 +89,19 @@ public class VisitingEvaluator implements AST.Evaluator, NodeVisitor{
     }else
       throw new EvaluatException("not support type node in left of assignment");
     // keep result
-    if(TreeEvaluatorHelper.check_if_value_can_be_assign_to(
-        variable_name,
-        value,
-        _g)){
+    if(
+        TreeEvaluatorHelper.check_if_value_can_be_assign_to(
+          variable_name,
+          value,
+          runtimeContext.current_frame()
+        )
+    ){
       TreeEvaluatorHelper.assign_to(
           variable_name,
           TreeEvaluatorHelper.get_variable(variable_name, _g),
           value,
-          _g);
+          runtimeContext.current_frame()
+      );
     }
   }
 
@@ -105,8 +112,8 @@ public class VisitingEvaluator implements AST.Evaluator, NodeVisitor{
     final VmyType declaration_type = Objects.isNull(node.type) ? expression_type : Utils.to_type(node.type);
     TreeEvaluatorHelper.can_assign(declaration_type, expression_type);
     put_stack(node.identifier.value);
-    var variable = Runtime.declare_variable(
-        _g,
+    Runtime.declare_variable(
+        runtimeContext.current_frame(),
         node.identifier.value,
         declaration_type,
         Utils.is_mutable(node.declare)
@@ -115,7 +122,7 @@ public class VisitingEvaluator implements AST.Evaluator, NodeVisitor{
 
   @Override
   public void visitIdentifierNode(AST.IdentifierNode node) {
-    put_stack(TreeEvaluatorHelper.get_variable(node.value, _g));
+    put_stack(TreeEvaluatorHelper.get_variable(node.value, runtimeContext.current_frame()));
   }
 
   @Override
@@ -125,15 +132,45 @@ public class VisitingEvaluator implements AST.Evaluator, NodeVisitor{
 
   @Override
   public void visitCallNode(AST.CallNode node) {
-    put_stack(FunctionSupport.call(
-        node.identifier,
-        node.params.elements.stream()
-            .map(param -> {
-              param.accept(this);
-              return TreeEvaluatorHelper.get_value(get_from_stack(), _g);
-            })
-            .toList()
-    ));
+    return_value = null; // reset return_value
+    if(/* builtin call */
+      FunctionSupport.is_builtin_func(node.identifier))
+      put_stack(FunctionSupport.call(
+          node.identifier,
+          node.params.elements.stream()
+              .map(param -> {
+                param.accept(this);
+                return TreeEvaluatorHelper.get_value(get_from_stack(), _g);
+              })
+              .toList()
+      ));
+    else { /* declared Function */
+      FunctionSupport.ASTFunction function = (FunctionSupport.ASTFunction) TreeEvaluatorHelper.get_value(
+          TreeEvaluatorHelper.get_variable(node.identifier, runtimeContext.current_frame()),
+          runtimeContext.current_frame()
+      );
+      if(Objects.isNull(function)){
+        throw new VmyRuntimeException("can't find function %s".formatted(node.identifier));
+      }
+      runtimeContext.new_frame();
+      List<AST.ASTNode> params = node.params.elements;
+      int params_len = Math.min( params.size(),  /* last one is type of return value */ function.func().params.size() - 1);
+      for(int i=0; i<params_len; i++){
+        params.get(i).accept(this);
+        Object value = get_from_stack(true);
+        AST.DeclareNode param_declaration = function.func().params.get(i);
+        Runtime.declare_variable(
+            runtimeContext.current_frame(),
+            param_declaration.identifier.value,
+            Utils.to_type(param_declaration.type),
+            value,
+            false
+        );
+      }
+      function.func().body.accept(this);
+      runtimeContext.exitCurrentFrame();
+      put_stack(return_value);
+    }
   }
 
   @Override
@@ -149,12 +186,31 @@ public class VisitingEvaluator implements AST.Evaluator, NodeVisitor{
 
   @Override
   public void visitFunction(AST.FunctionNode node) {
-    throw new RuntimeException("you should fill this function body");
+    String function_name = node.name;
+    put_stack(
+      Runtime.declare_variable(
+        runtimeContext.current_frame(),
+        function_name,
+        VmyTypes.BuiltinType.Function,
+        FunctionSupport.create_ast_function(node),
+        false
+      )
+    );
   }
 
   @Override
   public void visitReturn(AST.Return node) {
-    throw new RuntimeException("you should fill this function body");
+    if(Objects.isNull(node.value))
+      return_value = null;
+    else {
+      node.value.accept(this);
+      return_value = get_from_stack();
+    }
+  }
+
+  @Override
+  public void visitEmpty(AST.EmptyNode node) {
+    put_stack(null);
   }
 
 

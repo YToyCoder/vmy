@@ -11,7 +11,7 @@ public class AST {
   static interface ASTNode{
 
     default void accept(NodeVisitor visitor){
-      throw new ASTProcessingException("your should override this method");
+      throw new ASTProcessingException("your should override this method(%s)".formatted(this.getClass().getName()));
     }
 
   }
@@ -254,6 +254,7 @@ public class AST {
     final String name;
 
     public FunctionNode(String _name, List<DeclareNode> _params, ASTNode _body){
+      // the last one is return type
       params = _params;
       body = _body;
       name = _name;
@@ -334,16 +335,19 @@ public class AST {
 
 
   private static 
-  abstract class BaseHandler 
+  abstract class BaseHandler
     implements TokenHandler, 
     Utils.Recursive, 
-    TokenHistoryRecorderGetter
+    TokenHistoryRecorderGetter,
+      Utils.PeekTokenAbility
   {
     private BaseHandler next;
 
     private BaseHandler head;
 
     private TokenHistoryRecorder tokenHistoryRecorder;
+
+    private Scanner scanner = null;
 
     public void setNext(final BaseHandler _next){
       next = _next;
@@ -381,10 +385,12 @@ public class AST {
       Stack<ASTNode> nodesStack
     ){
       try {
-      if(canHandle(token, operatorStack, nodesStack))
-        doHandle(token, remains, operatorStack, nodesStack);
-      else if(Objects.nonNull(next))
-        next.handle(token, remains, operatorStack, nodesStack);
+        if(Objects.isNull(scanner))
+          scanner = remains;
+        if(canHandle(token, operatorStack, nodesStack))
+          doHandle(token, remains, operatorStack, nodesStack);
+        else if(Objects.nonNull(next))
+          next.handle(token, remains, operatorStack, nodesStack);
       }catch (Exception e){
         e.printStackTrace();
         throw new ASTProcessingException(String.format("%s : at token %s", e.getMessage(), token));
@@ -404,6 +410,10 @@ public class AST {
       Stack<ASTNode> nodesStack
     );
 
+    @Override
+    public Token peek() {
+      return scanner.peek();
+    }
   }
 
   private static class NumberHandler extends BaseHandler{
@@ -429,6 +439,63 @@ public class AST {
 
     }
 
+  }
+
+  private static class CallHandler extends Tool {
+    @Override
+    public boolean canHandle(Token token, Stack<String> operatorStack, Stack<ASTNode> nodesStack) {
+      return (token.tag == Token.BuiltinCall || token.tag == Token.Identifier) && Utils.equal(peek().value, Identifiers.OpenParenthesis);
+    }
+
+    @Override
+    public void doHandle(Token token, Scanner remains, Stack<String> operatorStack, Stack<ASTNode> nodesStack) {
+
+        Token should_be_open_parenthesis;
+        if(!remains.hasNext() || !operatorEquals(Identifiers.OpenParenthesis, (should_be_open_parenthesis = remains.next())))
+          throw new ASTProcessingException("builtin call " + token.value + " should be followed with open parenthesis '('");
+        if(operatorEquals(Identifiers.ClosingParenthesis, remains.peek())){
+          // no content, empty call like : print()
+          remains.next();
+          nodesStack.add(new CallNode(token.value, new ListExpression(List.of())));
+          return;
+        }
+
+        Token start_token = should_be_open_parenthesis;
+        while(
+            remains.hasNext() &&
+            (operatorStack.isEmpty() || !Utils.equal(start_token.value, Identifiers.ClosingParenthesis))
+        ){
+          travel_back_build(
+              start_token,
+              remains,
+              operatorStack,
+              nodesStack,
+              Set.of(Identifiers.Comma, Identifiers.ClosingParenthesis),
+              Set.of(Identifiers.Comma, Identifiers.OpenParenthesis)
+          );
+          start_token = new Token(-1, operatorStack.pop());
+        }
+
+        // last operators must be like this : ( , , )
+        if(!Utils.equal(start_token.value, Identifiers.ClosingParenthesis))
+          throw new ASTProcessingException("there is no closing parenthesis when handle builtin call " + token.value);
+        LinkedList<ASTNode> params = new LinkedList<>();
+        while(
+            !operatorStack.isEmpty() &&
+            !nodesStack.isEmpty() &&
+            !Utils.equal( operatorStack.peek(), Identifiers.OpenParenthesis)
+        ){
+          if(
+              !Utils.equal(operatorStack.pop(), Identifiers.Comma)
+          ) throw new ASTProcessingException("error when merge builtin call " + token.value);
+          // do merge
+          params.addFirst(nodesStack.pop());
+        }
+        operatorStack.pop(); // pop the "("
+        params.addFirst(nodesStack.pop());
+        nodesStack.add(new CallNode(token.value, new ListExpression(params)));
+
+    }
   }
 
   private static class OperatorHandler extends Tool{
@@ -524,54 +591,58 @@ public class AST {
             )
         );
 
-      } else if(/* a call like : print(1) */token.tag == Token.BuiltinCall){
-
-        Token should_be_open_parenthesis;
-        if(!remains.hasNext() || !operatorEquals(Identifiers.OpenParenthesis, (should_be_open_parenthesis = remains.next())))
-          throw new ASTProcessingException("builtin call " + token.value + " should be followed with open parenthesis '('");
-        if(operatorEquals(Identifiers.ClosingParenthesis, remains.peek())){
-          // no content, empty call like : print()
-          remains.next();
-          nodesStack.add(new CallNode(token.value, new ListExpression(List.of())));
-          return;
-        }
-
-        Token start_token = should_be_open_parenthesis;
-        while(
-            remains.hasNext() &&
-            (operatorStack.isEmpty() || !Utils.equal(start_token.value, Identifiers.ClosingParenthesis))
-        ){
-          travel_back_build(
-              start_token,
-              remains,
-              operatorStack,
-              nodesStack,
-              Set.of(Identifiers.Comma, Identifiers.ClosingParenthesis),
-              Set.of(Identifiers.Comma, Identifiers.OpenParenthesis)
-          );
-          start_token = new Token(-1, operatorStack.pop());
-        }
-
-        // last operators must be like this : ( , , )
-        if(!Utils.equal(start_token.value, Identifiers.ClosingParenthesis))
-          throw new ASTProcessingException("there is no closing parenthesis when handle builtin call " + token.value);
-        LinkedList<ASTNode> params = new LinkedList<>();
-        while(
-            !operatorStack.isEmpty() &&
-            !nodesStack.isEmpty() &&
-            !Utils.equal( operatorStack.peek(), Identifiers.OpenParenthesis)
-        ){
-          if(
-              !Utils.equal(operatorStack.pop(), Identifiers.Comma)
-          ) throw new ASTProcessingException("error when merge builtin call " + token.value);
-          // do merge
-          params.addFirst(nodesStack.pop());
-        }
-        operatorStack.pop(); // pop the "("
-        params.addFirst(nodesStack.pop());
-        nodesStack.add(new CallNode(token.value, new ListExpression(params)));
-
-      } else if(operatorEquals(Identifiers.MULTI, token) || operatorEquals(Identifiers.DIVIDE, token) ){
+      }
+//      else if(/* a call like : print(1) */
+//          token.tag == Token.BuiltinCall ||
+//          (remains.hasNext() && Utils.equal(remains.peek().value, Identifiers.OpenParenthesis))
+//      ){
+//
+//        Token should_be_open_parenthesis;
+//        if(!remains.hasNext() || !operatorEquals(Identifiers.OpenParenthesis, (should_be_open_parenthesis = remains.next())))
+//          throw new ASTProcessingException("builtin call " + token.value + " should be followed with open parenthesis '('");
+//        if(operatorEquals(Identifiers.ClosingParenthesis, remains.peek())){
+//          // no content, empty call like : print()
+//          remains.next();
+//          nodesStack.add(new CallNode(token.value, new ListExpression(List.of())));
+//          return;
+//        }
+//
+//        Token start_token = should_be_open_parenthesis;
+//        while(
+//            remains.hasNext() &&
+//            (operatorStack.isEmpty() || !Utils.equal(start_token.value, Identifiers.ClosingParenthesis))
+//        ){
+//          travel_back_build(
+//              start_token,
+//              remains,
+//              operatorStack,
+//              nodesStack,
+//              Set.of(Identifiers.Comma, Identifiers.ClosingParenthesis),
+//              Set.of(Identifiers.Comma, Identifiers.OpenParenthesis)
+//          );
+//          start_token = new Token(-1, operatorStack.pop());
+//        }
+//
+//        // last operators must be like this : ( , , )
+//        if(!Utils.equal(start_token.value, Identifiers.ClosingParenthesis))
+//          throw new ASTProcessingException("there is no closing parenthesis when handle builtin call " + token.value);
+//        LinkedList<ASTNode> params = new LinkedList<>();
+//        while(
+//            !operatorStack.isEmpty() &&
+//            !nodesStack.isEmpty() &&
+//            !Utils.equal( operatorStack.peek(), Identifiers.OpenParenthesis)
+//        ){
+//          if(
+//              !Utils.equal(operatorStack.pop(), Identifiers.Comma)
+//          ) throw new ASTProcessingException("error when merge builtin call " + token.value);
+//          // do merge
+//          params.addFirst(nodesStack.pop());
+//        }
+//        operatorStack.pop(); // pop the "("
+//        params.addFirst(nodesStack.pop());
+//        nodesStack.add(new CallNode(token.value, new ListExpression(params)));
+//      }
+      else if(operatorEquals(Identifiers.MULTI, token) || operatorEquals(Identifiers.DIVIDE, token) ){
 
         if(!remains.hasNext())
           throw new ASTProcessingException("*(multiply) doesn't have right side");
@@ -604,7 +675,13 @@ public class AST {
   }
 
   // represent an empty node
-  private static class EmptyNode implements ASTNode{}
+  static class EmptyNode implements ASTNode{
+
+    @Override
+    public void accept(NodeVisitor visitor) {
+      visitor.visitEmpty(this);
+    }
+  }
 
   private static abstract class Tool extends BaseHandler {
 
@@ -1219,6 +1296,7 @@ public class AST {
     HANDLER = new HandlerBuilder()
     .next(new FunctionDeclarationHandler())
     .next(new NumberHandler())
+    .next(new CallHandler())
     .next(new OperatorHandler())
     .next(new AssignmentHandler())
     .next(new DeclarationHandler())

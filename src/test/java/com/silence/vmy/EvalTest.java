@@ -86,4 +86,12 @@ public class EvalTest {
     );
   }
 
+
+  @Test
+  public void eval_function(){
+    FileInputScannerTestUtils.do_with_instance(
+        FileInputScannerTestUtils.ofScript("function_support.vmy"),
+        FileInputScannerTestUtils.eval_with_scanner()
+    );
+  }
 }

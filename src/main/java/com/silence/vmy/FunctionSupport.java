@@ -17,6 +17,14 @@ public class FunctionSupport {
     return func.call(params.toArray(new Object[0]));
   }
 
+  public static boolean is_builtin_func(String name){
+    return Objects.nonNull(
+      BuiltinOps
+      .builtinOps()
+      .get_function(name, null)
+    );
+  }
+
   /**
    * lookup the function
    * @param name function name
@@ -101,5 +109,12 @@ public class FunctionSupport {
     public VmyType param_type(int i) {
       return i < types.size() ? types.get(i) : null;
     }
+  }
+
+  public record ASTFunction(AST.FunctionNode func) {
+  }
+
+  static ASTFunction create_ast_function(AST.FunctionNode func){
+    return new ASTFunction(func);
   }
 }

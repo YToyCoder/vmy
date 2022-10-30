@@ -332,4 +332,8 @@ public class Utils {
     return test.apply(scanner.peek());
   }
 
+  public interface PeekTokenAbility{
+    Token peek();
+  }
+
 }

@@ -62,4 +62,6 @@ public interface NodeVisitor {
   void visitFunction(AST.FunctionNode node);
 
   void visitReturn(AST.Return node);
+
+  void visitEmpty(AST.EmptyNode node);
 }

@@ -117,12 +117,20 @@ public class Runtime {
     return declare_variable(frame, name, type, true);
   }
 
-  public static Variable declare_variable(Frame frame, String name, VmyType type, boolean mutable){
+  public static Variable declare_variable(Frame frame, String name, VmyType type, Object value, boolean mutable){
     if(is_declared(frame, name))
       throw new VmyRuntimeException(name + " is declared, can't redeclare it!");
     Variable variable = create_variable(type, mutable);
-    frame.put(name, variable, null);
+    frame.put(name, variable, value);
     return variable;
+  }
+
+  public static Variable declare_variable(
+    Frame frame, 
+    String name, 
+    VmyType type, 
+    boolean mutable){
+    return declare_variable(frame, name, type, null, mutable);
   }
 
   public static boolean is_declared(Frame frame, String name){
@@ -131,7 +139,7 @@ public class Runtime {
 
   public static Object get_value(String name, Frame frame){
     Variable variable = frame.local(name);
-    if(Utils.isType(variable, VmyTypes.BuiltinType.Table)){
+    if(Utils.isType(variable, VmyTypes.BuiltinType.Table) || Utils.isType(variable, VmyTypes.BuiltinType.Function)){
       return frame.get_obj((Long)variable.getValue());
     }else return variable.getValue();
   }

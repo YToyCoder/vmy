@@ -4,9 +4,9 @@ import java.util.Objects;
 
 public class TreeEvaluatorHelper {
 
-  public static Object get_value(Object obj, Global _g){
+  public static Object get_value(Object obj, Frame frame){
     if(obj instanceof Runtime.VariableWithName variable) {
-      return Runtime.get_value(variable.name(), _g);
+      return Runtime.get_value(variable.name(), frame);
     }
     return obj;
   }

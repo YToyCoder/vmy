@@ -1,0 +1,5 @@
+function func(param : Int) : void {
+    print("hello, world")
+}
+
+func()
