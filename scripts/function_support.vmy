@@ -11,3 +11,17 @@ function func(param : Int) : void {
 let a : Int = 10
 
 func(a)
+
+function return_test() : String {
+    return "hello, world."
+}
+
+print(return_test() ++ " this is return test.")
+
+function return_complex() : Int {
+    return 1 + 2 * 4
+}
+
+# a = 1 + 2 * 4 + 3 * 5
+
+print(return_complex() )

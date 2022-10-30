@@ -841,7 +841,7 @@ public class AST {
 
 
   // handle name like variable name
-  private static class VariableNameHandler extends BaseHandler{
+  private static class VariableNameHandler extends Tool{
     @Override
     public boolean canHandle(Token token, Stack<String> operatorStack, Stack<ASTNode> nodesStack) {
       return token.tag == Token.Identifier &&
@@ -861,7 +861,27 @@ public class AST {
       Stack<ASTNode> nodesStack
     ) {
 
-      nodesStack.add(new IdentifierNode(token.value));
+      switch (token.value){
+        case Identifiers.Return -> {
+//          travel_back_build();
+          while(
+              remains.hasNext() &&
+              remains.peek().tag != Token.NewLine &&
+              !Utils.equal(remains.peek().value, Identifiers.ClosingBrace)
+          ) recall(remains.next(), remains, operatorStack, nodesStack);
+
+          nodesStack.add(new Return(
+            merge_back(
+                operatorStack,
+                nodesStack,
+                (nodes, op_stack) -> {
+                  String op = op_stack.peek();
+                  return Utils.equal(op, Identifiers.NewLine) || Utils.equal(op, Identifiers.ClosingParenthesis);
+                })
+          ));
+        }
+        default -> nodesStack.add(new IdentifierNode(token.value));
+      }
 
     }
   }
@@ -1242,6 +1262,7 @@ public class AST {
 
       List<DeclareNode> declarations; // params
       if(Utils.next_token_is(remains, Utils.ClosingParenthesis())/* empty params */){
+        remains.next(); // remove ')'
         declarations = List.of(get_return_type(remains, name, token));
       } else { /* has params */
         declarations = new ArrayList<>(4);
