@@ -25,3 +25,13 @@ function return_complex() : Int {
 # a = 1 + 2 * 4 + 3 * 5
 
 print(return_complex() )
+
+function return_function() : Function {
+    return return_complex
+}
+
+val fun = return_function()
+
+print( "The return func "  ++ fun() )
+
+print( "the value" ++ a )

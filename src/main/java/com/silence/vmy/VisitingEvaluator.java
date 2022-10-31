@@ -47,8 +47,10 @@ public class VisitingEvaluator implements AST.Evaluator, NodeVisitor{
     try{
         Object result = Objects.nonNull(b_op) ?
             b_op.apply(
-                TreeEvaluatorHelper.get_value(left, runtimeContext.current_frame()),
-                TreeEvaluatorHelper.get_value(right, runtimeContext.current_frame())
+//                TreeEvaluatorHelper.get_value(left, runtimeContext.current_frame()),
+                left,
+//                TreeEvaluatorHelper.get_value(right, runtimeContext.current_frame())
+                right
             ) :
             null;
         put_stack(result);
@@ -125,7 +127,12 @@ public class VisitingEvaluator implements AST.Evaluator, NodeVisitor{
 
   @Override
   public void visitIdentifierNode(AST.IdentifierNode node) {
-    put_stack(TreeEvaluatorHelper.get_variable(node.value, runtimeContext.current_frame()));
+    put_stack(
+        TreeEvaluatorHelper.get_value(
+            TreeEvaluatorHelper.get_variable(node.value, runtimeContext.current_frame()),
+            runtimeContext.current_frame()
+        )
+    );
   }
 
   @Override

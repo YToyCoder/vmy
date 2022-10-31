@@ -132,6 +132,8 @@ public class Utils {
       return VmyTypes.BuiltinType.Boolean;
     else if(obj instanceof Double)
       return VmyTypes.BuiltinType.Double;
+    else if (obj instanceof FunctionSupport.ASTFunction)
+      return VmyTypes.BuiltinType.Function;
     else
       throw new VmyRuntimeException("current version not support this type");
 
