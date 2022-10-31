@@ -3,6 +3,7 @@ package com.silence.vmy;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Objects;
+import java.util.Optional;
 
 import com.silence.vmy.Runtime.Variable;
 
@@ -16,15 +17,8 @@ public class LinkedListRuntimeContext implements RuntimeContext{
 
   @Override
   public Variable get_variable(String name) {
-    Iterator<Frame> riter = frame_stack.descendingIterator();
-    Variable variable = null;
-    while(riter.hasNext()){
-      Frame frame = riter.next();
-      variable = frame.local(name);
-      if(Objects.nonNull(variable)) 
-        break;
-    }
-    return variable;
+    Frame frame = current_frame();
+    return Objects.isNull(frame) ? null : frame.local(name);
   }
 
   @Override
