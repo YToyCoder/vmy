@@ -1,9 +1,7 @@
 package com.silence.vmy;
 
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Objects;
-import java.util.Optional;
 
 import com.silence.vmy.Runtime.Variable;
 
