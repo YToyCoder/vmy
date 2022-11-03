@@ -45,14 +45,7 @@ public class VisitingEvaluator implements AST.Evaluator, NodeVisitor{
     if(Objects.isNull(b_op))
       throw new EvaluatException("op(" + op + ") not support!");
     try{
-        Object result = Objects.nonNull(b_op) ?
-            b_op.apply(
-//                TreeEvaluatorHelper.get_value(left, runtimeContext.current_frame()),
-                left,
-//                TreeEvaluatorHelper.get_value(right, runtimeContext.current_frame())
-                right
-            ) :
-            null;
+        Object result = Objects.nonNull(b_op) ? b_op.apply(left, right) : null;
         put_stack(result);
     }catch (OpsException e){
       throw new ASTProcessingException(String.format("%s : left value - %s, right value - %s", e.getMessage(), left, right));
@@ -107,6 +100,7 @@ public class VisitingEvaluator implements AST.Evaluator, NodeVisitor{
           value,
           runtimeContext.current_frame()
       );
+      put_stack(value);
     }
   }
 
