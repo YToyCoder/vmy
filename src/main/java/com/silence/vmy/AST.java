@@ -1382,7 +1382,7 @@ public class AST {
       if(tree instanceof VmyAST ast){
         return evalsub(ast.root);
       }else
-        throw new EvaluatException("unrecognized AST");
+        throw new EvaluateException("unrecognized AST");
     }
 
     Object evalsub(ASTNode node){
@@ -1392,10 +1392,10 @@ public class AST {
         Object left = evalsub(common.left);
         Object right  = evalsub(common.right);
         if(Objects.isNull(right) || Objects.isNull(left))
-          throw new EvaluatException(common.OP + " can't handle null object");
+          throw new EvaluateException(common.OP + " can't handle null object");
         BinaryOps op = BinaryOps.OpsMapper.get(common.OP);
         if(Objects.isNull(op))
-          throw new EvaluatException("op(" + common.OP + ") not support!");
+          throw new EvaluateException("op(" + common.OP + ") not support!");
         return Objects.nonNull(op) ? op.apply(getValue(left), getValue( right )) : null;
       }else if(node instanceof AssignNode assignment){
         String variable_name = (String) evalsub(assignment.variable);
@@ -1417,13 +1417,13 @@ public class AST {
         }
         return null;
       } else
-        throw new EvaluatException("unrecognizable AST node : " + node.getClass().getName());
+        throw new EvaluateException("unrecognizable AST node : " + node.getClass().getName());
     }
 
     Object getValue(Object obj){
       if(obj instanceof String obj_name) {
         if(!_g.exists(obj_name))
-          throw new EvaluatException(String.format("variable (%s) not exists", obj_name));
+          throw new EvaluateException(String.format("variable (%s) not exists", obj_name));
         return _g.get(obj_name);
       }
       return obj;
@@ -1435,7 +1435,7 @@ public class AST {
      */
     void findAndPut(String _name, Object _value){
       if(!_g.exists(_name))
-        throw new EvaluatException(_name + " haven't declared!");
+        throw new EvaluateException(_name + " haven't declared!");
       _g.put(_name, _value);
     }
 
@@ -1459,7 +1459,7 @@ public class AST {
       if(tree instanceof VmyAST ast){
         return eval_sub(ast.root);
       }else
-        throw new EvaluatException("unrecognized AST");
+        throw new EvaluateException("unrecognized AST");
     }
 
     /**
@@ -1523,7 +1523,7 @@ public class AST {
         do_evaluate_if_else(ifElse);
         return null;
       } else
-        throw new EvaluatException("unrecognizable AST node");
+        throw new EvaluateException("unrecognizable AST node");
     }
 
     // compare type
@@ -1568,10 +1568,10 @@ public class AST {
      */
     Object binary_op_call(String op, Object left , Object right){
       if(Objects.isNull(right) || Objects.isNull(left))
-        throw new EvaluatException(op + " can't handle null object");
+        throw new EvaluateException(op + " can't handle null object");
       BinaryOps b_op = BinaryOps.OpsMapper.get(op);
       if(Objects.isNull(b_op))
-        throw new EvaluatException("op(" + op + ") not support!");
+        throw new EvaluateException("op(" + op + ") not support!");
       return Objects.nonNull(b_op) ? b_op.apply(get_value(left), get_value( right )) : null;
     }
 
@@ -1594,7 +1594,7 @@ public class AST {
      */
     void can_assign(Runtime.VariableWithName variable, Object value){
       if(!variable.mutable())
-        throw new EvaluatException("const variable (let) can't be assigned : " + variable.name());
+        throw new EvaluateException("const variable (let) can't be assigned : " + variable.name());
       can_assign(variable.getType(), Utils.get_obj_type(value));
     }
 
@@ -1642,7 +1642,7 @@ public class AST {
     Runtime.VariableWithName get_variable(String name){
       Runtime.Variable variable = _g.local(name);
       if(Objects.isNull(variable))
-        throw new EvaluatException("variable " + name + " haven't declared!");
+        throw new EvaluateException("variable " + name + " haven't declared!");
       return Utils.variable_with_name(name, variable);
     }
 

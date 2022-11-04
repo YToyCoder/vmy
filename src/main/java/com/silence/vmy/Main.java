@@ -6,14 +6,11 @@ public class Main {
   public static void main(String[] args) {
     String[] strings = handle_args(args);
     if(Objects.nonNull(strings) && strings.length > 0 )
-    switch (strings[0]){
-      case Repl:
-        Eval.repl();
-        break;
-      case Run:
-        Scripts.run(Arrays.copyOfRange(strings, 1, strings.length));
-        break;
-    }else{
+      switch (strings[0]) {
+        case Repl -> Eval.repl();
+        case Run -> Scripts.run(Arrays.copyOfRange(strings, 1, strings.length));
+      }
+    else{
       Utils.log("no file");
     }
   }

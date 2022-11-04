@@ -79,14 +79,14 @@ public class FunctionSupport {
   /**
    * register a function
    */
-  public static interface FunctionRegister {
+  public interface FunctionRegister {
     void register(String name, FunctionType type, Callable callable);
   }
 
   /**
    * create a function
    */
-  public static interface FunctionFactory {
+  public interface FunctionFactory {
     /**
      * get a {@link Callable} by function name and function type
      * @param name function name

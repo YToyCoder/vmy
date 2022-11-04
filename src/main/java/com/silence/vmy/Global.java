@@ -12,7 +12,7 @@ public class Global implements Frame {
   }
 
   private Map<String, Object> primitives = new TreeMap<>();
-  private ObjPool objPool = Runtime.create_pool();
+  private final ObjPool objPool = Runtime.create_pool();
   private Map<String, Runtime.Variable> variables = new HashMap<>();
 
   @Deprecated

@@ -7,7 +7,7 @@ import java.util.WeakHashMap;
 public class Runtime {
   private Runtime(){}
 
-  public static interface Variable {
+  public interface Variable {
     VmyType getType();
     Object getValue();
     void setValue(Object value);
@@ -15,7 +15,7 @@ public class Runtime {
   }
 
   private static class DefaultOPool implements ObjPool {
-    private Map<Long, Object> objectMapper = new WeakHashMap<>();
+    private final Map<Long, Object> objectMapper = new WeakHashMap<>();
 
     @Override
     public void put(Long identity, Object obj) {

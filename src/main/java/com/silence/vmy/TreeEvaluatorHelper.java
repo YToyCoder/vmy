@@ -19,7 +19,7 @@ public class TreeEvaluatorHelper {
   public static Runtime.VariableWithName get_variable(String name, Frame frame){
     Runtime.Variable variable = frame.local(name);
     if(Objects.isNull(variable))
-      throw new EvaluatException("variable " + name + " haven't declared!");
+      throw new EvaluateException("variable " + name + " haven't declared!");
     return Utils.variable_with_name(name, variable);
   }
 

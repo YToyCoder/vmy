@@ -17,7 +17,7 @@ public class VisitingEvaluator implements AST.Evaluator, NodeVisitor{
       ast.root.accept(this);
       return get_from_stack();
     }else
-      throw new EvaluatException("unrecognized AST");
+      throw new EvaluateException("unrecognized AST");
   }
 
   private void put_stack(Object obj){
@@ -40,10 +40,10 @@ public class VisitingEvaluator implements AST.Evaluator, NodeVisitor{
     node.right.accept(this);
     var right = get_from_stack();
     if(Objects.isNull(right) || Objects.isNull(left))
-      throw new EvaluatException(op + " can't handle null object");
+      throw new EvaluateException(op + " can't handle null object");
     BinaryOps b_op = BinaryOps.OpsMapper.get(op);
     if(Objects.isNull(b_op))
-      throw new EvaluatException("op(" + op + ") not support!");
+      throw new EvaluateException("op(" + op + ") not support!");
     try{
         Object result = Objects.nonNull(b_op) ? b_op.apply(left, right) : null;
         put_stack(result);
@@ -85,7 +85,7 @@ public class VisitingEvaluator implements AST.Evaluator, NodeVisitor{
     }else if(node.variable instanceof AST.IdentifierNode identifier) {
       variable_name = identifier.value;
     }else
-      throw new EvaluatException("not support type node in left of assignment");
+      throw new EvaluateException("not support type node in left of assignment");
     // keep result
     if(
         TreeEvaluatorHelper.check_if_value_can_be_assign_to(
