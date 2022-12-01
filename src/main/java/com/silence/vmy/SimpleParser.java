@@ -20,10 +20,6 @@ public class SimpleParser implements Parser{
     token_recorder = _recorder;
   }
 
-  public static Parser instance(Scanner _scanner, AST.TokenHandler _tk_handler, int token_record_size){
-    return new SimpleParser(_scanner, _tk_handler, token_record_size);
-  }
-
   public static Parser create(Scanner scanner){
     TokenHistoryRecorder recorder = new FixedSizeCapabilityTokenRecorder(3);
     scanner.register(recorder, false);
