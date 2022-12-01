@@ -10,6 +10,9 @@ import java.util.Map;
 import java.util.List;
 import java.util.logging.Logger;
 
+import com.silence.vmy.compiler.*;
+import com.silence.vmy.tools.Scripts;
+import com.silence.vmy.tools.Utils;
 import org.junit.Test;
 
 public class ScannerTest {
@@ -243,7 +246,7 @@ public class ScannerTest {
   @Test
   public void file_scanner_test(){
     log.info(Utils.project_dir);
-    Scripts.FileInputScanner scanner = null;
+    FileInputScanner scanner = null;
     try {
       scanner = Scripts.file_scanner(ofScript("hello_word.vmy"));
     } catch (FileNotFoundException e) {

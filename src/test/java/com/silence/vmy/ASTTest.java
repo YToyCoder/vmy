@@ -2,9 +2,14 @@ package com.silence.vmy;
 
 import static org.junit.Assert.assertThrows;
 
+import com.silence.vmy.compiler.AST;
+import com.silence.vmy.compiler.visitor.ASTProcessingException;
+import com.silence.vmy.compiler.Scanners;
+import com.silence.vmy.compiler.SimpleParser;
+import com.silence.vmy.tools.Scripts;
 import org.junit.Test;
 
-import com.silence.vmy.AST.VmyAST;
+import com.silence.vmy.compiler.AST.VmyAST;
 
 import java.util.Set;
 import java.util.function.Consumer;

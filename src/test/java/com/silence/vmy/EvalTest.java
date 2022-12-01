@@ -1,5 +1,8 @@
 package com.silence.vmy;
 
+import com.silence.vmy.compiler.AST;
+import com.silence.vmy.runtime.Evaluators;
+import com.silence.vmy.tools.Eval;
 import org.junit.Test;
 
 import java.util.List;
@@ -11,23 +14,23 @@ public class EvalTest {
 
   @Test
   public void evalTest(){
-    assertEquals( 1 + 2 * (3 + 4), Eval.eval("1 + 2 * ( 3 + 4 )", AST.variableStoreTreeEvaluator()));
-    assertEquals( 1 + 2 * (3 + 4.0), Eval.eval("1 + 2 * ( 3 + 4.0 )", AST.variableStoreTreeEvaluator()));
-    assertEquals( 1 + 2 * (3 + 4) * (5) - 1, Eval.eval("1 + 2 * ( 3 + 4 ) * ( 5 )  - 1", AST.variableStoreTreeEvaluator()));
+    assertEquals( 1 + 2 * (3 + 4), Eval.eval("1 + 2 * ( 3 + 4 )", Evaluators.variableStoreTreeEvaluator()));
+    assertEquals( 1 + 2 * (3 + 4.0), Eval.eval("1 + 2 * ( 3 + 4.0 )", Evaluators.variableStoreTreeEvaluator()));
+    assertEquals( 1 + 2 * (3 + 4) * (5) - 1, Eval.eval("1 + 2 * ( 3 + 4 ) * ( 5 )  - 1", Evaluators.variableStoreTreeEvaluator()));
   }
   @Test
   public void evalTest1(){
-    assertEquals(1 + 2 * 3 * 4, Eval.eval("1 + 2 * 3 * 4", AST.variableStoreTreeEvaluator()));
-    assertEquals(1 + 2 / 3 * 4 * 7, Eval.eval("1 + 2 / 3 * 4 * 7", AST.variableStoreTreeEvaluator()));
-    assertEquals(1 + 14 / (3 + 4), Eval.eval("1 + 14 / (3 + 4)", AST.variableStoreTreeEvaluator()));
+    assertEquals(1 + 2 * 3 * 4, Eval.eval("1 + 2 * 3 * 4", Evaluators.variableStoreTreeEvaluator()));
+    assertEquals(1 + 2 / 3 * 4 * 7, Eval.eval("1 + 2 / 3 * 4 * 7", Evaluators.variableStoreTreeEvaluator()));
+    assertEquals(1 + 14 / (3 + 4), Eval.eval("1 + 14 / (3 + 4)", Evaluators.variableStoreTreeEvaluator()));
   }
 
   @Test
   public void evalTest2(){
-    assertEquals(1 + 2 * 3 * 4, Eval.eval("let a : Int = 1 + 2 * 3 * 4", AST.variableStoreTreeEvaluator()));
-    assertEquals(1 + 2 * 3 * 4, Eval.eval("let k = 1 + 2 * 3 * 4", AST.variableStoreTreeEvaluator()));
-    assertEquals(1 + 2 / 3 * 4 * 7, Eval.eval("let b : Int = 1 + 2 / 3 * 4 * 7", AST.variableStoreTreeEvaluator()));
-    assertEquals(1 + 14 / (3 + 4), Eval.eval("let c : Int = 1 + 14 / (3 + 4)", AST.variableStoreTreeEvaluator()));
+    assertEquals(1 + 2 * 3 * 4, Eval.eval("let a : Int = 1 + 2 * 3 * 4", Evaluators.variableStoreTreeEvaluator()));
+    assertEquals(1 + 2 * 3 * 4, Eval.eval("let k = 1 + 2 * 3 * 4", Evaluators.variableStoreTreeEvaluator()));
+    assertEquals(1 + 2 / 3 * 4 * 7, Eval.eval("let b : Int = 1 + 2 / 3 * 4 * 7", Evaluators.variableStoreTreeEvaluator()));
+    assertEquals(1 + 14 / (3 + 4), Eval.eval("let c : Int = 1 + 14 / (3 + 4)", Evaluators.variableStoreTreeEvaluator()));
   }
 
   @Test
@@ -50,7 +53,7 @@ public class EvalTest {
     FileInputScannerTestUtils.do_with_instance(
         FileInputScannerTestUtils.ofScript("number_literal_token_support_test.vmy"),
         scanner -> {
-          AST.evaluator(true).eval(AST.build(scanner));
+          Evaluators.evaluator(true).eval(AST.build(scanner));
         }
     );
   }
@@ -82,7 +85,7 @@ public class EvalTest {
   void cts(String v1, String v2){
     assertEquals(
         v1.substring(1, v1.length() - 1) + v2.substring(1, v2.length() - 1),
-        Eval.eval(v1 + " ++ " + v2, AST.variableStoreTreeEvaluator())
+        Eval.eval(v1 + " ++ " + v2, Evaluators.variableStoreTreeEvaluator())
     );
   }
 
