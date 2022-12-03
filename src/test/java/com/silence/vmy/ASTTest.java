@@ -9,8 +9,6 @@ import com.silence.vmy.compiler.SimpleParser;
 import com.silence.vmy.tools.Scripts;
 import org.junit.Test;
 
-import com.silence.vmy.compiler.AST.VmyAST;
-
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -18,7 +16,7 @@ public class ASTTest {
 
   @Test
   public void test1(){
-    VmyAST ast = AST.build(Scanners.scan("1 + 2"));
+    AST.build(Scanners.scan("1 + 2"));
   }
 
   @Test

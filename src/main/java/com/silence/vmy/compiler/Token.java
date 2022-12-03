@@ -16,10 +16,26 @@ public class Token {
   @Override
   public String toString() {
     return "Token{" +
-        "tag=" + tag +
+        "tag=" + tagStr(tag) +
         ", value='" + value + '\'' +
         ", pos=" + pos +
         '}';
+  }
+
+  private String tagStr(int tag_){
+    return switch (tag_){
+      case INT_V -> "Int";
+      case DOUBLE_V -> "Double";
+      case Identifier -> "Id";
+      case Assignment -> "Assign";
+      case NewLine -> "newline";
+      case Declaration -> "declare";
+      case Literal -> "literal";
+      case BuiltinCall -> "builtin-call";
+      case Builtin -> "builtin";
+      case Comma -> "Comma";
+      default -> "no-exits";
+    };
   }
 
   public static final int INT_V = 0;

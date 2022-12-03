@@ -33,7 +33,6 @@ public class ScannerTest {
 
   @Test
   public void testHandler(){
-    var identifiers = Identifiers.operatorCharacters;
     oneCharSource.forEach((k, v) -> {
       List<Token> tokens = Scanners.scan(v);
       assertTrue(v + "length should be 1, but is " + tokens.size(), tokens.size() == 1);
@@ -474,6 +473,19 @@ public class ScannerTest {
             return null;
         }
     );
+  }
+
+  @Test
+  public void printTokStartPosition(){
+    Scripts.run_with_file_input_scanner(
+      ofScript("if_else_eval_test.vmy"),
+      scanner -> {
+        while(scanner.hasNext()){
+          var tok = scanner.next();
+          System.out.println(tok);
+        }
+        return null;
+      });
   }
 
 }

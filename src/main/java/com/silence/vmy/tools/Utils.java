@@ -15,7 +15,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.BiPredicate;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class Utils {
@@ -283,14 +282,10 @@ public class Utils {
     return String.format("%s/%s", project_dir, name);
   }
 
-  // compare two token's value and tag : preview
+  // compare two tokens' value and tag : preview
   public static boolean next_token_is(Scanner scanner, Token token){
     var next = scanner.peek();
     return equal(next.value, token.value) && equal(next.tag, token.tag);
-  }
-
-  public static Token create_token(String identifier, int tag){
-    return new Token(tag, identifier);
   }
 
   public static Token OpenParenthesis(){
@@ -329,15 +324,6 @@ public class Utils {
 
     should_has_next_token(scanner, err_supplier);
     return  next_token_is(scanner, token);
-  }
-
-  public static boolean should_has_and_test(
-    Scanner scanner, 
-    Function<Token, Boolean> test, 
-    Supplier<RuntimeException> err_supplier 
-  ){
-    should_has_next_token(scanner, err_supplier);
-    return test.apply(scanner.peek());
   }
 
   public interface PeekTokenAbility{
