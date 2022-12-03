@@ -1,4 +1,4 @@
 package com.silence.vmy.compiler.tree;
 
-public interface Root {
+public interface Root extends Tree{
 }
