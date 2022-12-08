@@ -1,12 +1,13 @@
-package com.silence.vmy.compiler.tree;
+package com.silence.vmy.compiler.deprecated;
 
+import com.silence.vmy.compiler.tree.Tree;
 import com.silence.vmy.compiler.visitor.NodeVisitor;
 
 // node for assignment
 // like :
 //      let a : Type = 1
 //      a = 2
-public class AssignNode implements Tree {
+public class AssignNode extends AbstractTree implements Tree {
     Tree variable;
     Tree expression;
 

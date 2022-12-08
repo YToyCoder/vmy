@@ -1,8 +1,9 @@
-package com.silence.vmy.compiler.tree;
+package com.silence.vmy.compiler.deprecated;
 
+import com.silence.vmy.compiler.tree.Tree;
 import com.silence.vmy.compiler.visitor.NodeVisitor;
 
-public abstract class LiteralNode implements Tree {
+public abstract class LiteralNode extends AbstractTree implements Tree {
     private final int tag;
 
     public LiteralNode(int _tag) {

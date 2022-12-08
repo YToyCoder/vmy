@@ -1,4 +1,6 @@
-package com.silence.vmy.compiler;
+package com.silence.vmy.compiler.deprecated.deprecated;
+
+import com.silence.vmy.compiler.TokenHistoryRecorder;
 
 import java.util.List;
 

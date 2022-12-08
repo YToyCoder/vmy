@@ -1,9 +1,10 @@
-package com.silence.vmy.compiler.tree;
+package com.silence.vmy.compiler.deprecated;
 
+import com.silence.vmy.compiler.tree.Tree;
 import com.silence.vmy.compiler.visitor.NodeVisitor;
 
 // node for Declaration, like let a : Type , val a : Type
-public class DeclareNode implements Tree {
+public class DeclareNode extends AbstractTree implements Tree {
     final String declare;
     final String type;
     final IdentifierNode identifier;

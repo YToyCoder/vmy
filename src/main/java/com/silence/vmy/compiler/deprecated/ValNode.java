@@ -1,8 +1,9 @@
-package com.silence.vmy.compiler.tree;
+package com.silence.vmy.compiler.deprecated;
 
+import com.silence.vmy.compiler.tree.Tree;
 import com.silence.vmy.compiler.visitor.NodeVisitor;
 
-public class ValNode implements Tree {
+public class ValNode extends AbstractTree implements Tree {
     private final Number value;
 
     public Number val() {

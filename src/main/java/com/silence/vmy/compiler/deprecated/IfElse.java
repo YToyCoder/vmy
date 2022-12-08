@@ -1,11 +1,12 @@
-package com.silence.vmy.compiler.tree;
+package com.silence.vmy.compiler.deprecated;
 
+import com.silence.vmy.compiler.tree.Tree;
 import com.silence.vmy.compiler.visitor.NodeVisitor;
 
 import java.util.List;
 import java.util.Objects;
 
-public class IfElse implements Tree {
+public class IfElse extends AbstractTree implements Tree {
     final ConditionNode TheIf;
     final List<ConditionNode> Elif;
     final Tree Else;

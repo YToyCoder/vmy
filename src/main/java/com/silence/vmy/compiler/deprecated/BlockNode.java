@@ -1,5 +1,6 @@
-package com.silence.vmy.compiler.tree;
+package com.silence.vmy.compiler.deprecated;
 
+import com.silence.vmy.compiler.tree.Tree;
 import com.silence.vmy.compiler.visitor.NodeVisitor;
 
 import java.util.List;
@@ -10,7 +11,7 @@ import java.util.List;
  * <p>a = 1 </p>
  * <p>print(a)</p>
  */
-public class BlockNode implements Tree {
+public class BlockNode extends AbstractTree implements Tree {
     List<Tree> process;
 
     public List<Tree> process(){

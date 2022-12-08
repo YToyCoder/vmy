@@ -1,5 +1,7 @@
 package com.silence.vmy.compiler;
 
+import com.silence.vmy.compiler.deprecated.deprecated.Token;
+
 public class FixedSizeCapabilityTokenRecorder implements TokenHistoryRecorder {
 
   private final int MaxSize;

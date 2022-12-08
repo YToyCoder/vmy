@@ -1,5 +1,7 @@
 package com.silence.vmy.compiler;
 
+import com.silence.vmy.compiler.deprecated.deprecated.Token;
+
 import java.util.Objects;
 
 public class OneCapabilityTokenRecorder implements TokenHistoryRecorder {

@@ -11,6 +11,9 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import com.silence.vmy.compiler.*;
+import com.silence.vmy.compiler.deprecated.deprecated.FileInputScanner;
+import com.silence.vmy.compiler.deprecated.deprecated.Scanner;
+import com.silence.vmy.compiler.deprecated.deprecated.Token;
 import com.silence.vmy.tools.Scripts;
 import com.silence.vmy.tools.Utils;
 import org.junit.Test;

@@ -1,8 +1,9 @@
-package com.silence.vmy.compiler.tree;
+package com.silence.vmy.compiler.deprecated;
 
+import com.silence.vmy.compiler.tree.Tree;
 import com.silence.vmy.compiler.visitor.NodeVisitor;
 
-public class BinaryOperatorNode implements Tree {
+public class BinaryOperatorNode extends AbstractTree implements Tree {
     final String OP;
     Tree left;
     Tree right;

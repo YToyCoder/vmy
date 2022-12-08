@@ -1,11 +1,12 @@
-package com.silence.vmy.compiler.tree;
+package com.silence.vmy.compiler.deprecated;
 
+import com.silence.vmy.compiler.tree.Tree;
 import com.silence.vmy.compiler.visitor.NodeVisitor;
 
 import java.util.List;
 
 // function declaration
-public class FunctionNode implements Tree {
+public class FunctionNode extends AbstractTree implements Tree {
     final List<DeclareNode> params;
     final Tree body;
     final String name;

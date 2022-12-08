@@ -1,5 +1,8 @@
-package com.silence.vmy.compiler;
+package com.silence.vmy.compiler.deprecated.deprecated;
 
+import com.silence.vmy.compiler.Identifiers;
+import com.silence.vmy.compiler.LexicalException;
+import com.silence.vmy.compiler.TokenHistoryRecorder;
 import com.silence.vmy.tools.Utils;
 
 import java.io.ByteArrayInputStream;

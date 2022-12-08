@@ -1,6 +1,6 @@
 package com.silence.vmy.runtime;
 
-import com.silence.vmy.compiler.tree.FunctionNode;
+import com.silence.vmy.compiler.deprecated.FunctionNode;
 import com.silence.vmy.tools.Utils;
 
 import java.util.ArrayList;

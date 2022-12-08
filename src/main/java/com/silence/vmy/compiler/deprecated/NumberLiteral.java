@@ -1,4 +1,4 @@
-package com.silence.vmy.compiler.tree;
+package com.silence.vmy.compiler.deprecated;
 
 import com.silence.vmy.compiler.AST;
 

@@ -1,5 +1,7 @@
 package com.silence.vmy.compiler;
 
+import com.silence.vmy.compiler.deprecated.deprecated.Token;
+
 /**
  * record the Token that Token has been used 
  */
