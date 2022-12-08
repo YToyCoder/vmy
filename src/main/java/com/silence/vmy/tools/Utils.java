@@ -3,8 +3,8 @@ package com.silence.vmy.tools;
 import com.silence.vmy.compiler.Identifiers;
 import com.silence.vmy.compiler.visitor.ASTProcessingException;
 import com.silence.vmy.runtime.*;
-import com.silence.vmy.compiler.deprecated.deprecated.Scanner;
-import com.silence.vmy.compiler.deprecated.deprecated.Token;
+import com.silence.vmy.compiler.deprecated.Scanner;
+import com.silence.vmy.compiler.deprecated.Token;
 import com.silence.vmy.runtime.Runtime;
 
 import java.lang.invoke.MethodHandle;

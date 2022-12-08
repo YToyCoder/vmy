@@ -1,8 +1,8 @@
 package com.silence.vmy.compiler;
 
 import com.silence.vmy.compiler.deprecated.*;
-import com.silence.vmy.compiler.deprecated.deprecated.Scanner;
-import com.silence.vmy.compiler.deprecated.deprecated.Token;
+import com.silence.vmy.compiler.deprecated.Scanner;
+import com.silence.vmy.compiler.deprecated.Token;
 import com.silence.vmy.compiler.visitor.ASTProcessingException;
 import com.silence.vmy.compiler.tree.*;
 import com.silence.vmy.compiler.visitor.NodeVisitor;
@@ -42,7 +42,7 @@ public class AST {
     Stack<String> operatorStack = new Stack<>();
     Stack<Tree> nodesStack = new Stack<>();
     Iterator<Token> tokenIterator = tokens.iterator();
-    com.silence.vmy.compiler.deprecated.deprecated.Scanner scanner = new Scanners.VmyScanner(tokens);
+    Scanner scanner = new Scanners.VmyScanner(tokens);
     TokenHandler handler = getTokenHandler();
     while(tokenIterator.hasNext()){
       handler.handle(scanner.next(), scanner, operatorStack, nodesStack);
@@ -67,7 +67,7 @@ public class AST {
   }
 
   // new version
-  public static VmyAST build(com.silence.vmy.compiler.deprecated.deprecated.Scanner scanner){
+  public static VmyAST build(Scanner scanner){
     TokenHistoryRecorder recorder = new FixedSizeCapabilityTokenRecorder(3);
     scanner.register(recorder, false);
     Stack<String> operatorStack = new Stack<>();
@@ -87,7 +87,7 @@ public class AST {
   }
 
   public interface TokenHandler{
-    void handle(Token token, com.silence.vmy.compiler.deprecated.deprecated.Scanner remains, Stack<String> operatorStack, Stack<Tree> nodesStack);
+    void handle(Token token, Scanner remains, Stack<String> operatorStack, Stack<Tree> nodesStack);
   }
 
 
@@ -104,7 +104,7 @@ public class AST {
 
     private TokenHistoryRecorder tokenHistoryRecorder;
 
-    private com.silence.vmy.compiler.deprecated.deprecated.Scanner scanner = null;
+    private Scanner scanner = null;
 
     public void setNext(final BaseHandler _next){
       next = _next;
@@ -116,7 +116,7 @@ public class AST {
 
     final protected void recall(
       Token token, 
-      com.silence.vmy.compiler.deprecated.deprecated.Scanner remains,
+      Scanner remains,
       Stack<String> operatorStack, 
       Stack<Tree> nodesStack
     ){
@@ -137,7 +137,7 @@ public class AST {
     @Override
     final public void handle(
       Token token, 
-      com.silence.vmy.compiler.deprecated.deprecated.Scanner remains,
+      Scanner remains,
       Stack<String> operatorStack, 
       Stack<Tree> nodesStack
     ){
@@ -162,7 +162,7 @@ public class AST {
 
     public abstract void doHandle(
       Token token, 
-      com.silence.vmy.compiler.deprecated.deprecated.Scanner remains,
+      Scanner remains,
       Stack<String> operatorStack, 
       Stack<Tree> nodesStack
     );
@@ -183,7 +183,7 @@ public class AST {
     @Override
     public void doHandle(
       Token token, 
-      com.silence.vmy.compiler.deprecated.deprecated.Scanner remains,
+      Scanner remains,
       Stack<String> operatorStack, 
       Stack<Tree> nodesStack
     ) {
@@ -205,7 +205,7 @@ public class AST {
     }
 
     @Override
-    public void doHandle(Token token, com.silence.vmy.compiler.deprecated.deprecated.Scanner remains, Stack<String> operatorStack, Stack<Tree> nodesStack) {
+    public void doHandle(Token token, Scanner remains, Stack<String> operatorStack, Stack<Tree> nodesStack) {
 
         Token should_be_open_parenthesis;
         if(!remains.hasNext() || !operatorEquals(Identifiers.OpenParenthesis, (should_be_open_parenthesis = remains.next())))
@@ -271,7 +271,7 @@ public class AST {
     }
 
     @Override
-    public void doHandle(Token token, com.silence.vmy.compiler.deprecated.deprecated.Scanner remains, Stack<String> operatorStack, Stack<Tree> nodesStack) {
+    public void doHandle(Token token, Scanner remains, Stack<String> operatorStack, Stack<Tree> nodesStack) {
 
       if(
           /* + */
@@ -436,7 +436,7 @@ public class AST {
     // a default option for remove end-op
     protected void travel_back_build(
         Token token,
-        com.silence.vmy.compiler.deprecated.deprecated.Scanner remains,
+        Scanner remains,
         Stack<String> operation_stack,
         Stack<Tree> nodes_stack,
         Set<String> end_op,
@@ -459,7 +459,7 @@ public class AST {
     // add option to determined if it should remove the end_op from token
     protected void travel_back_build(
         Token token,
-        com.silence.vmy.compiler.deprecated.deprecated.Scanner remains,
+        Scanner remains,
         Stack<String> operation_stack,
         Stack<Tree> nodes_stack,
         Set<String> end_op,
@@ -553,7 +553,7 @@ public class AST {
     // }
     protected void handle_name_params_and_block(
         Token name,
-        com.silence.vmy.compiler.deprecated.deprecated.Scanner remains,
+        Scanner remains,
         Stack<String> operator_stack,
         Stack<Tree> nodes_stack,
         BiPredicate<Token,Token> pre_process_params_check
@@ -581,7 +581,7 @@ public class AST {
      * remove EOL till next token is not.
      * @param remains
      */
-    protected void remove_end_of_line(com.silence.vmy.compiler.deprecated.deprecated.Scanner remains){
+    protected void remove_end_of_line(Scanner remains){
       while(remains.hasNext() && Utils.isEOL(remains.peek()))
         remains.next();
     }
@@ -604,7 +604,7 @@ public class AST {
     @Override
     public void doHandle(
       Token token, 
-      com.silence.vmy.compiler.deprecated.deprecated.Scanner remains,
+      Scanner remains,
       Stack<String> operatorStack, 
       Stack<Tree> nodesStack
     ) {
@@ -641,7 +641,7 @@ public class AST {
     }
 
     @Override
-    public void doHandle(Token token, com.silence.vmy.compiler.deprecated.deprecated.Scanner remains, Stack<String> operatorStack, Stack<Tree> nodesStack) {
+    public void doHandle(Token token, Scanner remains, Stack<String> operatorStack, Stack<Tree> nodesStack) {
 
       // currently, it only needs to handle the string literal and bool literal
       // the Int and Double literal it handled by ValHandler
@@ -674,7 +674,7 @@ public class AST {
     }
 
     @Override
-    public void doHandle(Token token, com.silence.vmy.compiler.deprecated.deprecated.Scanner remains, Stack<String> operatorStack, Stack<Tree> nodesStack) {
+    public void doHandle(Token token, Scanner remains, Stack<String> operatorStack, Stack<Tree> nodesStack) {
 
       // 1 get the variable name or a declaration
       Tree variable;
@@ -717,7 +717,7 @@ public class AST {
     }
 
     @Override
-    public void doHandle(Token token, com.silence.vmy.compiler.deprecated.deprecated.Scanner remains, Stack<String> operatorStack, Stack<Tree> nodesStack) {
+    public void doHandle(Token token, Scanner remains, Stack<String> operatorStack, Stack<Tree> nodesStack) {
 
       Token identifier;
       if((identifier = remains.next()).tag != Token.Identifier)
@@ -744,7 +744,7 @@ public class AST {
     }
 
     @Override
-    public void doHandle(Token token, com.silence.vmy.compiler.deprecated.deprecated.Scanner remains, Stack<String> operatorStack, Stack<Tree> nodesStack) {
+    public void doHandle(Token token, Scanner remains, Stack<String> operatorStack, Stack<Tree> nodesStack) {
 
       // no content
       if(operatorEquals(Identifiers.ClosingBrace, remains.peek())){
@@ -809,7 +809,7 @@ public class AST {
     }
 
     @Override
-    public void doHandle(Token token, com.silence.vmy.compiler.deprecated.deprecated.Scanner remains, Stack<String> operatorStack, Stack<Tree> nodesStack) {
+    public void doHandle(Token token, Scanner remains, Stack<String> operatorStack, Stack<Tree> nodesStack) {
 
       handle_name_params_and_block(
           token,
@@ -855,7 +855,7 @@ public class AST {
     }
 
     @Override
-    public void doHandle(Token token, com.silence.vmy.compiler.deprecated.deprecated.Scanner remains, Stack<String> operatorStack, Stack<Tree> nodesStack) {
+    public void doHandle(Token token, Scanner remains, Stack<String> operatorStack, Stack<Tree> nodesStack) {
       // if
       handle_name_params_and_block(
           token,
@@ -964,7 +964,7 @@ public class AST {
     }
 
     @Override
-    public void doHandle(Token token, com.silence.vmy.compiler.deprecated.deprecated.Scanner remains, Stack<String> operatorStack, Stack<Tree> nodesStack) {
+    public void doHandle(Token token, Scanner remains, Stack<String> operatorStack, Stack<Tree> nodesStack) {
       throw new ASTProcessingException(
           "not support token for " +
           String.format(
@@ -986,7 +986,7 @@ public class AST {
     }
 
     @Override
-    public void doHandle(Token token, com.silence.vmy.compiler.deprecated.deprecated.Scanner remains, Stack<String> operatorStack, Stack<Tree> nodesStack) {
+    public void doHandle(Token token, Scanner remains, Stack<String> operatorStack, Stack<Tree> nodesStack) {
     }
   }
 
@@ -998,7 +998,7 @@ public class AST {
     }
 
     @Override
-    public void doHandle(Token token, com.silence.vmy.compiler.deprecated.deprecated.Scanner remains, Stack<String> operatorStack, Stack<Tree> nodesStack) {
+    public void doHandle(Token token, Scanner remains, Stack<String> operatorStack, Stack<Tree> nodesStack) {
       String name = "";
       // get function name
       if(!Utils.next_token_is(remains, Utils.OpenParenthesis())){
@@ -1041,7 +1041,7 @@ public class AST {
       nodesStack.add(new FunctionNode(name, declarations, body));
     }
 
-    private DeclareNode handle_param_declaration(Token token, com.silence.vmy.compiler.deprecated.deprecated.Scanner remains, Stack<String> operators, Stack<Tree> nodes){
+    private DeclareNode handle_param_declaration(Token token, Scanner remains, Stack<String> operators, Stack<Tree> nodes){
       String name = token.value;
       Utils.should_has_and_equal(remains, Utils.Colon(), () -> new ASTProcessingException("param declaration err"));
       remains.next(); // remove ':'

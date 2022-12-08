@@ -1,6 +1,6 @@
 package com.silence.vmy.compiler;
 
-import com.silence.vmy.compiler.deprecated.deprecated.Scanner;
+import com.silence.vmy.compiler.deprecated.Scanner;
 import com.silence.vmy.compiler.deprecated.BinaryOperatorNode;
 import com.silence.vmy.compiler.deprecated.BlockNode;
 import com.silence.vmy.compiler.tree.Root;

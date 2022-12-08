@@ -1,6 +1,6 @@
 package com.silence.vmy.compiler;
 
-import com.silence.vmy.compiler.deprecated.deprecated.Token;
+import com.silence.vmy.compiler.deprecated.Token;
 
 public class FixedSizeCapabilityTokenRecorder implements TokenHistoryRecorder {
 

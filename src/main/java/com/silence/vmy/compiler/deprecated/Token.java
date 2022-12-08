@@ -1,4 +1,4 @@
-package com.silence.vmy.compiler.deprecated.deprecated;
+package com.silence.vmy.compiler.deprecated;
 
 public class Token {
   public final int tag;
