@@ -32,8 +32,17 @@ public class AST {
     }
 
     @Override
+    public <R, T> R accept(TreeVisitor<R, T> visitor, T payload) {
+      return null;
+    }
+
     public Object accept(TreeVisitor visitor) {
       return null;
+    }
+
+    @Override
+    public Tree body() {
+      return root;
     }
   }
 
