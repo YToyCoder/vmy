@@ -9,8 +9,12 @@ public class AbstractTree implements Tree {
   public void accept(NodeVisitor visitor) {
   }
 
+  public Object accept(TreeVisitor<?,?> visitor) {
+    return null;
+  }
+
   @Override
-  public Object accept(TreeVisitor visitor) {
+  public <R, T> R accept(TreeVisitor<R, T> visitor, T payload) {
     return null;
   }
 }

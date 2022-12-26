@@ -1,7 +1,5 @@
 package com.silence.vmy.compiler.tree;
 
-import com.silence.vmy.compiler.visitor.NodeVisitor;
-
 public class LiteralExpression implements Expression{
 
   public LiteralExpression(Tag tag) {
