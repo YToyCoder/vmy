@@ -2,10 +2,14 @@ package com.silence.vmy.compiler.tree;
 
 import com.silence.vmy.compiler.visitor.NodeVisitor;
 
-public interface Tree<T> {
+public interface Tree {
 
-    // visitor pattern
-    void accept(NodeVisitor visitor);
-    T accept(TreeVisitor<? extends T> visitor);
+    // old version
+    default void accept(NodeVisitor visitor){
+        accept(visitor);
+    }
+
+    // new version
+    <R,T> R accept(TreeVisitor<R,T> visitor, T payload);
 
 }
