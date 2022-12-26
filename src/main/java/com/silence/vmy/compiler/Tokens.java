@@ -11,7 +11,7 @@ public class Tokens {
     // 8 * 8 => 32 | 16
     assert row >= 0 && row <= Integer.MAX_VALUE : "row must be >= 0 and <= Integer.MAX_VALUE, it's %d".formatted(row);
     assert col >= 0 && col <= Integer.MAX_VALUE : "col must be >= 0 and <= Integer.MAX_VALUE, it's %d".formatted(col);
-    return row << 32 | col;
+    return ((long)row) << 32 | col;
   }
 
   public enum TokenKind {
