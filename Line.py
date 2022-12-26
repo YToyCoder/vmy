@@ -1,3 +1,4 @@
+#!E:/python-/python
 # print file row number and line number
 import sys
 def readDo(filename : str):

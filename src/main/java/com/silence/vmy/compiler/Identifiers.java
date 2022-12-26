@@ -85,5 +85,9 @@ final public class Identifiers {
     );
   }
 
+  public static boolean isOperator(String ids){
+    return ids.chars().allMatch(operatorCharacters::contains);
+  }
+
 
 }

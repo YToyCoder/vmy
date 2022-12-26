@@ -144,8 +144,7 @@ public class VisitingEvaluator implements Evaluator, NodeVisitor {
   @Override
   public void visitCallNode(CallNode node) {
     return_value = null; // reset return_value
-    if(/* builtin call */
-      FunctionSupport.is_builtin_func(node.identifier()))
+    if(/* builtin call */ FunctionSupport.is_builtin_func(node.identifier())){
       put_stack(FunctionSupport.call(
           node.identifier(),
           node.params().elements().stream()
@@ -155,7 +154,7 @@ public class VisitingEvaluator implements Evaluator, NodeVisitor {
               })
               .toList()
       ));
-    else { /* declared Function */
+    } else { /* declared Function */
       FunctionSupport.ASTFunction function = (FunctionSupport.ASTFunction) TreeEvaluatorHelper.get_value(
           TreeEvaluatorHelper.get_variable(node.identifier(), runtimeContext.current_frame()),
           runtimeContext.current_frame()

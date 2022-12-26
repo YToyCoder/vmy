@@ -33,6 +33,7 @@ public class Utils {
     (// NoSuchMethodException | IllegalAccessException | 
     Throwable e
     ) {
+      e.printStackTrace();
       return null;
     }
     return lookupMethod;
@@ -125,6 +126,8 @@ public class Utils {
 
   public static VmyType get_obj_type(Object obj){
 
+    if(Objects.isNull(obj))
+      return VmyTypes.BuiltinType.Nil;
     if(obj instanceof Runtime.VariableWithName obj_variable)
       return obj_variable.getType();
     else if(obj instanceof String)
@@ -140,7 +143,7 @@ public class Utils {
     else if (obj instanceof FunctionSupport.ASTFunction)
       return VmyTypes.BuiltinType.Function;
     else
-      throw new VmyRuntimeException("current version not support this type");
+      throw new VmyRuntimeException("current version not support this type %s".formatted(obj.getClass().getName()));
 
   }
 
