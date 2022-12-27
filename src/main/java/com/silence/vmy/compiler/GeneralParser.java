@@ -97,7 +97,39 @@ public class GeneralParser implements Parser{
    * one = identifier | literal | "(" multi ")" | call
    */
   Expression one(){
-    return null;
+    Tokens.Token peek = token();
+    return switch (peek.kind()){
+      case IntLiteral,
+          StringLiteral,
+          CharLiteral -> literal();
+
+      case LBrace -> {
+        next();
+        Expression ret = multi();
+        // todo check
+        next(); // ")"
+        yield  ret;
+      }
+      // todo call
+      default -> null; // error
+    };
+  }
+
+  /**
+   * unary = one | "+" unary | "-" unary
+   */
+  Expression unary(){
+    if (peekTok(
+        tokenKind -> switch (tokenKind){
+          case Add, Sub -> true;
+          default -> false;
+        }
+    )){
+      Tokens.Token pre = next();
+      Expression unary = unary();
+      return new Unary(op2tag(pre.payload()), unary);
+    }
+    return one();
   }
 
   /**
@@ -117,14 +149,26 @@ public class GeneralParser implements Parser{
    *    | multi "-" multi
    */
   Expression add(){
-    return null;
+    Expression left = multi();
+    while(peekTok(
+        tokenKind -> switch (tokenKind){
+          case Add, Sub -> true;
+          default -> false;
+        }
+    )){
+      Tokens.Token op = next();
+      Expression right = multi();
+      left = (Expression) new BinaryOperateExpression(left, right, op2tag(op.payload()))
+          .setPos(op.start());
+    }
+    return left;
   }
 
   /**
-   * multi = one | multi "*" one | multi "/" one
+   * multi = unary | multi "*" unary | multi "/" one
    */
   Expression multi(){
-    Expression left = one();
+    Expression left = unary();
     while(peekTok(
         kind -> switch (kind){
           case Multi, Div -> true;
@@ -132,8 +176,9 @@ public class GeneralParser implements Parser{
         })
     ){
       Tokens.Token op = next();
-      Expression right = one();
-      left = new BinaryOperateExpression(left, right, op2tag(op.payload()));
+      Expression right = unary();
+      left = (Expression) new BinaryOperateExpression(left, right, op2tag(op.payload()))
+          .setPos(op.start());
     }
     return left;
   }
