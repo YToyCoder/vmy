@@ -185,7 +185,7 @@ public class GeneralScanner implements Lexer{
     }
     CharReaders.CharInFile endChar = nextChar();
     return createPayloadTok(
-        Tokens.TokenKind.String,
+        Tokens.TokenKind.StringLiteral,
         Tokens.location(startChar.row(), startChar.col()),
         Tokens.location(endChar.row(), endChar.col()),
         builder.toString());
@@ -220,7 +220,7 @@ public class GeneralScanner implements Lexer{
     CharReaders.CharInFile endChar;
     if(!charIs(endChar = peekChar(), '.'))
       return createPayloadTok(
-          Tokens.TokenKind.Int,
+          Tokens.TokenKind.IntLiteral,
           Tokens.location(startChar.row(), startChar.col()),
           Tokens.location(endChar.row(), endChar.col()),
           builder.toString());
@@ -229,7 +229,7 @@ public class GeneralScanner implements Lexer{
     while (hasChar() && (endChar = peekChar()).isDigital())
       builder.append(nextChar().c());
     return createPayloadTok(
-        Tokens.TokenKind.Double,
+        Tokens.TokenKind.DoubleLiteral,
         Tokens.location(startChar.row(), startChar.col()),
         Tokens.location(endChar.row(), endChar.col() + 1),
         builder.toString());

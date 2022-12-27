@@ -17,10 +17,10 @@ public class Tokens {
   public enum TokenKind {
     newline,
     // literal
-    Int,
-    Double,
-    String,
-    Char,
+    IntLiteral,
+    DoubleLiteral,
+    StringLiteral,
+    CharLiteral,
     // control flow
     For,
     While,
