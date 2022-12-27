@@ -17,4 +17,14 @@ public class AbstractTree implements Tree {
   public <R, T> R accept(TreeVisitor<R, T> visitor, T payload) {
     return null;
   }
+
+  @Override
+  public long position() {
+    return 0;
+  }
+
+  @Override
+  public Tag tag() {
+    return null;
+  }
 }

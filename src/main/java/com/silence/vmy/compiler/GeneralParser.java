@@ -4,7 +4,9 @@ import com.silence.vmy.compiler.tree.*;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Stack;
+import java.util.function.Predicate;
 
 public class GeneralParser implements Parser{
   private Lexer lexer;
@@ -52,6 +54,14 @@ public class GeneralParser implements Parser{
   protected void ensureLookahead(int lookahead) {
     for(int i= savedTokens.size(); i < lookahead && lexer.hasNext() ; i++)
       savedTokens.add(lexer.next());
+  }
+
+  protected boolean hasTok(){
+    return Objects.nonNull(token) || !savedTokens.isEmpty() || lexer.hasNext();
+  }
+
+  boolean peekTok(Predicate<Tokens.TokenKind> tk){
+    return hasTok() && tk.test(token().kind());
   }
 
   /**
@@ -113,6 +123,28 @@ public class GeneralParser implements Parser{
   /**
    * multi = one | multi "*" one | multi "/" one
    */
+  Expression multi(){
+    Expression left = one();
+    while(peekTok(
+        kind -> switch (kind){
+          case Multi, Div -> true;
+          default -> false;
+        })
+    ){
+      Tokens.Token op = next();
+      Expression right = one();
+      left = new BinaryOperateExpression(left, right, op2tag(op.payload()));
+    }
+    return left;
+  }
+
+  BaseTree.Tag op2tag(String op){
+    return switch (op){
+      case "*" -> BaseTree.Tag.Multi;
+      case "/" -> BaseTree.Tag.Div;
+      default -> null;
+    };
+  }
 
   /**
    * call = identifier expr

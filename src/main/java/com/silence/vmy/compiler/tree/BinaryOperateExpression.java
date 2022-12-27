@@ -3,10 +3,12 @@ package com.silence.vmy.compiler.tree;
 public class BinaryOperateExpression extends OperatorExpression{
   private final Expression lhe; // left hand expression
   private final Expression rhe; // right hand expression
+  private final Tag tag;
 
-  public BinaryOperateExpression(Expression lhe, Expression rhe) {
+  public BinaryOperateExpression(Expression lhe, Expression rhe, Tag tag) {
     this.lhe = lhe;
     this.rhe = rhe;
+    this.tag = tag;
   }
 
   @Override
@@ -20,5 +22,10 @@ public class BinaryOperateExpression extends OperatorExpression{
 
   public Expression right(){
     return rhe;
+  }
+
+  @Override
+  public Tag tag() {
+    return null;
   }
 }

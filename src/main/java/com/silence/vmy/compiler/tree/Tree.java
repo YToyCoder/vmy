@@ -12,4 +12,23 @@ public interface Tree {
     // new version
     <R,T> R accept(TreeVisitor<R,T> visitor, T payload);
 
+    long position();
+
+    Tag tag();
+
+    enum Tag{
+        Root,
+        //
+        Multi,
+        Div,
+        Assign,
+        // literal
+        IntLiteral,
+        StringLiteral,
+        DoubleLiteral,
+        FunctionLiteral,
+        //
+        Fun,
+        VarDecl
+    };
 }

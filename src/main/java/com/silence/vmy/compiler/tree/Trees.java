@@ -18,6 +18,11 @@ public abstract class Trees {
     public Tree body() {
       return body;
     }
+
+    @Override
+    public Tag tag() {
+      return Tag.Root;
+    }
   }
 
   public static CompileUnit createCompileUnit(BaseTree content){

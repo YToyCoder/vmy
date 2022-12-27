@@ -1,9 +1,9 @@
 package com.silence.vmy.compiler.tree;
 
-public class LiteralExpression implements Expression{
+public class LiteralExpression extends BaseTree implements Expression{
 
-  public LiteralExpression(Tag tag) {
-    this.tag = tag;
+  public LiteralExpression(Kind kind) {
+    this.kind = kind;
   }
 
   @Override
@@ -11,24 +11,29 @@ public class LiteralExpression implements Expression{
     return visitor.visitLiteral(this, payload);
   }
 
-  public enum Tag{
+  @Override
+  public BaseTree.Tag tag() {
+    return null;
+  }
+
+  public enum Kind {
     Int,
     String,
     Boolean
   }
 
-  private final Tag tag;
+  private final Kind kind;
 
   public boolean isInt(){
-    return tag == Tag.Int;
+    return kind == Kind.Int;
   }
 
   public boolean isBoolean(){
-    return tag == Tag.Boolean;
+    return kind == Kind.Boolean;
   }
 
   public boolean isString(){
-    return tag == Tag.String;
+    return kind == Kind.String;
   }
 
 }
