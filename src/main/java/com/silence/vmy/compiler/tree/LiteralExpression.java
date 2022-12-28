@@ -28,11 +28,12 @@ public abstract class LiteralExpression extends BaseTree implements Expression{
   public boolean isInt(){
     return kind == Kind.Int;
   }
-
+  public boolean isDouble() {
+    return kind == Kind.Double;
+  }
   public boolean isBoolean(){
     return kind == Kind.Boolean;
   }
-
   public boolean isString(){
     return kind == Kind.String;
   }
