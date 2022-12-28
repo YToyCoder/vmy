@@ -1,6 +1,14 @@
 package com.silence.vmy.compiler.tree;
 
-public record FunctionDecl(long position) implements Tree{
+import java.util.List;
+
+public record FunctionDecl(
+    String name,
+    List<Tree> params,
+    Tree body,
+    long position
+) implements Tree{
+
   @Override
   public <R, T> R accept(TreeVisitor<R, T> visitor, T payload) {
     return visitor.visitFunctionDecl(this, payload);
