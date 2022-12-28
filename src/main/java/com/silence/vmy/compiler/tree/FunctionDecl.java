@@ -5,7 +5,7 @@ import java.util.List;
 public record FunctionDecl(
     String name,
     List<Tree> params,
-    Tree body,
+    BlockStatement body,
     long position
 ) implements Tree{
 
