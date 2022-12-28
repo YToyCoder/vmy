@@ -140,7 +140,15 @@ public class GeneralParser implements Parser{
    *         | functionLiteral
    */
   Expression literal(){
-    return null;
+    Tokens.Token tok = next();
+    return switch (tok.kind()) {
+      case True -> LiteralExpression.ofStringify("true", LiteralExpression.Kind.Boolean);
+      case False-> LiteralExpression.ofStringify("false", LiteralExpression.Kind.Boolean);
+      case StringLiteral -> LiteralExpression.ofStringify(tok.payload(), LiteralExpression.Kind.String);
+      case IntLiteral -> LiteralExpression.ofStringify(tok.payload(), LiteralExpression.Kind.Int);
+      case DoubleLiteral -> LiteralExpression.ofStringify(tok.payload(), LiteralExpression.Kind.Double);
+      default -> null;
+    };
   }
 
   /**

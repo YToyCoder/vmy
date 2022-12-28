@@ -21,6 +21,8 @@ public class Tokens {
     DoubleLiteral,
     StringLiteral,
     CharLiteral,
+    True,
+    False,
     // control flow
     For,
     While,

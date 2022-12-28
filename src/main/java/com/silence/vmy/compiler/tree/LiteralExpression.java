@@ -1,6 +1,6 @@
 package com.silence.vmy.compiler.tree;
 
-public class LiteralExpression extends BaseTree implements Expression{
+public abstract class LiteralExpression extends BaseTree implements Expression{
 
   public LiteralExpression(Kind kind) {
     this.kind = kind;
@@ -19,7 +19,8 @@ public class LiteralExpression extends BaseTree implements Expression{
   public enum Kind {
     Int,
     String,
-    Boolean
+    Boolean,
+    Double
   }
 
   private final Kind kind;
@@ -34,6 +35,25 @@ public class LiteralExpression extends BaseTree implements Expression{
 
   public boolean isString(){
     return kind == Kind.String;
+  }
+
+  public abstract Object literal(); // string or function
+
+  public static LiteralExpression ofStringify(String content, Kind kind){
+    return new Stringify(kind, content);
+  }
+
+  private static class Stringify extends LiteralExpression {
+    private final String content;
+    public Stringify(Kind kind, String content) {
+      super(kind);
+      this.content = content;
+    }
+
+    @Override
+    public Object literal() {
+      return content;
+    }
   }
 
 }
