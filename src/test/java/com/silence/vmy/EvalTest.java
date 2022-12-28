@@ -2,12 +2,14 @@ package com.silence.vmy;
 
 import com.silence.vmy.compiler.AST;
 import com.silence.vmy.runtime.Evaluators;
+import com.silence.vmy.runtime.VmyRuntimeException;
 import com.silence.vmy.tools.Eval;
 import org.junit.Test;
 
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 
 public class EvalTest {
 
@@ -50,12 +52,14 @@ public class EvalTest {
 
   @Test
   public void eval_script_test(){
-    FileInputScannerTestUtils.do_with_instance(
-        FileInputScannerTestUtils.ofScript("number_literal_token_support_test.vmy"),
-        scanner -> {
-          Evaluators.evaluator(true).eval(AST.build(scanner));
-        }
-    );
+//    assertThrows(VmyRuntimeException.class, () -> {
+      FileInputScannerTestUtils.do_with_instance(
+          FileInputScannerTestUtils.ofScript("number_literal_token_support_test.vmy"),
+          scanner -> {
+            Evaluators.evaluator(true).eval(AST.build(scanner));
+          }
+      );
+//    });
   }
 
   @Test

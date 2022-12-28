@@ -127,7 +127,7 @@ public class FileInputScanner implements Scanner, AutoCloseable {
      * check if the token list is empty, if empty and has char , then add new token to token list
      */
     private void checkNotEmpty() {
-        while (has_char() && tokens.isEmpty())
+        while (tokens.isEmpty() && has_char())
             do_fill_tokens();
     }
 
@@ -296,11 +296,11 @@ public class FileInputScanner implements Scanner, AutoCloseable {
 
         final StringBuilder builder = new StringBuilder();
         while (
-                has_char() &&
-                        (
-                                Identifiers.operatorCharacters.contains(peek_char()) ||
-                                        Identifiers.commonIdentifiers.contains(peek_char())
-                        )
+            has_char() &&
+            (
+                Identifiers.operatorCharacters.contains(peek_char()) ||
+                Identifiers.commonIdentifiers.contains(peek_char())
+            )
         ) builder.append(next_char());
 
         final String operator = builder.toString();
@@ -318,20 +318,19 @@ public class FileInputScanner implements Scanner, AutoCloseable {
 
         return switch (identifier) {
             case /* let , val */
-                    Identifiers.ConstDeclaration,
-                            Identifiers.VarDeclaration -> Token.Declaration;
+                Identifiers.ConstDeclaration,
+                Identifiers.VarDeclaration -> Token.Declaration;
 
             case /* = */ Identifiers.Assignment -> Token.Assignment;
 
             case /* while, if, elif, else */
-                    Identifiers.While,
-                            Identifiers.If,
-                            Identifiers.Elif,
-                            Identifiers.Else -> Token.Builtin;
+                Identifiers.While,
+                Identifiers.If,
+                Identifiers.Elif,
+                Identifiers.Else -> Token.Builtin;
 
             case /* true false */
-                    Identifiers.True,
-                            Identifiers.False -> Token.Literal;
+                Identifiers.True, Identifiers.False -> Token.Literal;
 
             default -> {
                 if (Identifiers.builtinCall.contains(identifier)) yield Token.BuiltinCall;
@@ -424,8 +423,10 @@ public class FileInputScanner implements Scanner, AutoCloseable {
         if (end_of_file) /* already at end_of_file */
             return false;
 
-        buffer.clear();
+        if(!channel.isOpen())
+            return false;
 
+        buffer.clear();
         try {
             end_of_file = channel.read(buffer) == 0;
         } catch (IOException e) {

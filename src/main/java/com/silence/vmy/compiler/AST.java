@@ -24,7 +24,7 @@ public class AST {
     String;
   }
 
-  public static class VmyAST implements Root {
+  public static class VmyAST extends AbstractTree implements Root {
     public Tree root;
 
     @Override
@@ -180,6 +180,10 @@ public class AST {
     public Token peek() {
       return scanner.peek();
     }
+
+    public boolean hasTok(){
+      return scanner.hasNext();
+    }
   }
 
   private static class NumberHandler extends BaseHandler{
@@ -210,7 +214,7 @@ public class AST {
   private static class CallHandler extends Tool {
     @Override
     public boolean canHandle(Token token, Stack<String> operatorStack, Stack<Tree> nodesStack) {
-      return (token.tag == Token.BuiltinCall || (token.tag == Token.Identifier && !Identifiers.isOperator(token.value))) && Utils.equal(peek().value, Identifiers.OpenParenthesis);
+      return (token.tag == Token.BuiltinCall || (token.tag == Token.Identifier && !Identifiers.isOperator(token.value))) && hasTok() && Utils.equal(peek().value, Identifiers.OpenParenthesis);
     }
 
     @Override
@@ -904,9 +908,10 @@ public class AST {
   private static TokenHandler HANDLER;
 
   public static TokenHandler getTokenHandler(TokenHistoryRecorder recorder){
-    if(Objects.isNull(HANDLER))
-      buildHandler(recorder);
-    return HANDLER;
+//    if(Objects.isNull(HANDLER))
+//      buildHandler(recorder);
+//    return HANDLER;
+    return createHandler(recorder);
   }
 
   static TokenHandler getTokenHandler(){
@@ -1021,6 +1026,25 @@ public class AST {
 
   private static void buildHandler(TokenHistoryRecorder recorder){
     HANDLER = new HandlerBuilder()
+    .next(new FunctionDeclarationHandler())
+    .next(new NumberHandler())
+    .next(new CallHandler())
+    .next(new OperatorHandler())
+    .next(new AssignmentHandler())
+    .next(new DeclarationHandler())
+    .next(new VariableNameHandler())
+    .next(new LiteralHandler())
+    .next(new BlockHandler())
+    .next(new WhileHandler())
+    .next(new NewlineHandler())
+    .next(new IfElHandler())
+    .next(new DefaultHandler())
+    .build_with_each(el -> el.setTokenRecorder(recorder))
+    .build();
+  }
+
+  public static TokenHandler createHandler(TokenHistoryRecorder recorder){
+    return new HandlerBuilder()
     .next(new FunctionDeclarationHandler())
     .next(new NumberHandler())
     .next(new CallHandler())
