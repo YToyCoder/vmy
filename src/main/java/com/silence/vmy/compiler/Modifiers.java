@@ -12,7 +12,7 @@ public record Modifiers(int modifier) {
       this.state = 0;
     }
     Builder Const(){
-      set(this.state, CVariableConst);
+      state = set(this.state, CVariableConst);
       return this;
     }
 
@@ -20,6 +20,8 @@ public record Modifiers(int modifier) {
       return new Modifiers(this.state);
     }
   }
+
+  public static Modifiers Empty = new Modifiers(0);
 
   private static int set(int origin, int modifier){
     return origin | modifier;

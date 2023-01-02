@@ -1,41 +1,77 @@
 package com.silence.vmy.compiler;
 
+import com.silence.vmy.compiler.Tokens.TokenKind;
 import com.silence.vmy.compiler.tree.*;
+import com.silence.vmy.compiler.tree.Tree.Tag;
 
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Stack;
 import java.util.function.Predicate;
 
 public class GeneralParser implements Parser{
   private Lexer lexer;
-  private Stack<BaseTree> nodes;
   private Tokens.Token token;
   private Tokens.Token pre;
   private List<Tokens.Token> savedTokens = new LinkedList<>();
+
+  GeneralParser(Lexer _lexer){
+    this.lexer = _lexer;
+    next(); // fill token
+  }
+
+  public static Parser create(Lexer lexer){
+    return new GeneralParser(lexer);
+  }
+
   @Override
   public Root parse() {
-    return null;
+    return Trees.createCompileUnit(compileBlock(TokenKind.EOF));
   }
 
   /**
    * e_fun = fun identifier expr "{" e_block "}"
    */
   private FunctionDecl compileFunc(){
-    return null;
+    if(peekTok(tk -> tk != TokenKind.Fun))
+      error(next());
+    Tokens.Token decl = next();
+    String name = null;
+    if(peekTok(tk -> tk == TokenKind.Id))
+      name = next().payload();
+    return new FunctionDecl(
+        name,
+        ((ListExpr) expr()).body(),
+        compileBlock(TokenKind.LParenthesis, TokenKind.RParenthesis),
+        decl.start()
+    );
   }
 
   /**
    * expr = "(" ")" | "(" expr2 ")"
    */
   private Expression expr(){
-    return null;
+    if(token().kind() != TokenKind.LParenthesis){
+      throw new LexicalException("expression error position %d".formatted(token().start()));
+    }
+
+    Tokens.Token start = next();
+    if(peekTok(kind -> kind == TokenKind.RParenthesis))
+      return new ListExpr(next().start(), Tag.Param, List.of());
+    Expression ret = new ListExpr(start.start(), Tag.Param, expr2());
+    next();
+    return ret;
   }
 
   protected Tokens.Token next(){
     pre = token;
-    return (token = savedTokens.isEmpty() ? lexer.next() : savedTokens.remove(0));
+    if(!savedTokens.isEmpty())
+      token = savedTokens.remove(0);
+    else if(lexer.hasNext())
+      token = lexer.next();
+    else
+      token = null;
+    return pre;
   }
 
   protected Tokens.Token token(){
@@ -61,56 +97,142 @@ public class GeneralParser implements Parser{
   }
 
   boolean peekTok(Predicate<Tokens.TokenKind> tk){
+    ensureLookahead(0);
     return hasTok() && tk.test(token().kind());
+  }
+
+  boolean peekTok(Predicate<Tokens.TokenKind> tk, Predicate<Tokens.TokenKind> tk1){
+    ensureLookahead(2);
+    return hasTok() && tk.test(token().kind()) && savedTokens.size() > 1 && tk1.test(token(1).kind());
   }
 
   /**
    * expr2 =  expr3 | expr2 "," expr3
    */
-  private List<Exception> expr2(){
-    return null;
+  private List<Expression> expr2(){
+    List<Expression> ret = new LinkedList<>();
+    ret.add(expr3());
+    while(peekTok(tokenKind -> tokenKind == TokenKind.Comma)){
+      next(); //
+      ret.add(expr3());
+    }
+    return ret;
+  }
+
+  private BlockStatement compileBlock(TokenKind start, TokenKind end){
+    if(peekTok(tk -> tk == start))
+      next();
+    else if(peekTok(tk -> tk == TokenKind.newline, tk -> tk == start)){
+      next();
+      next();
+    }
+    var ret = compileBlock(end);
+    return ret;
   }
 
   /**
    * e_block = [ expression ]
    */
-  private BlockStatement compileBlock(){
-    return null;
+  private BlockStatement compileBlock(TokenKind end){
+    final long pos = token().start();
+    List<Tree> ret = new LinkedList<>();
+    while(
+      hasTok() &&
+      !peekTok(tk -> tk == end) &&
+      !peekTok(tk -> tk == TokenKind.newline, tk -> tk == end)
+    ){
+//      if(peekTok(tk -> tk != TokenKind.RParenthesis))
+//        next();
+      ret.add(expression());
+      while (hasTok() && peekTok(tk -> tk == TokenKind.newline))
+        next();
+    }
+    if(peekTok(tk -> tk == end))
+      next();
+    else if(peekTok(tk -> tk == TokenKind.newline, tk -> tk == end)){
+      next();
+      next();
+    }
+    return new BlockStatement(ret, pos);
   }
 
   /**
-   * expr3 = identifier "=" expr4
+   * expr3 = identifier "=" expr3
+   *       | add
    */
   private Expression expr3(){
-    return null;
+    if(peekTok(tk -> tk == TokenKind.Id, tk -> tk == TokenKind.Assignment)) {
+      Tokens.Token id = next();
+      next(); // equal
+      return new AssignmentExpression(new IdExpr(id.start(), Tag.Id, id.payload()), expr3(), id.start());
+    }
+    return add();
   }
+
 
   /**
    * expression = varDecl "=" expr4
    *            | expr3
+   *            | e_fun
    */
-  private Expression expression(){
-    return null;
+  private Tree expression(){
+    if(peekTok(tk -> tk == TokenKind.Fun)){
+      System.out.println("parsing function");
+      return compileFunc();
+    }
+    if(peekTok(tk -> tk == TokenKind.Let || tk == TokenKind.Val)){
+      Tokens.Token decl = next();
+      if(peekTok(tk -> tk != TokenKind.Id))
+        error(token());
+      Tokens.Token id = next();
+      Modifiers modifiers = switch (decl.kind()){
+        case Val -> new Modifiers.Builder()
+            .Const()
+            .build();
+        case Let -> new Modifiers.Builder().build();
+        default -> Modifiers.Empty;
+      };
+      if(peekTok(tk -> tk == TokenKind.Assignment)){
+        System.out.println("create a assignment expression");
+        var assign = next();
+        return new AssignmentExpression(
+            new VariableDecl(id.payload(), modifiers, id.start()),
+            expr3(),
+            assign.start()
+        );
+      }
+    }
+    return expr3();
+  }
+
+  void error(Tokens.Token tok){
+    System.err.println("error in " + tok);
   }
 
   /**
-   * one = identifier | literal | "(" multi ")" | call
+   * one = identifier | literal | "(" expr3 ")" | call
    */
   Expression one(){
     Tokens.Token peek = token();
     return switch (peek.kind()){
       case IntLiteral,
           StringLiteral,
+          DoubleLiteral,
           CharLiteral -> literal();
 
       case LBrace -> {
+        System.out.println("doing >> ( ) << expression");
         next();
-        Expression ret = multi();
+        Expression ret = expr3();
         // todo check
         next(); // ")"
         yield  ret;
       }
-      // todo call
+      case Id -> {
+        if(peekTok(tk -> tk == TokenKind.Id, tk -> tk == TokenKind.LParenthesis))
+          yield call();
+        else yield new IdExpr(peek.start(), Tag.Id, next().payload());
+      }
       default -> null; // error
     };
   }
@@ -119,15 +241,10 @@ public class GeneralParser implements Parser{
    * unary = one | "+" unary | "-" unary
    */
   Expression unary(){
-    if (peekTok(
-        tokenKind -> switch (tokenKind){
-          case Add, Sub -> true;
-          default -> false;
-        }
-    )){
+    if (peekTok( tk -> tk == TokenKind.Add || tk == TokenKind.Sub)){
       Tokens.Token pre = next();
       Expression unary = unary();
-      return new Unary(op2tag(pre.payload()), unary);
+      return new Unary(kind2tag(pre.kind()), unary);
     }
     return one();
   }
@@ -141,6 +258,7 @@ public class GeneralParser implements Parser{
    */
   Expression literal(){
     Tokens.Token tok = next();
+    System.out.println("parsing literal " + tok);
     return switch (tok.kind()) {
       case True -> LiteralExpression.ofStringify("true", LiteralExpression.Kind.Boolean);
       case False-> LiteralExpression.ofStringify("false", LiteralExpression.Kind.Boolean);
@@ -166,14 +284,14 @@ public class GeneralParser implements Parser{
     )){
       Tokens.Token op = next();
       Expression right = multi();
-      left = (Expression) new BinaryOperateExpression(left, right, op2tag(op.payload()))
+      left = (Expression) new BinaryOperateExpression(left, right, kind2tag(op.kind()))
           .setPos(op.start());
     }
     return left;
   }
 
   /**
-   * multi = unary | multi "*" unary | multi "/" one
+   * multi = unary | multi "*" unary | multi "/" unary
    */
   Expression multi(){
     Expression left = unary();
@@ -185,16 +303,18 @@ public class GeneralParser implements Parser{
     ){
       Tokens.Token op = next();
       Expression right = unary();
-      left = (Expression) new BinaryOperateExpression(left, right, op2tag(op.payload()))
+      left = (Expression) new BinaryOperateExpression(left, right, kind2tag(op.kind()))
           .setPos(op.start());
     }
     return left;
   }
 
-  BaseTree.Tag op2tag(String op){
-    return switch (op){
-      case "*" -> BaseTree.Tag.Multi;
-      case "/" -> BaseTree.Tag.Div;
+  Tag kind2tag(TokenKind kind){
+    return switch (kind){
+      case Add -> Tag.Add;
+      case Multi -> Tag.Multi;
+      case Sub -> Tag.Sub;
+      case Div -> Tag.Div;
       default -> null;
     };
   }

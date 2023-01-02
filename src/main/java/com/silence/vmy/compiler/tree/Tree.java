@@ -18,10 +18,12 @@ public interface Tree {
 
     enum Tag{
         Root,
-        //
+        // ops
         Multi,
         Div,
         Assign,
+        Add, // +
+        Sub, // -
         // literal
         IntLiteral,
         StringLiteral,
@@ -29,6 +31,9 @@ public interface Tree {
         FunctionLiteral,
         //
         Fun,
-        VarDecl
+        VarDecl,
+        // 
+        Param,
+        Id
     };
 }

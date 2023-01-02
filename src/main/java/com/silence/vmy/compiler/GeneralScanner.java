@@ -93,9 +93,9 @@ public class GeneralScanner implements Lexer{
         case '/' -> {
           CharReaders.CharInFile startChar = nextChar();
           if(hasChar() && peekChar().charIs('=')){
-            yield createTok(Tokens.TokenKind.Div, startChar.location(), nextChar().location() + 1);
+            yield createTok(Tokens.TokenKind.DivEqual, startChar.location(), nextChar().location() + 1);
           }
-          yield createTok(Tokens.TokenKind.DivEqual, startChar.location(), startChar.location() + 1);
+          yield createTok(Tokens.TokenKind.Div, startChar.location(), startChar.location() + 1);
         }
         case '\n' -> createTok(Tokens.TokenKind.newline, nextChar().location(), peekChar.location() + 1);
         // TODO: 2022/12/

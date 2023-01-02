@@ -26,6 +26,6 @@ public class BinaryOperateExpression extends OperatorExpression{
 
   @Override
   public Tag tag() {
-    return null;
+    return tag;
   }
 }

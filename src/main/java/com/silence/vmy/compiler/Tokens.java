@@ -16,6 +16,7 @@ public class Tokens {
 
   public enum TokenKind {
     newline,
+    EOF,
     // literal
     IntLiteral,
     DoubleLiteral,
