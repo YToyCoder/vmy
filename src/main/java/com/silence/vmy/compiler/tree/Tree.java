@@ -34,6 +34,7 @@ public interface Tree {
         VarDecl,
         // 
         Param,
-        Id
+        Id,
+        TypeDecl,
     };
 }

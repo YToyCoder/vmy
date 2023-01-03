@@ -28,4 +28,6 @@ public record Modifiers(int modifier) {
   }
 
   public static final int CVariableConst = 1;
+
+  public static final Modifiers Const = new Builder().Const().build();
 }

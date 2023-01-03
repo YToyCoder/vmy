@@ -41,7 +41,19 @@ public class GeneralParserTest {
           val c = a + b
           return c
         }
+        fun he(a : String) : Unit {
+        }
         """,
         scanner -> GeneralParser.create(scanner).parse());
+  }
+
+  @Test
+  public void type_decl(){
+    run_with_scanner_s(
+        """
+            val c : String = "hello"
+            """,
+        scanner -> GeneralParser.create(scanner).parse()
+    );
   }
 }

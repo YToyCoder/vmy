@@ -41,7 +41,8 @@ public class GeneralParser implements Parser{
       name = next().payload();
     return new FunctionDecl(
         name,
-        ((ListExpr) expr()).body(),
+        ((ListExpr) parameters()).body(),
+        peekTok(tk -> tk == TokenKind.Colon) ? parsingType() : null,
         compileBlock(TokenKind.LBrace, TokenKind.RBrace),
         decl.start()
     );
@@ -61,6 +62,31 @@ public class GeneralParser implements Parser{
     Expression ret = new ListExpr(start.start(), Tag.Param, expr2());
     next();
     return ret;
+  }
+
+  // parameters_expr = "(" ")" | "(" parameter_expr ["," parameter_expr] ")"
+  // parameter_expr = identifier ":" typeDecl
+  private Expression parameters(){
+    if(token().kind() != TokenKind.LParenthesis){
+      throw new LexicalException("expression error position %d" + token());
+    }
+
+    Tokens.Token start = next();
+    if(peekTok(kind -> kind == TokenKind.RParenthesis))
+      return new ListExpr(next().start(), Tag.Param, List.of());
+    List<Expression> ls = new LinkedList<>();
+    ls.add(parameter());
+    while(peekTok(tk -> tk == TokenKind.Comma)){
+      next_must(TokenKind.Comma);
+      ls.add(parameter());
+    }
+    next_must(TokenKind.RParenthesis);
+    return new ListExpr(start.start(), Tag.Param, ls);
+  }
+
+  private VariableDecl parameter(){
+    Tokens.Token id = next_must(TokenKind.Id);
+    return new VariableDecl(id.payload(), Modifiers.Const, parsingType(), id.start());
   }
 
   protected Tokens.Token next(){
@@ -169,6 +195,12 @@ public class GeneralParser implements Parser{
     return add();
   }
 
+  // type_decl = ":" identifier
+  private TypeExpr parsingType(){
+    var start = next_must(TokenKind.Colon);
+    Tokens.Token id = next_must(TokenKind.Id);
+    return new TypeExpr(start.start(), Tag.TypeDecl, id.payload());
+  }
 
   /**
    * expression = varDecl "=" expr4
@@ -193,11 +225,12 @@ public class GeneralParser implements Parser{
         case Let -> new Modifiers.Builder().build();
         default -> Modifiers.Empty;
       };
+      TypeExpr type = peekTok(tk -> tk == TokenKind.Colon) ? parsingType() : null;
       if(peekTok(tk -> tk == TokenKind.Assignment)){
         System.out.println("create a assignment expression");
         var assign = next();
         return new AssignmentExpression(
-            new VariableDecl(id.payload(), modifiers, id.start()),
+            new VariableDecl(id.payload(), modifiers, type,id.start()),
             expr3(),
             assign.start()
         );
@@ -212,6 +245,7 @@ public class GeneralParser implements Parser{
 
   void error(Tokens.Token tok){
     System.err.println("error in " + tok);
+    throw new LexicalException("<<error>>");
   }
 
   /**
