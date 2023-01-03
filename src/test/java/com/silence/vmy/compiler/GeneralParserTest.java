@@ -39,6 +39,7 @@ public class GeneralParserTest {
           let a = "hello"
           let b = 100
           val c = a + b
+          return c
         }
         """,
         scanner -> GeneralParser.create(scanner).parse());

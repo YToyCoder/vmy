@@ -120,14 +120,21 @@ public class GeneralParser implements Parser{
   }
 
   private BlockStatement compileBlock(TokenKind start, TokenKind end){
-    if(peekTok(tk -> tk == start))
-      next();
-    else if(peekTok(tk -> tk == TokenKind.newline, tk -> tk == start)){
-      next();
+    ignore(TokenKind.newline);
+    next_must(start);
+    return compileBlock(end);
+  }
+
+  protected Tokens.Token next_must(TokenKind tk){
+    if(hasTok() && peekTok(tokenKind -> tokenKind != tk))
+      error(token);
+    return next();
+  }
+
+  protected void ignore(TokenKind tokenKind){
+    while(peekTok(tk -> tk == tokenKind)){
       next();
     }
-    var ret = compileBlock(end);
-    return ret;
   }
 
   /**
@@ -141,18 +148,11 @@ public class GeneralParser implements Parser{
       !peekTok(tk -> tk == end) &&
       !peekTok(tk -> tk == TokenKind.newline, tk -> tk == end)
     ){
-//      if(peekTok(tk -> tk != TokenKind.RParenthesis))
-//        next();
       ret.add(expression());
-      while (hasTok() && peekTok(tk -> tk == TokenKind.newline))
-        next();
+      ignore(TokenKind.newline);
     }
-    if(peekTok(tk -> tk == end))
-      next();
-    else if(peekTok(tk -> tk == TokenKind.newline, tk -> tk == end)){
-      next();
-      next();
-    }
+    ignore(TokenKind.newline);
+    next_must(end);
     return new BlockStatement(ret, pos);
   }
 
@@ -163,7 +163,7 @@ public class GeneralParser implements Parser{
   private Expression expr3(){
     if(peekTok(tk -> tk == TokenKind.Id, tk -> tk == TokenKind.Assignment)) {
       Tokens.Token id = next();
-      next(); // equal
+      next_must(TokenKind.Assignment);
       return new AssignmentExpression(new IdExpr(id.start(), Tag.Id, id.payload()), expr3(), id.start());
     }
     return add();
@@ -174,6 +174,7 @@ public class GeneralParser implements Parser{
    * expression = varDecl "=" expr4
    *            | expr3
    *            | e_fun
+   *            | "return" expr3
    */
   private Tree expression(){
     if(peekTok(tk -> tk == TokenKind.Fun)){
@@ -202,6 +203,10 @@ public class GeneralParser implements Parser{
         );
       }
     }
+    if(peekTok(tk -> tk == TokenKind.Return)){
+      Tokens.Token ret = next();
+      return new ReturnExpr(ret.start(), null, expr3());
+    }
     return expr3();
   }
 
@@ -220,12 +225,10 @@ public class GeneralParser implements Parser{
           DoubleLiteral,
           CharLiteral -> literal();
 
-      case LBrace -> {
-        System.out.println("doing >> ( ) << expression");
-        next();
+      case LParenthesis -> {
+        next_must(TokenKind.LParenthesis);
         Expression ret = expr3();
-        // todo check
-        next(); // ")"
+        next_must(TokenKind.RParenthesis);
         yield  ret;
       }
       case Id -> {
