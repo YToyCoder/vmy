@@ -7,6 +7,7 @@ import com.silence.vmy.compiler.tree.Tree.Tag;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 public class GeneralParser implements Parser{
@@ -101,6 +102,7 @@ public class GeneralParser implements Parser{
   }
 
   protected Tokens.Token token(){
+    System.out.println("get tok " + token(0));
     return token(0);
   }
 
@@ -184,6 +186,10 @@ public class GeneralParser implements Parser{
 
   /**
    * expr3 = identifier "=" expr3
+   *       | identifier "+=" expr3
+   *       | identifier "-=" expr3
+   *       | identifier "*=" expr3
+   *       | identifier "/=" expr3
    *       | add
    */
   private Expression expr3(){
@@ -191,6 +197,19 @@ public class GeneralParser implements Parser{
       Tokens.Token id = next();
       next_must(TokenKind.Assignment);
       return new AssignmentExpression(new IdExpr(id.start(), Tag.Id, id.payload()), expr3(), id.start());
+    }
+    Function<TokenKind,Boolean> is_assign_op = tk -> switch (tk){
+      case SubEqual, DivEqual, MultiEqual, AddEqual -> true;
+      default -> false;
+    };
+    if(peekTok(tk -> tk == TokenKind.Id, is_assign_op::apply)){
+      Tokens.Token id = next();
+      Tokens.Token op = next();
+      return new BinaryOperateExpression(
+          new IdExpr(id.start(), Tag.Id, id.payload()),
+          expr3(),
+          kind2tag(op.kind())
+      );
     }
     return add();
   }
@@ -352,6 +371,10 @@ public class GeneralParser implements Parser{
       case Multi -> Tag.Multi;
       case Sub -> Tag.Sub;
       case Div -> Tag.Div;
+      case DivEqual -> Tag.DivEqual;
+      case SubEqual -> Tag.SubEqual;
+      case MultiEqual -> Tag.MultiEqual;
+      case AddEqual -> Tag.AddEqual;
       default -> null;
     };
   }

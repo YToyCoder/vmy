@@ -19,11 +19,15 @@ public interface Tree {
     enum Tag{
         Root,
         // ops
-        Multi,
-        Div,
-        Assign,
-        Add, // +
+        Add,
+        AddEqual, // +=
         Sub, // -
+        SubEqual, // -=
+        Multi, // *
+        MultiEqual, // *=
+        Div, // /
+        DivEqual, // /=
+        Assign,
         // literal
         IntLiteral,
         StringLiteral,

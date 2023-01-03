@@ -17,6 +17,10 @@ public class GeneralParserTest {
     }
   }
 
+  Consumer<GeneralScanner> parsing(){
+    return scanner -> GeneralParser.create(scanner).parse();
+  }
+
   @Test
   public void t1(){
     run_with_scanner_s(
@@ -54,6 +58,20 @@ public class GeneralParserTest {
             val c : String = "hello"
             """,
         scanner -> GeneralParser.create(scanner).parse()
+    );
+  }
+
+  @Test
+  public void ops(){
+    run_with_scanner_s(
+        """
+            let a : Int = 10
+            a += 12
+            a -= 1
+            a *= -1
+            a /= 1.0
+            """,
+        parsing()
     );
   }
 }
