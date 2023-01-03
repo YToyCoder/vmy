@@ -37,10 +37,10 @@ public class GeneralScanner implements Lexer{
              '6', '7','8', '9', '0'-> handle_digit_literal();
         case ',' -> one_char(Tokens.TokenKind.Comma);
         case '.' -> one_char(Tokens.TokenKind.Dot);
-        case '(' -> one_char(Tokens.TokenKind.LBrace);
-        case ')' -> one_char(Tokens.TokenKind.RBrace);
-        case '{' -> one_char(Tokens.TokenKind.LParenthesis);
-        case '}' -> one_char(Tokens.TokenKind.RParenthesis);
+        case '(' -> one_char(Tokens.TokenKind.LParenthesis);
+        case ')' -> one_char(Tokens.TokenKind.RParenthesis);
+        case '{' -> one_char(Tokens.TokenKind.LBrace);
+        case '}' -> one_char(Tokens.TokenKind.RBrace);
         case ':' -> one_char(Tokens.TokenKind.Colon);
         case '>' -> {
           CharReaders.CharInFile startChar = nextChar();

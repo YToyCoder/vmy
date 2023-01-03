@@ -42,7 +42,7 @@ public class GeneralParser implements Parser{
     return new FunctionDecl(
         name,
         ((ListExpr) expr()).body(),
-        compileBlock(TokenKind.LParenthesis, TokenKind.RParenthesis),
+        compileBlock(TokenKind.LBrace, TokenKind.RBrace),
         decl.start()
     );
   }
@@ -52,7 +52,7 @@ public class GeneralParser implements Parser{
    */
   private Expression expr(){
     if(token().kind() != TokenKind.LParenthesis){
-      throw new LexicalException("expression error position %d".formatted(token().start()));
+      throw new LexicalException("expression error position %d" + token());
     }
 
     Tokens.Token start = next();

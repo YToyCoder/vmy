@@ -30,4 +30,17 @@ public class GeneralParserTest {
         """,
         scanner -> GeneralParser.create(scanner).parse());
   }
+
+  @Test
+  public void func(){
+    run_with_scanner_s(
+        """
+        fun name() {
+          let a = "hello"
+          let b = 100
+          val c = a + b
+        }
+        """,
+        scanner -> GeneralParser.create(scanner).parse());
+  }
 }
