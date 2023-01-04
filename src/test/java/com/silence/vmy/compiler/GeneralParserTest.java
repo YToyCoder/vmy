@@ -4,7 +4,6 @@ import com.silence.vmy.tools.Utils;
 import org.junit.Test;
 
 import java.io.FileNotFoundException;
-import java.net.URL;
 import java.util.function.Consumer;
 
 // test for GeneralParser
