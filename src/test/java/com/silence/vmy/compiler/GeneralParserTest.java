@@ -98,6 +98,7 @@ public class GeneralParserTest {
   @Test
   public void script(){
     run_of_script("general_parser.vmy", parsing());
+    run_of_script("hello_word.vmy", parsing());
   }
 
 }

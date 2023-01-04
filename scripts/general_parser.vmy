@@ -7,3 +7,8 @@ fun function(){
 fun type(m: Int): Double {
     return 0.0
 }
+
+type(a = name = "hello")
+
+val variable = 1.00
+variable += 1.201
