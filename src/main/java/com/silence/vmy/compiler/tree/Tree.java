@@ -40,5 +40,6 @@ public interface Tree {
         Param,
         Id,
         TypeDecl,
+        CallExpr
     };
 }

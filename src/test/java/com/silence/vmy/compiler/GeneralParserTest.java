@@ -86,6 +86,16 @@ public class GeneralParserTest {
   }
 
   @Test
+  public void call_expr() {
+    run_with_scanner_s(
+        """
+            call(a,b, 1.0)
+            """,
+        parsing()
+    );
+  }
+
+  @Test
   public void script(){
     run_of_script("general_parser.vmy", parsing());
   }

@@ -52,7 +52,7 @@ public class GeneralParser implements Parser{
   /**
    * expr = "(" ")" | "(" expr2 ")"
    */
-  private Expression expr(){
+  private ListExpr expr(){
     if(token().kind() != TokenKind.LParenthesis){
       throw new LexicalException("expression error position %d" + token());
     }
@@ -60,7 +60,7 @@ public class GeneralParser implements Parser{
     Tokens.Token start = next();
     if(peekTok(kind -> kind == TokenKind.RParenthesis))
       return new ListExpr(next().start(), Tag.Param, List.of());
-    Expression ret = new ListExpr(start.start(), Tag.Param, expr2());
+    ListExpr ret = new ListExpr(start.start(), Tag.Param, expr2());
     next();
     return ret;
   }
@@ -383,7 +383,9 @@ public class GeneralParser implements Parser{
    * call = identifier expr
    */
   private Expression call(){
-    return null;
+    Tokens.Token id = next_must(TokenKind.Id);
+    ListExpr params = expr();
+    return CallExpr.create(id.start(), id.payload(), params);
   }
 
 }
