@@ -3,3 +3,7 @@ let a : Int = 1
 fun function(){
     val c = 1.0
 }
+
+fun type(m: Int): Double {
+    return 0.0
+}
