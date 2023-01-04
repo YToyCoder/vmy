@@ -1,8 +1,10 @@
 package com.silence.vmy.compiler;
 
+import com.silence.vmy.tools.Utils;
 import org.junit.Test;
 
 import java.io.FileNotFoundException;
+import java.net.URL;
 import java.util.function.Consumer;
 
 // test for GeneralParser
@@ -13,6 +15,15 @@ public class GeneralParserTest {
       GeneralScanner scanner = new GeneralScanner(content,false);
       run.accept(scanner);
     } catch (FileNotFoundException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public static void run_of_script(String script, Consumer<GeneralScanner> run){
+    try {
+      GeneralScanner scanner = new GeneralScanner(Utils.ofScript(script), true);
+      run.accept(scanner);
+    } catch (FileNotFoundException e){
       throw new RuntimeException(e);
     }
   }
@@ -74,4 +85,10 @@ public class GeneralParserTest {
         parsing()
     );
   }
+
+  @Test
+  public void script(){
+    run_of_script("general_parser.vmy", parsing());
+  }
+
 }

@@ -285,6 +285,10 @@ public class Utils {
     return String.format("%s/%s", project_dir, name);
   }
 
+  public static String ofScript(String _name){
+    return String.format("%s/%s", Utils.get_dir_of_project("scripts" ), _name);
+  }
+
   // compare two tokens' value and tag : preview
   public static boolean next_token_is(Scanner scanner, Token token){
     var next = scanner.peek();
