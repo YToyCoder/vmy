@@ -12,6 +12,6 @@ sourceCompatibility = 17
 targetCompatibility = 17
 
 dependencies {
-    implementation 'org.scala-lang:scala-library:2.13.9'
+    implementation 'org.scala-lang:scala3-library_3:3.0.1'
     testImplementation "junit:junit:4.13"
 }
