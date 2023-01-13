@@ -2,3 +2,5 @@ target
 .idea
 .vscode
 .metals
+.gradle
+build
