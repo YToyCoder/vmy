@@ -1,5 +1,7 @@
 ### vmy language
 
+*当前: rebuilt with scala*
+
 #### 1. 目的
 
 了解计算机编译原理
