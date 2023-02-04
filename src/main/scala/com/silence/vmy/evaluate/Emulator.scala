@@ -3,11 +3,13 @@ package com.silence.vmy.evaluate
 import com.silence.vmy.compiler.tree.Tree.Tag
 import com.silence.vmy.compiler.tree.{AssignmentExpression, BinaryOperateExpression, BlockStatement, CallExpr, FunctionDecl, ListExpr, LiteralExpression, ReturnExpr, Root, TreeVisitor, TypeExpr, Unary, VariableDecl}
 import com.silence.vmy.evaluate
-import com.silence.vmy.evaluate.EmulatingValue.{RetValue, initValue}
+import com.silence.vmy.evaluate.EmulatingValue.{BaseEV, RetValue, initValue}
 import com.silence.vmy.compiler.{BuiltinTypeString, Modifiers}
+import com.silence.vmy.compiler.TheType
 
 import java.util.Objects
 import scala.annotation.{implicitAmbiguous, tailrec, targetName}
+import scala.collection.mutable
 
 trait EmulatingValue{
   def value: EmulatingValue.valueType
@@ -28,10 +30,8 @@ trait Emulator {
   def run(): EmulatingValue
 }
 
-import scala.collection.mutable
-
 object TreeEmulator {
-  class Scope(protected val parent: Scope) {
+  abstract class Scope(protected[evaluate] val parent: Scope) {
     def lookup(name: String): EmulatingValue = {
       var looking: EmulatingValue = null
       if(Objects.nonNull(parent)){
@@ -39,8 +39,11 @@ object TreeEmulator {
         if(looking != EmulatingValue.EVEmpty)
           return looking
       }
-      locals.getOrElse(name, EmulatingValue.EVEmpty)
+      _lookup(name)
     }
+
+    // lookup current scope
+    protected def _lookup(name: String): EmulatingValue
 
     def put(name: String, v: EmulatingValue): Option[EmulatingValue] = locals.put(name, v)
 
@@ -56,51 +59,72 @@ object TreeEmulator {
       do_update(name, this)
     }
 
+    // check current scope
+    protected def _exists(name: String): Boolean
+
     @tailrec
     final def exists(name: String): Boolean = {
-      if(locals.exists((n, _) => n == name)) true
+      if(_exists(name)) true
       else if(parent == null) false
       else parent.exists(name)
     }
 
-    private val locals: mutable.Map[String, EmulatingValue] = mutable.Map()
+    protected val locals: mutable.Map[String, EmulatingValue] = mutable.Map()
   }
 
-  class FunctionScope(parent: Scope) extends Scope(parent)
+  class HierarchyScope(parent: TreeEmulator.Scope) extends Scope(parent) {
+    private var topScope: Scope = this
+    def last: Scope = parent
+    def push(scope: TreeEmulator.Scope): Unit =
+      val n = new HierarchyScope(topScope)
+      topScope = n
 
-  class Frame(parent: Frame = null) extends FunctionScope(parent){
-    def last: Frame = parent
+    // exit top scope
+    def exit(): TreeEmulator.Scope =
+      val old = topScope
+      topScope = old.parent
+      old
+
+    def top: TreeEmulator.Scope = topScope
   }
+
+
+  class FunctionScope(parent: Scope) extends HierarchyScope(parent)
+
+  class Frame(parent: Frame = null) extends FunctionScope(parent)
 }
 
 object EmulatingValue {
   type valueType = Int | Double | Long | String | Boolean | EmulatingValue | FunctionDecl
-  def apply(value: valueType): EmulatingValue = apply(value, null)
+  def apply(value: valueType): BaseEV = apply(value, null)
 
-  def apply(value: valueType, name: String, mutable: Boolean): EmulatingValue =
+  def apply(value: valueType, name: String, mutable: Boolean): BaseEV =
     val ret = value match {
-      case e : Int => EVInt(e)
-      case e : Double => EVDouble(e)
-      case e : Long => EVLong(e)
-      case e : String => EVString(e)
-      case e : Boolean => EVBool(e)
-      case e : EmulatingValue => RetValue(e)
-      case e : FunctionDecl => EVFunction(e)
+      case e: Int => EVInt(e)
+      case e: Double => EVDouble(e)
+      case e: Long => EVLong(e)
+      case e: String => EVString(e)
+      case e: Boolean => EVBool(e)
+      case e: EmulatingValue => RetValue(e)
+      case e: FunctionDecl => EVFunction(e)
     }
     ret.setName(name)
-    if(mutable) ret else ret.immutable()
+    if (mutable) ret else ret.immutable()
 
-  def initValue(id: String): valueType =
+  def apply(value: valueType, name: String): BaseEV =
+    apply(value, name, true)
+
+  // get init value for different type value
+  def initValue(id: String): valueType = {
     id match {
       case BuiltinTypeString.IntT => 0
       case BuiltinTypeString.StrT => null.asInstanceOf[String]
       case BuiltinTypeString.DoubleT => 0.0
-      case BuiltinTypeString.BoolT => true
+      case BuiltinTypeString.BooleanT => true
       case BuiltinTypeString.LongT => 0L
+      case _ => null
     }
-
-  def apply(value: valueType, name: String): EmulatingValue =
-    apply(value, name, true)
+  }
 
   abstract class BaseEV extends EmulatingValue{
     private var n: String = _
@@ -116,7 +140,7 @@ object EmulatingValue {
 
     def name: String = n
 
-    override def update(v: EmulatingValue): EmulatingValue = {
+    override def update(v: EmulatingValue): EmulatingValue =
       if(scope == null) {
         println(s"no scope for variable ${name}")
         throw new Exception("variable update error")
@@ -124,7 +148,6 @@ object EmulatingValue {
       val old = scope.lookup(name)
       scope.update(name, v)
       old
-    }
 
     def updateScope(s: TreeEmulator.Scope): TreeEmulator.Scope =
       val old = scope
@@ -166,6 +189,14 @@ object EmulatingValue {
 class TreeEmulator extends TreeVisitor[EmulatingValue, EmulatingValue] with Emulator {
 
   private var frame: TreeEmulator.Frame = _
+
+  private def declareVariable(name: String, initValue: EmulatingValue.valueType, mutable: Boolean): EmulatingValue =
+    val vv /* variable and value */= EmulatingValue(initValue, name, mutable)
+    vv.updateScope(frame.top)
+    frame.update(name, vv)
+    vv
+
+  private def declareVariable(name: String, initValue: EmulatingValue.valueType): EmulatingValue = declareVariable(name, initValue, true)
 
   override def visitLiteral(expression: LiteralExpression, payload: EmulatingValue): EmulatingValue = {
     val literal = expression.literal().asInstanceOf[String]
@@ -237,14 +268,19 @@ class TreeEmulator extends TreeVisitor[EmulatingValue, EmulatingValue] with Emul
   override def visitVariableDecl(expression: VariableDecl, payload: EmulatingValue): EmulatingValue = {
     val name = expression.name()
     val variable_type = expression.t()
-    EmulatingValue(initValue(variable_type.typeId()), name, expression.modifiers().is(Modifiers.CVariableConst))
+    declareVariable(name, initValue(variable_type.typeId()), expression.modifiers().is(Modifiers.CVariableConst))
   }
 
   override def visitAssignment(expression: AssignmentExpression, payload: EmulatingValue): EmulatingValue = {
-    null
+    val variable = expression.left().accept(this, payload)
+    val value = expression.right().accept(this, payload)
+    variable() = value
+    variable
   }
 
-  override def visitFunctionDecl(function: FunctionDecl, payload: EmulatingValue): EmulatingValue = ???
+  override def visitFunctionDecl(function: FunctionDecl, payload: EmulatingValue): EmulatingValue =
+    val name = function.name()
+    declareVariable(name, function)
 
   override def visitRoot(root: Root, payload: EmulatingValue): EmulatingValue = {
     frame = new TreeEmulator.Frame()
