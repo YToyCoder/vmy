@@ -1,4 +1,4 @@
-function func(param : Int) : void {
+fun func(param : Int) : void {
     print("hello, world")
     print("param is " ++ param)
     let b : Int = 10
@@ -12,26 +12,28 @@ let a : Int = 10
 
 func(a)
 
-function return_test() : String {
+# func("hell")
+
+fun return_test() : String {
     return "hello, world."
 }
 
 print(return_test() ++ " this is return test.")
 
-function return_complex() : Int {
+fun return_complex() : Int {
     return 1 + 2 * 4
 }
 
 # a = 1 + 2 * 4 + 3 * 5
 
-print(return_complex() )
+print( return_complex() )
 
-function return_function() : Function {
+fun return_function() : Function {
     return return_complex
 }
 
-val fun = return_function()
+let fun2 = return_function()
 
-print( "The return func "  ++ fun() )
+print( "The return func "  ++ fun2() )
 
 print( "the value" ++ a )

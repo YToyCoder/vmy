@@ -639,14 +639,16 @@ public class AST {
     public void doHandle(Token token, Scanner remains, Stack<String> operatorStack, Stack<Tree> nodesStack) {
 
       // 1 get the variable name or a declaration
-      Tree variable;
+      Tree variable = null;
       if(
         nodesStack.isEmpty() ||
         (
           !((variable = nodesStack.pop()) instanceof DeclareNode) &&
           !(variable instanceof IdentifierNode)
         )
-      ) throw new ASTProcessingException("assignment has no variable or declare expression");
+      ) {
+        throw new ASTProcessingException("assignment has no variable or declare expression, it's " + variable != null ? variable.getClass().getName() : "");
+      }
 
       operatorStack.add(token.value);
       while(

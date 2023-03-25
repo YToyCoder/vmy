@@ -35,8 +35,8 @@ public class GeneralParserTest {
   public void t1(){
     run_with_scanner_s(
         """
-        val a = "hello"
-        a = "b"
+        val a = "hello" 
+          a = "b"
         b = a = "gr"
         k = 1 + 2 + ( 2 * 1 - 3) / 1.0
         let m = m * k

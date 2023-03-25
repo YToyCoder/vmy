@@ -4,6 +4,7 @@ import com.silence.vmy.compiler.Identifiers;
 import com.silence.vmy.compiler.LexicalException;
 import com.silence.vmy.compiler.TokenHistoryRecorder;
 import com.silence.vmy.tools.Utils;
+import scala.Char;
 
 import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
@@ -56,6 +57,7 @@ public class FileInputScanner implements Scanner, AutoCloseable {
         pos = 0;
         cs = new LinkedList<>();
         tokens = new LinkedList<>();
+        lineN = 0;
 
     }
 
@@ -90,6 +92,7 @@ public class FileInputScanner implements Scanner, AutoCloseable {
     private final String file_path;
     private int pos;
     private int record;
+    private int lineN; // line number
     private LinkedList<Character> cs;
     private boolean end_of_file;
     private TokenHistoryRecorder token_history_recorder;
@@ -268,6 +271,10 @@ public class FileInputScanner implements Scanner, AutoCloseable {
 
     }
 
+    private boolean is_qid_char(char c){
+        return Character.isDigit(c) || Character.isAlphabetic(c) || c == '_';
+    }
+
     /**
      * identifier things, variable name , function name or declaration
      */
@@ -276,8 +283,7 @@ public class FileInputScanner implements Scanner, AutoCloseable {
 
         final StringBuilder builder = new StringBuilder();
         while (
-                has_char() &&
-                        Identifiers.identifiers.contains(peek_char())
+                has_char() && is_qid_char(peek_char())
         ) builder.append(next_char());
 
         final String identifier = builder.toString();
@@ -369,7 +375,7 @@ public class FileInputScanner implements Scanner, AutoCloseable {
      * @see FileInputScanner#get_record()
      */
     private int get_record() {
-        return record;
+        return lineN;
     }
 
     /**
@@ -414,6 +420,8 @@ public class FileInputScanner implements Scanner, AutoCloseable {
                         pos()
                 )
         );
+        // increase line number
+        lineN++;
     }
 
     private boolean has_char() {

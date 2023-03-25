@@ -1,6 +1,6 @@
 package com.silence.vmy.compiler
 
-import com.silence.vmy.compiler.tree.{AssignmentExpression, BinaryOperateExpression, BlockStatement, CallExpr, Expression, FunctionDecl, ListExpr, LiteralExpression, ReturnExpr, Root, Tree, TreeVisitor, TypeExpr, Unary, VariableDecl}
+import com.silence.vmy.compiler.tree.{AssignmentExpression, BinaryOperateExpression, BlockStatement, CallExpr, FunctionDecl, ListExpr, LiteralExpression, ReturnExpr, Root, Tree, TreeVisitor, TypeExpr, Unary, VariableDecl}
 
 sealed class TheType(val name:String) extends CompilingPhaseType
 
@@ -26,13 +26,14 @@ class TypeCheck extends TreeVisitor[CompilingPhaseType, CompilingPhaseType]{
       case Tree.Tag.StringLiteral =>   StringT
       case Tree.Tag.IntLiteral =>      IntT
       case Tree.Tag.FunctionLiteral => null // todo
+      case _ => null
     }
   }
 
   override def visitUnary(expression: Unary, payload: CompilingPhaseType): CompilingPhaseType =
     expression.body().accept(this, null)
 
-  override def visitBlock(statement: BlockStatement, payload: CompilingPhaseType): CompilingPhaseType = ???
+  override def visitBlock(statement: BlockStatement, payload: CompilingPhaseType): CompilingPhaseType = null
 
   override def visitBinary(expression: BinaryOperateExpression, payload: CompilingPhaseType): CompilingPhaseType = {
     // visit both and compare
@@ -58,17 +59,17 @@ class TypeCheck extends TreeVisitor[CompilingPhaseType, CompilingPhaseType]{
     null
   }
 
-  override def visitFunctionDecl(function: FunctionDecl, payload: CompilingPhaseType): CompilingPhaseType = ???
+  override def visitFunctionDecl(function: FunctionDecl, payload: CompilingPhaseType): CompilingPhaseType = null
 
-  override def visitRoot(root: Root, payload: CompilingPhaseType): CompilingPhaseType = ???
+  override def visitRoot(root: Root, payload: CompilingPhaseType): CompilingPhaseType = null
 
-  override def visitListExpr(expr: ListExpr, payload: CompilingPhaseType): CompilingPhaseType = ???
+  override def visitListExpr(expr: ListExpr, payload: CompilingPhaseType): CompilingPhaseType = null
 
-  override def visitReturnExpr(expr: ReturnExpr, payload: CompilingPhaseType): CompilingPhaseType = ???
+  override def visitReturnExpr(expr: ReturnExpr, payload: CompilingPhaseType): CompilingPhaseType = null
 
-  override def visitTypeExpr(expr: TypeExpr, payload: CompilingPhaseType): CompilingPhaseType = ???
+  override def visitTypeExpr(expr: TypeExpr, payload: CompilingPhaseType): CompilingPhaseType = null
 
-  override def visitCallExpr(expr: CallExpr, payload: CompilingPhaseType): CompilingPhaseType = ???
+  override def visitCallExpr(expr: CallExpr, payload: CompilingPhaseType): CompilingPhaseType = null
 }
 
 object TypeCheck {

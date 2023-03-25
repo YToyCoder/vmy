@@ -181,7 +181,7 @@ public class ASTTest {
   @Test
   public void script_negative_value_test() {
     FileInputScannerTestUtils.do_with_instance(
-      "negative_number_test.vmy", 
+            FileInputScannerTestUtils.ofScript("negative_number_test.vmy"), 
       FileInputScannerTestUtils.build_with_scanner()
     );
   }

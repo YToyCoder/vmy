@@ -145,7 +145,7 @@ public class Runtime {
   public static Object get_value(String name, Frame frame){
     Variable variable = frame.local(name);
 //    switch
-    VmyType type = variable.getType();
+    // VmyType type = variable.getType();
     if(
         Utils.isType(variable, VmyTypes.BuiltinType.Table) ||
         Utils.isType(variable, VmyTypes.BuiltinType.Function) ||

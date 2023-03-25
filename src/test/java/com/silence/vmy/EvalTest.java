@@ -2,14 +2,12 @@ package com.silence.vmy;
 
 import com.silence.vmy.compiler.AST;
 import com.silence.vmy.runtime.Evaluators;
-import com.silence.vmy.runtime.VmyRuntimeException;
 import com.silence.vmy.tools.Eval;
 import org.junit.Test;
 
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
 
 public class EvalTest {
 
