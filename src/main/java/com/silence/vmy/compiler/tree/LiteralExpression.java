@@ -37,6 +37,10 @@ public abstract class LiteralExpression extends BaseTree implements Expression{
   public boolean isString(){
     return kind == Kind.String;
   }
+  public boolean isNumber() { return isDouble() || isInt(); }
+
+  public abstract int getInteger();
+  public abstract double getDouble();
 
   public abstract Object literal(); // string or function
 
@@ -49,6 +53,16 @@ public abstract class LiteralExpression extends BaseTree implements Expression{
     public Stringify(Kind kind, String content) {
       super(kind);
       this.content = content;
+    }
+
+    @Override
+    public int getInteger() {
+      return Integer.getInteger(content);
+    }
+
+    @Override
+    public double getDouble() {
+      return Double.parseDouble(content);
     }
 
     @Override
