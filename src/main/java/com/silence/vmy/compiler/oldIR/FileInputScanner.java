@@ -1,10 +1,9 @@
-package com.silence.vmy.compiler.deprecated;
+package com.silence.vmy.compiler.oldIR;
 
 import com.silence.vmy.compiler.Identifiers;
 import com.silence.vmy.compiler.LexicalException;
 import com.silence.vmy.compiler.TokenHistoryRecorder;
 import com.silence.vmy.tools.Utils;
-import scala.Char;
 
 import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;

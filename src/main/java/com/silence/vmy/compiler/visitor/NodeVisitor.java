@@ -1,6 +1,6 @@
 package com.silence.vmy.compiler.visitor;
 
-import com.silence.vmy.compiler.deprecated.*;
+import com.silence.vmy.compiler.oldIR.*;
 
 public interface NodeVisitor {
   /**

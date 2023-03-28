@@ -2,7 +2,7 @@ package com.silence.vmy;
 
 import com.silence.vmy.compiler.FixedSizeCapabilityTokenRecorder;
 import com.silence.vmy.compiler.RecordHistoryEmptyException;
-import com.silence.vmy.compiler.deprecated.Token;
+import com.silence.vmy.compiler.oldIR.Token;
 import com.silence.vmy.compiler.OneCapabilityTokenRecorder;
 import org.junit.Test;
 

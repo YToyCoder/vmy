@@ -1,7 +1,7 @@
 package com.silence.vmy.compiler;
 
-import com.silence.vmy.compiler.deprecated.Scanner;
-import com.silence.vmy.compiler.deprecated.Token;
+import com.silence.vmy.compiler.oldIR.Scanner;
+import com.silence.vmy.compiler.oldIR.Token;
 import com.silence.vmy.tools.Ordering;
 import com.silence.vmy.tools.Utils;
 

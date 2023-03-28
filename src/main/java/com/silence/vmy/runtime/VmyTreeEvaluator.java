@@ -1,7 +1,7 @@
 package com.silence.vmy.runtime;
 
 import com.silence.vmy.compiler.AST;
-import com.silence.vmy.compiler.deprecated.*;
+import com.silence.vmy.compiler.oldIR.*;
 import com.silence.vmy.compiler.tree.*;
 
 import java.util.Objects;

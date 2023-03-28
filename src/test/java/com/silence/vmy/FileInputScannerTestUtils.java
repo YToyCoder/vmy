@@ -1,8 +1,8 @@
 package com.silence.vmy;
 
 import com.silence.vmy.compiler.AST;
-import com.silence.vmy.compiler.deprecated.FileInputScanner;
-import com.silence.vmy.compiler.deprecated.Token;
+import com.silence.vmy.compiler.oldIR.FileInputScanner;
+import com.silence.vmy.compiler.oldIR.Token;
 import com.silence.vmy.runtime.VisitingEvaluator;
 import com.silence.vmy.tools.Scripts;
 import com.silence.vmy.tools.Utils;

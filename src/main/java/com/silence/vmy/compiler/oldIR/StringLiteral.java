@@ -1,4 +1,4 @@
-package com.silence.vmy.compiler.deprecated;
+package com.silence.vmy.compiler.oldIR;
 
 import com.silence.vmy.compiler.AST;
 

@@ -1,7 +1,7 @@
 package com.silence.vmy.tools;
 
 import com.silence.vmy.compiler.*;
-import com.silence.vmy.compiler.deprecated.FileInputScanner;
+import com.silence.vmy.compiler.oldIR.FileInputScanner;
 import com.silence.vmy.runtime.Evaluator;
 import com.silence.vmy.runtime.Evaluators;
 import com.silence.vmy.runtime.VisitingEvaluator;

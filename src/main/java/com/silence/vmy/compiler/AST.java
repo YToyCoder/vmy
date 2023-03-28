@@ -1,8 +1,8 @@
 package com.silence.vmy.compiler;
 
-import com.silence.vmy.compiler.deprecated.*;
-import com.silence.vmy.compiler.deprecated.Scanner;
-import com.silence.vmy.compiler.deprecated.Token;
+import com.silence.vmy.compiler.oldIR.*;
+import com.silence.vmy.compiler.oldIR.Scanner;
+import com.silence.vmy.compiler.oldIR.Token;
 import com.silence.vmy.compiler.visitor.ASTProcessingException;
 import com.silence.vmy.compiler.tree.*;
 import com.silence.vmy.compiler.visitor.NodeVisitor;
