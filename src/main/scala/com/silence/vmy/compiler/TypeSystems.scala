@@ -1,6 +1,6 @@
 package com.silence.vmy.compiler
 
-import com.silence.vmy.compiler.tree.{AssignmentExpression, BinaryOperateExpression, BlockStatement, CallExpr, FunctionDecl, ListExpr, LiteralExpression, ReturnExpr, Root, Tree, TreeVisitor, TypeExpr, Unary, VariableDecl}
+import com.silence.vmy.compiler.tree.{AssignmentExpression, BinaryOperateExpression, BlockStatement, CallExpr, Expression, FunctionDecl, IdExpr, ListExpr, LiteralExpression, ReturnExpr, Root, Tree, TreeVisitor, TypeExpr, Unary, VariableDecl}
 
 sealed class TheType(val name:String) extends CompilingPhaseType
 
@@ -63,13 +63,15 @@ class TypeCheck extends TreeVisitor[CompilingPhaseType, CompilingPhaseType]{
 
   override def visitRoot(root: Root, payload: CompilingPhaseType): CompilingPhaseType = null
 
-  override def visitListExpr(expr: ListExpr, payload: CompilingPhaseType): CompilingPhaseType = null
+  override def visitListExpr[E <: Expression](expr: ListExpr[E], payload: CompilingPhaseType): CompilingPhaseType = null
 
   override def visitReturnExpr(expr: ReturnExpr, payload: CompilingPhaseType): CompilingPhaseType = null
 
   override def visitTypeExpr(expr: TypeExpr, payload: CompilingPhaseType): CompilingPhaseType = null
 
   override def visitCallExpr(expr: CallExpr, payload: CompilingPhaseType): CompilingPhaseType = null
+
+  override def visitIdExpr(expr: IdExpr, payload: CompilingPhaseType): CompilingPhaseType = null
 }
 
 object TypeCheck {

@@ -4,7 +4,7 @@ import java.util.List;
 
 public record FunctionDecl(
     String name,
-    List<? extends  Tree> params,
+    List<VariableDecl> params,
     TypeExpr ret,
     BlockStatement body,
     long position

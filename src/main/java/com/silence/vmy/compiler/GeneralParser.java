@@ -27,7 +27,7 @@ public class GeneralParser implements Parser{
 
   @Override
   public Root parse() {
-    return Trees.createCompileUnit(compileBlock(TokenKind.EOF));
+    return Trees.createCompileUnit(hasTok() ? compileBlock(TokenKind.EOF) : null);
   }
 
   /**
@@ -42,7 +42,7 @@ public class GeneralParser implements Parser{
       name = next().payload();
     return new FunctionDecl(
         name,
-        ((ListExpr) parameters()).body(),
+        parameters().body(),
         peekTok(tk -> tk == TokenKind.Colon) ? parsingType() : null,
         compileBlock(TokenKind.LBrace, TokenKind.RBrace),
         decl.start()
@@ -52,37 +52,37 @@ public class GeneralParser implements Parser{
   /**
    * expr = "(" ")" | "(" expr2 ")"
    */
-  private ListExpr expr(){
+  private ListExpr<? extends Expression> expr(){
     if(token().kind() != TokenKind.LParenthesis){
       throw new LexicalException("expression error position %d" + token());
     }
 
     Tokens.Token start = next();
     if(peekTok(kind -> kind == TokenKind.RParenthesis))
-      return new ListExpr(next().start(), Tag.Param, List.of());
-    ListExpr ret = new ListExpr(start.start(), Tag.Param, expr2());
+      return new ListExpr<>(next().start(), Tag.Param, List.of());
+    ListExpr<?> ret = new ListExpr<>(start.start(), Tag.Param, expr2());
     next();
     return ret;
   }
 
   // parameters_expr = "(" ")" | "(" parameter_expr ["," parameter_expr] ")"
   // parameter_expr = identifier ":" typeDecl
-  private Expression parameters(){
+  private ListExpr<VariableDecl> parameters(){
     if(token().kind() != TokenKind.LParenthesis){
       throw new LexicalException("expression error position %d" + token());
     }
 
     Tokens.Token start = next();
     if(peekTok(kind -> kind == TokenKind.RParenthesis))
-      return new ListExpr(next().start(), Tag.Param, List.of());
-    List<Expression> ls = new LinkedList<>();
+      return new ListExpr<>(next().start(), Tag.Param, List.of());
+    List<VariableDecl> ls = new LinkedList<>();
     ls.add(parameter());
     while(peekTok(tk -> tk == TokenKind.Comma)){
       next_must(TokenKind.Comma);
       ls.add(parameter());
     }
     next_must(TokenKind.RParenthesis);
-    return new ListExpr(start.start(), Tag.Param, ls);
+    return new ListExpr<>(start.start(), Tag.Param, ls);
   }
 
   private VariableDecl parameter(){
@@ -102,7 +102,7 @@ public class GeneralParser implements Parser{
   }
 
   protected Tokens.Token token(){
-    System.out.println("get tok " + token(0));
+//    System.out.println("get tok " + token(0));
     return token(0);
   }
 
@@ -165,21 +165,28 @@ public class GeneralParser implements Parser{
     }
   }
 
+  private void ignoreEmptyLines(){
+    while(peekTok(tk -> tk == TokenKind.newline)){
+      ignore(TokenKind.newline);
+    }
+  }
+
   /**
    * e_block = [ expression ]
    */
   private BlockStatement compileBlock(TokenKind end){
     final long pos = token().start();
     List<Tree> ret = new LinkedList<>();
+    ignoreEmptyLines();
     while(
       hasTok() &&
       !peekTok(tk -> tk == end) &&
       !peekTok(tk -> tk == TokenKind.newline, tk -> tk == end)
     ){
       ret.add(expression());
-      ignore(TokenKind.newline);
+      ignoreEmptyLines();
     }
-    ignore(TokenKind.newline);
+    ignoreEmptyLines();
     next_must(end);
     return new BlockStatement(ret, pos);
   }
@@ -384,7 +391,7 @@ public class GeneralParser implements Parser{
    */
   private Expression call(){
     Tokens.Token id = next_must(TokenKind.Id);
-    ListExpr params = expr();
+    ListExpr<? extends Expression> params = expr();
     return CallExpr.create(id.start(), id.payload(), params);
   }
 

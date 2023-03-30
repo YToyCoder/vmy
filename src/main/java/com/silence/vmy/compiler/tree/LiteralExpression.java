@@ -1,5 +1,7 @@
 package com.silence.vmy.compiler.tree;
 
+import java.util.Objects;
+
 public abstract class LiteralExpression extends BaseTree implements Expression{
 
   public LiteralExpression(Kind kind) {
@@ -41,6 +43,7 @@ public abstract class LiteralExpression extends BaseTree implements Expression{
 
   public abstract int getInteger();
   public abstract double getDouble();
+  public abstract boolean getBoolean();
 
   public abstract Object literal(); // string or function
 
@@ -57,12 +60,17 @@ public abstract class LiteralExpression extends BaseTree implements Expression{
 
     @Override
     public int getInteger() {
-      return Integer.getInteger(content);
+      return Integer.parseInt(content);
     }
 
     @Override
     public double getDouble() {
       return Double.parseDouble(content);
+    }
+
+    @Override
+    public boolean getBoolean() {
+      return Objects.equals(content, "True");
     }
 
     @Override

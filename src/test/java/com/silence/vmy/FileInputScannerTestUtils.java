@@ -4,6 +4,7 @@ import com.silence.vmy.compiler.AST;
 import com.silence.vmy.compiler.oldIR.FileInputScanner;
 import com.silence.vmy.compiler.oldIR.Token;
 import com.silence.vmy.runtime.VisitingEvaluator;
+import com.silence.vmy.tools.Eval;
 import com.silence.vmy.tools.Scripts;
 import com.silence.vmy.tools.Utils;
 
@@ -14,6 +15,7 @@ public class FileInputScannerTestUtils {
 
   public static void do_with_instance(String file, Consumer<FileInputScanner> scanner_consumer){
     Scripts.do_with_file_input_scanner(file, scanner_consumer);
+    Eval.eval(file, true);
   }
 
   public static String ofScript(String _name){

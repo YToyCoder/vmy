@@ -1,0 +1,9 @@
+fun a(plus : Int) : Int {
+    return 1 + plus
+}
+
+let b = 1
+
+b = b + a( 1 + 2 )
+
+print(b)

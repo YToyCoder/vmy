@@ -12,10 +12,6 @@ public abstract class LiteralNode extends AbstractTree implements Tree {
 
     public abstract Object val();
 
-//    public int tag() {
-//        return tag;
-//    }
-
     @Override
     public void accept(NodeVisitor visitor) {
         visitor.visitLiteralNode(this);

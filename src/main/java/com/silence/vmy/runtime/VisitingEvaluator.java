@@ -21,6 +21,8 @@ public class VisitingEvaluator implements Evaluator, NodeVisitor {
   public Object eval(Root tree) {
     if(tree instanceof AST.VmyAST ast){
       _g = runtimeContext.new_frame();
+      if(Objects.isNull(ast.root))
+        return null;
       ast.root.accept(this);
       return get_from_stack();
     }else

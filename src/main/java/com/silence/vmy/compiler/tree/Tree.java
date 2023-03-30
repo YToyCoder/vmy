@@ -42,4 +42,19 @@ public interface Tree {
         TypeDecl,
         CallExpr
     };
+
+    static String opTag2String(Tag tag){
+        return switch (tag){
+            case Add -> "+";
+            case AddEqual -> "+=";
+            case Sub -> "-";
+            case Div -> "/";
+            case SubEqual -> "-=";
+            case Multi -> "*";
+            case Assign -> "=";
+            case MultiEqual -> "*=";
+            case DivEqual -> "/=";
+            default -> "";
+        };
+    }
 }

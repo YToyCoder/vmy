@@ -1,12 +1,12 @@
 package com.silence.vmy.evaluate
 
 import com.silence.vmy.compiler.tree.Tree.Tag
-import com.silence.vmy.compiler.tree.{AssignmentExpression, BinaryOperateExpression, BlockStatement, CallExpr, FunctionDecl, ListExpr, LiteralExpression, ReturnExpr, Root, TreeVisitor, TypeExpr, Unary, VariableDecl}
+import com.silence.vmy.compiler.tree.{AssignmentExpression, BinaryOperateExpression, BlockStatement, CallExpr, Expression, FunctionDecl, IdExpr, ListExpr, LiteralExpression, ReturnExpr, Root, TreeVisitor, TypeExpr, Unary, VariableDecl}
 import com.silence.vmy.evaluate.EmulatingValue.{BaseEV, RetValue, initValue}
 import com.silence.vmy.compiler.{BuiltinTypeString, Modifiers}
 
 import java.util.Objects
-import scala.annotation.{ tailrec }
+import scala.annotation.tailrec
 import scala.collection.mutable
 
 trait EmulatingValue{
@@ -298,7 +298,7 @@ class TreeEmulator extends TreeVisitor[EmulatingValue, EmulatingValue] with Emul
     else ret
   }
 
-  override def visitListExpr(expr: ListExpr, payload: EmulatingValue): EmulatingValue = {
+  override def visitListExpr[E <: Expression](expr: ListExpr[E], payload: EmulatingValue): EmulatingValue = {
     expr.body().forEach(el => el.accept(this, payload))
     null
   }
@@ -310,4 +310,6 @@ class TreeEmulator extends TreeVisitor[EmulatingValue, EmulatingValue] with Emul
   override def visitCallExpr(expr: CallExpr, payload: EmulatingValue): EmulatingValue = null
 
   override def run(): EmulatingValue = null
+
+  override def visitIdExpr(expr: IdExpr, payload: EmulatingValue): EmulatingValue = null
 }

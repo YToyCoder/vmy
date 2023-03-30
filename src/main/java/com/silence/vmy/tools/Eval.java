@@ -1,11 +1,12 @@
 package com.silence.vmy.tools;
 
-import com.silence.vmy.compiler.AST;
-import com.silence.vmy.compiler.Scanners;
-import com.silence.vmy.compiler.SimpleParser;
+import com.silence.vmy.compiler.*;
+import com.silence.vmy.compiler.transform.IrTransforms;
+import com.silence.vmy.compiler.tree.Root;
 import com.silence.vmy.runtime.Evaluator;
 import com.silence.vmy.runtime.Evaluators;
 
+import java.io.FileNotFoundException;
 import java.util.Objects;
 import java.util.Scanner;
 
@@ -66,6 +67,23 @@ public class Eval {
                 .parse()
         )
     );
+  }
+
+  public static Root parsing(String filenameOrCode, boolean is_file) throws FileNotFoundException {
+    return GeneralParser
+        .create(new GeneralScanner(filenameOrCode, is_file))
+        .parse();
+  }
+
+  public static Object eval(String filenameOrCode, boolean is_file) {
+    try {
+      Root parsing = parsing(filenameOrCode, is_file);
+      Root transformedIr = (Root) parsing.accept(new IrTransforms.Convert2OldIR(), null);
+      return Evaluators.evaluator(true).eval(transformedIr);
+    }catch (Exception e){
+      e.printStackTrace();
+    }
+    return null;
   }
 
 }

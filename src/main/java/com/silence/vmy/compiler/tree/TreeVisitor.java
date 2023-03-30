@@ -9,8 +9,9 @@ public interface TreeVisitor<R,T> {
   R visitAssignment(AssignmentExpression expression, T payload);
   R visitFunctionDecl(FunctionDecl function, T payload);
   R visitRoot(Root root, T payload);
-  R visitListExpr(ListExpr expr, T payload);
+  <E extends Expression> R visitListExpr(ListExpr<E> expr, T payload);
   R visitReturnExpr(ReturnExpr expr, T payload);
   R visitTypeExpr(TypeExpr expr, T payload);
   R visitCallExpr(CallExpr expr, T payload);
+  R visitIdExpr(IdExpr expr, T payload);
 }
