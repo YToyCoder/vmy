@@ -15,7 +15,7 @@ public class AbstractTree implements Tree {
   }
 
   @Override
-  public <R, T> R accept(TVisitor<R> visitor, T t){
+  public <T> Tree accept(TVisitor<T> visitor, T t) {
     return null;
   }
 
