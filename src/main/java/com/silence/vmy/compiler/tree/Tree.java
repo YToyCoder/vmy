@@ -11,6 +11,7 @@ public interface Tree {
 
     // new version
     <R,T> R accept(TreeVisitor<R,T> visitor, T payload);
+    <T> Tree accept(TVisitor<T> visitor, T t);
 
     long position();
 

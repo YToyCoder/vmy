@@ -28,5 +28,6 @@ dependencies {
 //    implementation 'org.scala-lang:scala3-library_3:3.2.2'
     implementation 'org.scala-lang:scala-library:2.13.9'
     testImplementation "junit:junit:4.13"
+    implementation 'org.ow2.asm:asm:9.5'
 //    implementation group: 'org.nd4j', name: 'jackson', version: '1.0.0-M2.1'
 }

@@ -16,6 +16,11 @@ public record FunctionDecl(
   }
 
   @Override
+  public <T> Tree accept(TVisitor<T> visitor, T t) {
+    return null;
+  }
+
+  @Override
   public Tag tag() {
     return Tag.Fun;
   }

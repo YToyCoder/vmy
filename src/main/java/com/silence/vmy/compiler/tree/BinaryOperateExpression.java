@@ -16,6 +16,29 @@ public class BinaryOperateExpression extends OperatorExpression{
     return visitor.visitBinary(this, payload);
   }
 
+  @Override
+  public <T> Tree accept(TVisitor<T> visitor, T t) {
+    if(visitor.enterBinary(this, t)) {
+      return visitor.leaveBinary(
+          setLhe((Expression) lhe.accept(visitor, t))
+          .setRhe((Expression) right().accept(visitor, t)),
+          t);
+    }
+    return this;
+  }
+
+  private BinaryOperateExpression setLhe(Expression expression) {
+    if(expression != this.lhe)
+      return new BinaryOperateExpression(expression, right(), tag);
+    return this;
+  }
+
+  private BinaryOperateExpression setRhe(Expression expression) {
+    if(expression != this.rhe)
+      return new BinaryOperateExpression(left(), expression, tag);
+    return this;
+  }
+
   public Expression left(){
     return lhe;
   }

@@ -1,5 +1,6 @@
 package com.silence.vmy.compiler.oldIR;
 
+import com.silence.vmy.compiler.tree.TVisitor;
 import com.silence.vmy.compiler.tree.Tree;
 import com.silence.vmy.compiler.tree.TreeVisitor;
 import com.silence.vmy.compiler.visitor.NodeVisitor;
@@ -10,6 +11,11 @@ public class AbstractTree implements Tree {
   }
 
   public Object accept(TreeVisitor<?,?> visitor) {
+    return null;
+  }
+
+  @Override
+  public <R, T> R accept(TVisitor<R> visitor, T t){
     return null;
   }
 
