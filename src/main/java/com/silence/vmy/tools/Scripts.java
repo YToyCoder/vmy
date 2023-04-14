@@ -94,8 +94,6 @@ public class Scripts {
 
     try(FileInputScanner scanner = new FileInputScanner(file_or_pure_string, is_file)){
       return run_with_scanner.apply(scanner);
-    } catch (FileNotFoundException e) {
-      throw new RuntimeException(e);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -104,14 +102,15 @@ public class Scripts {
 
   /**
    * default is file
+   *
    * @param file_or_pure_string
    * @param run_with_scanner
    */
-  public static Object run_with_file_input_scanner(
+  public static void run_with_file_input_scanner(
     String file_or_pure_string, 
     Function<FileInputScanner, Object> run_with_scanner
   ){
-    return run_with_file_input_scanner(file_or_pure_string, true, run_with_scanner);
+    run_with_file_input_scanner(file_or_pure_string, true, run_with_scanner);
   }
 
   public static FileInputScanner file_scanner(String file) throws FileNotFoundException {
