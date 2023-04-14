@@ -6,8 +6,13 @@ public record TypeExpr(long position, Tag tag, String typeId) implements Express
     return visitor.visitTypeExpr(this, payload);
   }
 
-  public static TypeExpr create(long pos, String typeId){
-    return new TypeExpr(pos, Tag.TypeDecl, typeId);
+  @Override
+  public <T> Tree accept(TVisitor<T> visitor, T t) {
+    if(visitor.enterTypeExpr(this, t))
+      return visitor.leaveTypeExpr(this, t);
+    return this;
   }
+
+  public static TypeExpr create(long pos, String typeId) { return new TypeExpr(pos, Tag.TypeDecl, typeId); }
 
 }

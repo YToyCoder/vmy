@@ -32,7 +32,5 @@ public record AssignmentExpression(Expression left, Expression right, long posit
   }
 
   @Override
-  public Tag tag() {
-    return Tag.Assign;
-  }
+  public Tag tag() { return Tag.Assign; }
 }

@@ -77,6 +77,13 @@ public abstract class LiteralExpression extends BaseTree implements Expression{
     public Object literal() {
       return content;
     }
+
+    @Override
+    public <T> Tree accept(TVisitor<T> visitor, T t) {
+      if(visitor.enterLiteral(this, t))
+        return visitor.leaveLiteral(this, t);
+      return this;
+    }
   }
 
 }

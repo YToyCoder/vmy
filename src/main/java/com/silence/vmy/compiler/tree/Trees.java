@@ -15,6 +15,13 @@ public abstract class Trees {
     }
 
     @Override
+    public <T> Tree accept(TVisitor<T> visitor, T t) {
+      if(visitor.enterRoot(this, t))
+        return visitor.leaveRoot(this, t);
+      return this;
+    }
+
+    @Override
     public Tree body() {
       return body;
     }

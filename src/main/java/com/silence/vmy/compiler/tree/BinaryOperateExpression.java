@@ -12,9 +12,7 @@ public class BinaryOperateExpression extends OperatorExpression{
   }
 
   @Override
-  public <R, T> R accept(TreeVisitor<R, T> visitor, T payload) {
-    return visitor.visitBinary(this, payload);
-  }
+  public <R, T> R accept(TreeVisitor<R, T> visitor, T payload) { return visitor.visitBinary(this, payload); }
 
   @Override
   public <T> Tree accept(TVisitor<T> visitor, T t) {
@@ -39,16 +37,9 @@ public class BinaryOperateExpression extends OperatorExpression{
     return this;
   }
 
-  public Expression left(){
-    return lhe;
-  }
-
-  public Expression right(){
-    return rhe;
-  }
+  public Expression left() { return lhe; }
+  public Expression right(){ return rhe; }
 
   @Override
-  public Tag tag() {
-    return tag;
-  }
+  public Tag tag() { return tag; }
 }

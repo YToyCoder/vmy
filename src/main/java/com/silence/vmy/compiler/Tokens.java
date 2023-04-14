@@ -9,8 +9,8 @@ public class Tokens {
 
   public static long location(int row, int col){
     // 8 * 8 => 32 | 16
-    assert row >= 0 && row <= Integer.MAX_VALUE : "row must be >= 0 and <= Integer.MAX_VALUE, it's %d".formatted(row);
-    assert col >= 0 && col <= Integer.MAX_VALUE : "col must be >= 0 and <= Integer.MAX_VALUE, it's %d".formatted(col);
+    assert row >= 0 : "row must be >= 0 and <= Integer.MAX_VALUE, it's %d".formatted(row);
+    assert col >= 0 : "col must be >= 0 and <= Integer.MAX_VALUE, it's %d".formatted(col);
     return ((long)row) << 32 | col;
   }
 

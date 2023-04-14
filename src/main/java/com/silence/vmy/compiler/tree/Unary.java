@@ -9,17 +9,18 @@ public class Unary extends OperatorExpression{
     this.body = body;
   }
 
-  public Tree body(){
-    return body;
+  public Tree body(){ return body; }
+
+  @Override
+  public <R,T> R accept(TreeVisitor<R,T> visitor, T payload) { return visitor.visitUnary(this, payload); }
+
+  @Override
+  public <T> Tree accept(TVisitor<T> visitor, T t) {
+    if(visitor.enterUnary(this, t))
+      return visitor.leaveUnary(this, t);
+    return this;
   }
 
   @Override
-  public <R,T> R accept(TreeVisitor<R,T> visitor, T payload) {
-    return visitor.visitUnary(this, payload);
-  }
-
-  @Override
-  public Tag tag() {
-    return tag;
-  }
+  public Tag tag() { return tag; }
 }
