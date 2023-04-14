@@ -21,18 +21,12 @@ public class GeneralParser implements Parser{
     do_next(); // fill token
   }
 
-  public static Parser create(Lexer lexer){
-    return new GeneralParser(lexer);
-  }
+  public static Parser create(Lexer lexer){ return new GeneralParser(lexer); }
 
   @Override
-  public Root parse() {
-    return Trees.createCompileUnit(hasTok() ? compileBlock(TokenKind.EOF) : null);
-  }
+  public Root parse() { return Trees.createCompileUnit(hasTok() ? compileBlock(TokenKind.EOF) : null); }
 
-  /**
-   * e_fun = fun identifier expr "{" e_block "}"
-   */
+  // e_fun = fun identifier expr "{" e_block "}"
   private FunctionDecl compileFunc(){
     if(peekTok(tk -> tk != TokenKind.Fun))
       error(next().toString());
@@ -49,9 +43,7 @@ public class GeneralParser implements Parser{
     );
   }
 
-  /**
-   * expr = "(" ")" | "(" expr2 ")"
-   */
+  // expr = "(" ")" | "(" expr2 ")"
   private ListExpr<? extends Expression> expr(){
     if(token().kind() != TokenKind.LParenthesis){
       throw new LexicalException("expression error position %d" + token());
@@ -141,9 +133,8 @@ public class GeneralParser implements Parser{
     return hasTok() && tk.test(token().kind()) && savedTokens.size() > 1 && tk1.test(token(1).kind());
   }
 
-  /**
-   * expr2 =  expr3 | expr2 "," expr3
-   */
+  // expr2 =  expr3
+  //        | expr2 "," expr3
   private List<Expression> expr2(){
     List<Expression> ret = new LinkedList<>();
     ret.add(expr3());
@@ -178,9 +169,7 @@ public class GeneralParser implements Parser{
     }
   }
 
-  /**
-   * e_block = [ expression ]
-   */
+  // e_block = [ expression ]
   private BlockStatement compileBlock(TokenKind end){
     final long pos = token().start();
     List<Tree> ret = new LinkedList<>();
@@ -199,14 +188,12 @@ public class GeneralParser implements Parser{
     return new BlockStatement(ret, pos);
   }
 
-  /**
-   * expr3 = identifier "=" expr3
-   *       | identifier "+=" expr3
-   *       | identifier "-=" expr3
-   *       | identifier "*=" expr3
-   *       | identifier "/=" expr3
-   *       | concat
-   */
+   // expr3 = identifier "=" expr3
+   //       | identifier "+=" expr3
+   //       | identifier "-=" expr3
+   //       | identifier "*=" expr3
+   //       | identifier "/=" expr3
+   //       | concat
   private Expression expr3(){
     if(peekTok(tk -> tk == TokenKind.Id, tk -> tk == TokenKind.Assignment)) {
       Tokens.Token id = next();
@@ -259,12 +246,10 @@ public class GeneralParser implements Parser{
     }
   }
 
-  /**
-   * expression = varDecl "=" expr4
-   *            | expr3
-   *            | e_fun
-   *            | "return" expr3
-   */
+   //expression = varDecl "=" expr4
+   //            | expr3
+   //            | e_fun
+   //            | "return" expr3
   private Tree expression(){
     if(peekTok(tk -> tk == TokenKind.Fun)){/* function */
       return compileFunc();
@@ -300,7 +285,6 @@ public class GeneralParser implements Parser{
       Tokens.Token ret = next();
       return new ReturnExpr(ret.start(), null, expr3());
     }
-
     //expr3
     return expr3();
   }
@@ -310,9 +294,10 @@ public class GeneralParser implements Parser{
     throw new LexicalException("<<error>>");
   }
 
-  /**
-   * one = identifier | literal | "(" expr3 ")" | call
-   */
+  // one = identifier
+  //     | literal
+  //     | "(" expr3 ")"
+  //     | call
   Expression one(){
     Tokens.Token peek = token();
     return switch (peek.kind()){
@@ -336,9 +321,9 @@ public class GeneralParser implements Parser{
     };
   }
 
-  /**
-   * unary = one | "+" unary | "-" unary
-   */
+   // unary = one
+   //       | "+" unary
+   //       | "-" unary
   Expression unary(){
     if (peekTok( tk -> tk == TokenKind.Add || tk == TokenKind.Sub)){
       Tokens.Token pre = next();
@@ -348,13 +333,11 @@ public class GeneralParser implements Parser{
     return one();
   }
 
-  /**
-   * literal = "true" | "false"
-   *         | numberLiteral
-   *         | stringLiteral
-   *         | charLiteral
-   *         | functionLiteral
-   */
+   // literal = "true" | "false"
+   //         | numberLiteral
+   //         | stringLiteral
+   //         | charLiteral
+   //         | functionLiteral
   Expression literal(){
     Tokens.Token tok = next();
     System.out.println("parsing literal " + tok);
@@ -389,9 +372,9 @@ public class GeneralParser implements Parser{
     return left;
   }
 
-  /**
-   * multi = unary | multi "*" unary | multi "/" unary
-   */
+  // multi = unary
+  //       | multi "*" unary
+  //       | multi "/" unary
   Expression multi(){
     Expression left = unary();
     while(peekTok(
