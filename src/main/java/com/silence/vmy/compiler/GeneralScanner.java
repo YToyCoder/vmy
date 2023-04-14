@@ -71,9 +71,12 @@ public class GeneralScanner implements Lexer{
         }
         case '+' -> {
           CharReaders.CharInFile startChar = nextChar();
-          if(hasChar() && peekChar().charIs('=')){
-            yield createTok(Tokens.TokenKind.AddEqual, startChar.location(), nextChar().location() + 1);
-          };
+          if(hasChar()){
+            if(peekChar().charIs('=')){
+              yield createTok(Tokens.TokenKind.AddEqual, startChar.location(), nextChar().location() + 1);
+            }else if(peekChar().charIs('+'))
+              yield createTok(Tokens.TokenKind.Concat, startChar.location(), nextChar().location() + 1);
+          }
           yield createTok(Tokens.TokenKind.Add, startChar.location(), startChar.location() + 1);
         }
         case '-' -> {

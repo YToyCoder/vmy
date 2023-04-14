@@ -54,7 +54,7 @@ public class VisitingEvaluator implements Evaluator, NodeVisitor {
     if(Objects.isNull(b_op))
       throw new EvaluateException("op(" + op + ") not support!");
     try{
-        Object result = Objects.nonNull(b_op) ? b_op.apply(left, right) : null;
+        Object result = b_op.apply(left, right);
         put_stack(result);
     }catch (OpsException e){
       throw new ASTProcessingException(String.format("%s : left value - %s, right value - %s", e.getMessage(), left, right));

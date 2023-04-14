@@ -197,7 +197,7 @@ public class GeneralParser implements Parser{
    *       | identifier "-=" expr3
    *       | identifier "*=" expr3
    *       | identifier "/=" expr3
-   *       | add
+   *       | concat
    */
   private Expression expr3(){
     if(peekTok(tk -> tk == TokenKind.Id, tk -> tk == TokenKind.Assignment)) {
@@ -218,7 +218,21 @@ public class GeneralParser implements Parser{
           kind2tag(op.kind())
       );
     }
-    return add();
+    return concat();
+  }
+
+  // concat = add
+  //         | add "++" concat
+  private Expression concat(){
+    Expression firstExpr = add();
+    if(hasTok() && peekTok(tk -> tk == TokenKind.Concat)){
+      next_must(TokenKind.Concat);
+      Expression right = concat();
+      // concat expression
+      return new BinaryOperateExpression(firstExpr, right, Tag.Concat);
+    }
+    // add expression
+    return firstExpr;
   }
 
   // type_decl = ":" identifier
@@ -235,11 +249,12 @@ public class GeneralParser implements Parser{
    *            | "return" expr3
    */
   private Tree expression(){
-    if(peekTok(tk -> tk == TokenKind.Fun)){
-      System.out.println("parsing function");
+    if(peekTok(tk -> tk == TokenKind.Fun)){/* function */
       return compileFunc();
     }
-    if(peekTok(tk -> tk == TokenKind.Let || tk == TokenKind.Val)){
+    if( /* variable declaration */
+        peekTok(tk -> tk == TokenKind.Let || tk == TokenKind.Val)){
+
       Tokens.Token decl = next();
       if(peekTok(tk -> tk != TokenKind.Id))
         error(token());
@@ -262,10 +277,14 @@ public class GeneralParser implements Parser{
         );
       }
     }
+
+    // return expression
     if(peekTok(tk -> tk == TokenKind.Return)){
       Tokens.Token ret = next();
       return new ReturnExpr(ret.start(), null, expr3());
     }
+
+    //expr3
     return expr3();
   }
 

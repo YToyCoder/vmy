@@ -22,6 +22,7 @@ public interface Tree {
         // ops
         Add,
         AddEqual, // +=
+        Concat, // ++
         Sub, // -
         SubEqual, // -=
         Multi, // *
@@ -55,6 +56,7 @@ public interface Tree {
             case Assign -> "=";
             case MultiEqual -> "*=";
             case DivEqual -> "/=";
+            case Concat -> "++";
             default -> "";
         };
     }

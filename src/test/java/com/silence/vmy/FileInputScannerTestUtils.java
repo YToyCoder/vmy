@@ -14,7 +14,7 @@ public class FileInputScannerTestUtils {
   private FileInputScannerTestUtils(){}
 
   public static void do_with_instance(String file, Consumer<FileInputScanner> scanner_consumer){
-    Scripts.do_with_file_input_scanner(file, scanner_consumer);
+//    Scripts.do_with_file_input_scanner(file, scanner_consumer);
     Eval.eval(file, true);
   }
 

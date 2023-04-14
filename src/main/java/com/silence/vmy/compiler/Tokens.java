@@ -45,6 +45,7 @@ public class Tokens {
     // calculate
     Add, // +
     AddEqual, // +=
+    Concat, // ++
     Sub, // -
     SubEqual, // -=
     Multi, // *
