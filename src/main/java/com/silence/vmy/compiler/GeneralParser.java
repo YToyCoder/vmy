@@ -18,7 +18,7 @@ public class GeneralParser implements Parser{
 
   GeneralParser(Lexer _lexer){
     this.lexer = _lexer;
-    next(); // fill token
+    do_next(); // fill token
   }
 
   public static Parser create(Lexer lexer){
@@ -35,7 +35,7 @@ public class GeneralParser implements Parser{
    */
   private FunctionDecl compileFunc(){
     if(peekTok(tk -> tk != TokenKind.Fun))
-      error(next());
+      error(next().toString());
     Tokens.Token decl = next();
     String name = null;
     if(peekTok(tk -> tk == TokenKind.Id))
@@ -91,23 +91,30 @@ public class GeneralParser implements Parser{
   }
 
   protected Tokens.Token next(){
+    ignoreAnnotation();
+    return do_next();
+  }
+
+  protected Tokens.Token do_next(){
     pre = token;
-    if(!savedTokens.isEmpty())
+    if(!savedTokens.isEmpty()) // move cache to token
       token = savedTokens.remove(0);
-    else if(lexer.hasNext())
+    else if(lexer.hasNext()) // get token from lexer
       token = lexer.next();
-    else
+    else // no token
       token = null;
     return pre;
   }
 
   protected Tokens.Token token(){
-//    System.out.println("get tok " + token(0));
     return token(0);
   }
 
   protected Tokens.Token token(int lookahead) {
     if(lookahead == 0) {
+      if(token == null && hasTok()){
+        token = do_next();
+      }
       return token;
     }else {
       ensureLookahead(lookahead);
@@ -155,8 +162,8 @@ public class GeneralParser implements Parser{
 
   protected Tokens.Token next_must(TokenKind tk){
     if(hasTok() && peekTok(tokenKind -> tokenKind != tk))
-      error(token);
-    return next();
+      error("expect token kind : %s , current token is %s".formatted(tk, token.toString()));
+    return do_next();
   }
 
   protected void ignore(TokenKind tokenKind){
@@ -178,6 +185,7 @@ public class GeneralParser implements Parser{
     final long pos = token().start();
     List<Tree> ret = new LinkedList<>();
     ignoreEmptyLines();
+    ignoreAnnotation();
     while(
       hasTok() &&
       !peekTok(tk -> tk == end) &&
@@ -242,6 +250,15 @@ public class GeneralParser implements Parser{
     return new TypeExpr(start.start(), Tag.TypeDecl, id.payload());
   }
 
+  private void ignoreAnnotation() {
+    while (peekTok(tk -> tk == TokenKind.Annotation)){
+      next_must(TokenKind.Annotation);
+      while (peekTok(tk -> tk != TokenKind.newline && tk != TokenKind.EOF))
+        do_next(); // remove token of this line
+      do_next(); // newline & end of file
+    }
+  }
+
   /**
    * expression = varDecl "=" expr4
    *            | expr3
@@ -257,7 +274,7 @@ public class GeneralParser implements Parser{
 
       Tokens.Token decl = next();
       if(peekTok(tk -> tk != TokenKind.Id))
-        error(token());
+        error(token().toString());
       Tokens.Token id = next();
       Modifiers modifiers = switch (decl.kind()){
         case Val -> new Modifiers.Builder()
@@ -288,8 +305,8 @@ public class GeneralParser implements Parser{
     return expr3();
   }
 
-  void error(Tokens.Token tok){
-    System.err.println("error in " + tok);
+  void error(String msg){
+    System.err.println("error in " + msg);
     throw new LexicalException("<<error>>");
   }
 
