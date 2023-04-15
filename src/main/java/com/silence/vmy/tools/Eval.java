@@ -11,21 +11,12 @@ import java.util.Objects;
 import java.util.Scanner;
 
 public class Eval {
-  // eval an expression , like 1 + 2 * (3 + 4)
-  public static Object eval(final String expression){
-    return 
-    Evaluators.defaultTreeEvaluator().eval(
-      AST.build(
-        Scanners.scanner(expression)
-      )
-    );
-  }
 
   private static final String notice = """
       Hell , welcome to vmy!
       version 0.1
       """;
-  public static void repl(){ repl(Evaluators.variableStoreTreeEvaluator()); }
+  public static void repl(){ repl(Evaluators.evaluator(true)); }
 
   public static void repl(final Evaluator evaluator){
     System.out.println(notice);
@@ -42,9 +33,11 @@ public class Eval {
       }
 
       try{
-        Object ans = eval(input, evaluator);
+        Root parsing = parsing(input, false);
+        Root transformedIr = (Root) parsing.accept(new IrTransforms.Convert2OldIR(), null);
+        Object ans = evaluator.eval(transformedIr);
         if(Objects.nonNull(ans))
-          System.out.println(ans);
+          Utils.log(ans.toString());
       }catch (Exception e){
         Utils.error(e.getMessage());
       }
@@ -58,19 +51,19 @@ public class Eval {
    */
   public static Object eval(final String expression, final Evaluator evaluator){
     return Scripts.run_with_file_input_scanner(
-        expression,
-        false,
-        scanner -> evaluator.eval(
-            SimpleParser.create(scanner)
-                .parse()
-        )
-    );
+            expression,
+            false,
+            scanner -> // do with scanner
+                evaluator.eval(
+                    SimpleParser
+                        .create(scanner)
+                        .parse()));
   }
 
-  public static Root parsing(String filenameOrCode, boolean is_file) throws FileNotFoundException {
+  public static Root parsing(String filenameOrCode, boolean isFile) throws FileNotFoundException {
     return GeneralParser
-        .create(new GeneralScanner(filenameOrCode, is_file))
-        .parse();
+            .create(new GeneralScanner(filenameOrCode, isFile))
+            .parse();
   }
 
   public static Object eval(String filenameOrCode, boolean is_file) {
@@ -79,9 +72,8 @@ public class Eval {
       Root transformedIr = (Root) parsing.accept(new IrTransforms.Convert2OldIR(), null);
       return Evaluators.evaluator(true).eval(transformedIr);
     }catch (Exception e){
-      e.printStackTrace();
+      throw new RuntimeException(e);
     }
-    return null;
   }
 
 }
