@@ -20,7 +20,8 @@ public class VisitingEvaluator implements Evaluator, NodeVisitor {
   @Override
   public Object eval(Root tree) {
     if(tree instanceof AST.VmyAST ast){
-      _g = runtimeContext.new_frame();
+      if(runtimeContext.current_frame() == null)
+        _g = runtimeContext.new_frame();
       if(Objects.isNull(ast.root))
         return null;
       ast.root.accept(this);
