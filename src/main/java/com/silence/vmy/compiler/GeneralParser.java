@@ -3,6 +3,7 @@ package com.silence.vmy.compiler;
 import com.silence.vmy.compiler.Tokens.TokenKind;
 import com.silence.vmy.compiler.tree.*;
 import com.silence.vmy.compiler.tree.Tree.Tag;
+import com.silence.vmy.tools.Utils;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -251,7 +252,6 @@ public class GeneralParser implements Parser{
    //            | "return" expr3
   //             | ifStatement
   private Expression expression(){
-    System.out.printf("parsing expression %s%n", token().toString());
     if(peekTok(tk -> tk == TokenKind.Fun)){/* function */
       return compileFunc();
     }
@@ -271,7 +271,6 @@ public class GeneralParser implements Parser{
       };
       TypeExpr type = peekTok(tk -> tk == TokenKind.Colon) ? parsingType() : null;
       if(peekTok(tk -> tk == TokenKind.Assignment)){
-        System.out.println("create a assignment expression");
         var assign = next();
         return new AssignmentExpression(
             new VariableDecl(id.payload(), modifiers, type,id.start()),
@@ -294,7 +293,7 @@ public class GeneralParser implements Parser{
   }
 
   void error(String msg){
-    System.err.println("error in " + msg);
+    Utils.error("error in " + msg);
     throw new LexicalException("<<error>>");
   }
 
@@ -346,7 +345,6 @@ public class GeneralParser implements Parser{
    //         | functionLiteral
   Expression literal(){
     Tokens.Token tok = next();
-    System.out.println("parsing literal " + tok);
     return switch (tok.kind()) {
       case True -> LiteralExpression.ofStringify("true", LiteralExpression.Kind.Boolean);
       case False-> LiteralExpression.ofStringify("false", LiteralExpression.Kind.Boolean);
