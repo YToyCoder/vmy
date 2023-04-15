@@ -48,7 +48,7 @@ object TreeEmulator {
       @tailrec
       def do_update(id: String, cur: TreeEmulator.Scope): Option[EmulatingValue] = {
         if(cur == null) None
-        else if(locals.exists((n) => n == id)) locals.put(id, v)
+        else if(locals.contains(id)) locals.put(id, v)
         else do_update(id, cur.parent)
       }
       do_update(name, this)
