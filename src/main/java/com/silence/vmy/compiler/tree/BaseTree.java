@@ -4,9 +4,7 @@ public abstract class BaseTree implements Tree{
   private long pos;
 
   @Override
-  public <R, T> R accept(TreeVisitor<R, T> visitor, T payload) {
-    return null;
-  }
+  public <R, T> R accept(TreeVisitor<R, T> visitor, T payload) { return null; }
 
   public BaseTree setPos(long pos){
     this.pos = pos;
@@ -14,8 +12,6 @@ public abstract class BaseTree implements Tree{
   }
 
   @Override
-  public long position() {
-    return pos;
-  }
+  public long position() { return pos; }
 
 }

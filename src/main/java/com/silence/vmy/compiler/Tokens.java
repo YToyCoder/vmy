@@ -5,6 +5,15 @@ public class Tokens {
     public Token(TokenKind kind, long start, long end){
       this(kind, start, end, null);
     }
+
+    @Override
+    public String toString() {
+      return "{kind: %s, payload: %s, range: %s - %s }".formatted(
+          kind,
+          payload,
+          stringifyLocation(start),
+          stringifyLocation(end));
+    }
   }
 
   public static long location(int row, int col){
@@ -14,9 +23,13 @@ public class Tokens {
     return ((long)row) << 32 | col;
   }
 
+  public static String stringifyLocation(long location){
+    return "r%d/c%d".formatted((int)(location >> 32), (int)location);
+  }
+
   public enum TokenKind {
     newline,
-    EOF,
+    EOF, // end of file
     // literal
     IntLiteral,
     DoubleLiteral,
