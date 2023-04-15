@@ -7,11 +7,12 @@ import com.silence.vmy.runtime.Runtime.Variable;
 
 public class LinkedListRuntimeContext implements RuntimeContext {
   private LinkedList<Frame> frame_stack = new LinkedList<>();
-
-  @Override
-  public Frame current_frame() {
-    return frame_stack.isEmpty() ? null : frame_stack.peekLast();
-  }
+  @Override public
+  Frame current_frame() { return frame_stack.isEmpty() ? null : frame_stack.peekLast(); }
+  @Override public
+  void put(String name, Variable head, Object value) { current_frame().put(name, head, value); }
+  @Override public
+  Frame exitCurrentFrame() { return frame_stack.isEmpty() ? null : frame_stack.pop(); }
 
   @Override
   public Variable get_variable(String name) {
@@ -26,14 +27,5 @@ public class LinkedListRuntimeContext implements RuntimeContext {
     return frame;
   }
 
-  @Override
-  public void put(String name, Variable head, Object value) {
-    current_frame().put(name, head, value);
-  }
-
-  @Override
-  public Frame exitCurrentFrame() {
-    return frame_stack.isEmpty() ? null : frame_stack.pop();
-  }
 
 }

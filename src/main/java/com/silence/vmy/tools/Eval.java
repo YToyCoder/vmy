@@ -25,9 +25,7 @@ public class Eval {
       Hell , welcome to vmy!
       version 0.1
       """;
-  public static void repl(){
-    repl(Evaluators.variableStoreTreeEvaluator());
-  }
+  public static void repl(){ repl(Evaluators.variableStoreTreeEvaluator()); }
 
   public static void repl(final Evaluator evaluator){
     System.out.println(notice);

@@ -107,17 +107,10 @@ public class FunctionSupport {
     List<VmyType> types, 
     int tag
   ) implements FunctionType {
-
     @Override
-    public VmyType param_type(int i) {
-      return i < types.size() ? types.get(i) : null;
-    }
+    public VmyType param_type(int i) { return i < types.size() ? types.get(i) : null; }
   }
 
-  public record ASTFunction(FunctionNode func) {
-  }
-
-  static ASTFunction create_ast_function(FunctionNode func){
-    return new ASTFunction(func);
-  }
+  public record ASTFunction(FunctionNode func) { }
+  static ASTFunction create_ast_function(FunctionNode func){ return new ASTFunction(func); }
 }

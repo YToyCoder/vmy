@@ -27,20 +27,15 @@ public class BuiltinOps
     init();
   }
 
-  public static BuiltinOps builtinOps(){
-    return INSTANCE;
-  }
-
+  public static BuiltinOps builtinOps(){ return INSTANCE; }
   private TreeMap<FunctionType, List<Callable>> type_mapper = new TreeMap<>(Utils::function_type_compare);
   private TreeMap<String, List<Callable>> name_mapper = new TreeMap<>();
 
   @Override
   public Callable get_function(String name, FunctionType type) {
-
     // just looking by name
     List<Callable> with_name = name_mapper.get(name);
     return Objects.isNull(with_name) ? null : with_name.get(0);
-
   }
 
   @Override

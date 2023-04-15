@@ -27,14 +27,7 @@ public class OneCapabilityTokenRecorder implements TokenHistoryRecorder {
     return the_one;
   }
 
-  @Override
-  public boolean has_history(int index) {
-    return false;
-  }
-
-  @Override
-  public boolean has_history() {
-    return Objects.nonNull(the_one);
-  }
+  @Override public boolean has_history(int index) { return false; }
+  @Override public boolean has_history() { return Objects.nonNull(the_one); }
   
 }

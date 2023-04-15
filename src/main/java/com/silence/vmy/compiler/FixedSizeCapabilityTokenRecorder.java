@@ -25,31 +25,15 @@ public class FixedSizeCapabilityTokenRecorder implements TokenHistoryRecorder {
     }
   }
 
-  private int move_forward(int i){
-    return (i + 1) % MaxSize;
-  }
-
-  private boolean isEmpty(){
-    return head == -1;
-  }
-
-  private boolean isFull(){
-    return move_forward(tail) == head;
-  }
-
-  private void reset() {
-    head = tail = -1;
-  }
+  private int move_forward(int i){ return (i + 1) % MaxSize; }
+  private boolean isEmpty()      { return head == -1; }
+  private boolean isFull()       { return move_forward(tail) == head; }
+  private void reset()           { head = tail = -1; }
 
   @Override
   public TokenHistoryRecorder record_to_history(Token token) {
     append(token);
     return this;
-  }
-
-  @Override
-  public Token last() {
-    return get(0);
   }
 
   @Override
@@ -78,12 +62,7 @@ public class FixedSizeCapabilityTokenRecorder implements TokenHistoryRecorder {
         );
   }
 
-  private int reverse_index(int index){
-    return (tail - index + MaxSize) % MaxSize;
-  }
-
-  @Override
-  public boolean has_history() {
-    return !isEmpty();
-  }
+  @Override public Token last() { return get(0); }
+  private int reverse_index(int index){ return (tail - index + MaxSize) % MaxSize; }
+  @Override public boolean has_history() { return !isEmpty(); }
 }

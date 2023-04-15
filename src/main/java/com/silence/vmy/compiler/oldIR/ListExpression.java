@@ -10,16 +10,8 @@ import java.util.List;
 public class ListExpression extends AbstractTree implements Tree {
     final List<Tree> elements;
 
-    public List<Tree> elements() {
-        return elements;
-    }
+    public List<Tree> elements() { return elements; }
+    @Override public void accept(NodeVisitor visitor) { }
 
-    public ListExpression(List<Tree> _els) {
-        elements = _els;
-    }
-
-    @Override
-    public void accept(NodeVisitor visitor) {
-
-    }
+    public ListExpression(List<Tree> _els) { elements = _els; }
 }

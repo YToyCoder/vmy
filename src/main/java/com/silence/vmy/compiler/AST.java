@@ -27,23 +27,10 @@ public class AST {
   public static class VmyAST extends AbstractTree implements Root {
     public Tree root;
 
-    @Override
-    public void accept(NodeVisitor visitor) {
-    }
-
-    @Override
-    public <R, T> R accept(TreeVisitor<R, T> visitor, T payload) {
-      return null;
-    }
-
-    public Object accept(TreeVisitor visitor) {
-      return null;
-    }
-
-    @Override
-    public Tree body() {
-      return root;
-    }
+    @Override public void accept(NodeVisitor visitor) { }
+    @Override public <R, T> R accept(TreeVisitor<R, T> visitor, T payload) { return null; }
+    @Override public Tree body() { return root; }
+    public Object accept(TreeVisitor visitor) { return null; }
   }
 
   // main for support old version test
@@ -90,38 +77,27 @@ public class AST {
     return ast;
   }
 
-  private static Tree merge_linear_nodes(List<Tree> nodes){
-//    return new Process
-    return new BlockNode(nodes);
-  }
+  private static Tree merge_linear_nodes(List<Tree> nodes){ return new BlockNode(nodes); }
 
   public interface TokenHandler{
     void handle(Token token, Scanner remains, Stack<String> operatorStack, Stack<Tree> nodesStack);
   }
 
 
-  private static 
-  abstract class BaseHandler
-    implements TokenHandler, 
-    Utils.Recursive,
-          TokenHistoryRecorderGetter,
-      Utils.PeekTokenAbility
+  private static abstract class BaseHandler
+    implements TokenHandler,
+               Utils.Recursive,
+               TokenHistoryRecorderGetter,
+               Utils.PeekTokenAbility
   {
     private BaseHandler next;
-
     private BaseHandler head;
-
     private TokenHistoryRecorder tokenHistoryRecorder;
-
     private Scanner scanner = null;
 
-    public void setNext(final BaseHandler _next){
-      next = _next;
-    }
-
-    public void setHead(BaseHandler _head){
-      head = _head;
-    }
+    public void setNext(final BaseHandler _next){ next = _next; }
+    public void setHead(BaseHandler _head){ head = _head; }
+    public void setTokenRecorder(TokenHistoryRecorder recorder){ tokenHistoryRecorder = recorder; }
 
     final protected void recall(
       Token token, 
@@ -134,14 +110,7 @@ public class AST {
       head.handle(token, remains, operatorStack, nodesStack);
     }
 
-    public void setTokenRecorder(TokenHistoryRecorder recorder){
-      tokenHistoryRecorder = recorder;
-    }
-
-    @Override
-    public TokenHistoryRecorder getTokenRecorder(){
-      return tokenHistoryRecorder;
-    }
+    @Override public TokenHistoryRecorder getTokenRecorder(){ return tokenHistoryRecorder; }
 
     @Override
     final public void handle(
@@ -176,14 +145,8 @@ public class AST {
       Stack<Tree> nodesStack
     );
 
-    @Override
-    public Token peek() {
-      return scanner.peek();
-    }
-
-    public boolean hasTok(){
-      return scanner.hasNext();
-    }
+    @Override public Token peek() { return scanner.peek(); }
+    public boolean hasTok(){ return scanner.hasNext(); }
   }
 
   private static class NumberHandler extends BaseHandler{
@@ -571,27 +534,28 @@ public class AST {
       Stack<Tree> nodesStack
     ) {
 
-      switch (token.value){
-        case Identifiers.Return -> {
-//          travel_back_build();
-          while(
-              remains.hasNext() &&
-              remains.peek().tag != Token.NewLine &&
-              !Utils.equal(remains.peek().value, Identifiers.ClosingBrace)
-          ) recall(remains.next(), remains, operatorStack, nodesStack);
-
-          nodesStack.add(new Return(
-            merge_back(
-                operatorStack,
-                nodesStack,
-                (nodes, op_stack) -> {
-                  String op = op_stack.peek();
-                  return Utils.equal(op, Identifiers.NewLine) || Utils.equal(op, Identifiers.ClosingParenthesis);
-                })
-          ));
-        }
-        default -> nodesStack.add(new IdentifierNode(token.value));
+      if(!Objects.equals(token.value, Identifiers.Return)){
+        nodesStack.add(new IdentifierNode(token.value));
+        return;
       }
+
+      while(
+          remains.hasNext() &&
+          remains.peek().tag != Token.NewLine &&
+          !Utils.equal(remains.peek().value, Identifiers.ClosingBrace))
+      {
+        recall(remains.next(), remains, operatorStack, nodesStack);
+      }
+
+      nodesStack.add(new Return(
+        merge_back(
+            operatorStack,
+            nodesStack,
+            (nodes, op_stack) -> {
+              String op = op_stack.peek();
+              return Utils.equal(op, Identifiers.NewLine) || Utils.equal(op, Identifiers.ClosingParenthesis);
+            })
+      ));
 
     }
   }

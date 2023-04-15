@@ -10,8 +10,5 @@ public class StringLiteral extends LiteralNode {
         this.value = value;
     }
 
-    @Override
-    public Object val() {
-        return value;
-    }
+    @Override public Object val() { return value; }
 }

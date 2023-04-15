@@ -7,16 +7,7 @@ import com.silence.vmy.compiler.visitor.NodeVisitor;
 public class IdentifierNode extends AbstractTree implements Tree {
     final String value;
 
-    public String val(){
-        return value;
-    }
-
-    public IdentifierNode(String _val) {
-        value = _val;
-    }
-
-    @Override
-    public void accept(NodeVisitor visitor) {
-        visitor.visitIdentifierNode(this);
-    }
+    public String val(){ return value; }
+    public IdentifierNode(String _val) { value = _val; }
+    @Override public void accept(NodeVisitor visitor) { visitor.visitIdentifierNode(this); }
 }

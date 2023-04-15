@@ -27,21 +27,13 @@ public class Runtime {
     }
 
     @Override
-    public Object get(Long identity) {
-      return objectMapper.get(identity);
-    }
-
+    public Object get(Long identity) { return objectMapper.get(identity); }
     @Override
-    public boolean exists(Long identity) {
-      return objectMapper.containsKey(identity);
-    }
+    public boolean exists(Long identity) { return objectMapper.containsKey(identity); }
   }
 
   // create a pool to store objects
-  public static ObjPool create_pool(){
-    return new DefaultOPool();
-  }
-
+  public static ObjPool create_pool(){ return new DefaultOPool(); }
   private static ObjPool OBJPool = new DefaultOPool();
 
   /**
@@ -49,66 +41,32 @@ public class Runtime {
    * @param identity
    * @param obj
    */
-  public static void put(Long identity, Object obj) {
-    OBJPool.put(identity, obj);
-  }
+  public static void put(Long identity, Object obj) { OBJPool.put(identity, obj); }
 
   /**
    * get obj from pool
    * @param identity
    * @return
    */
-  public static Object get(Long identity) {
-    return OBJPool.get(identity);
-  }
+  public static Object get(Long identity) { return OBJPool.get(identity); }
 
   private static class DefaultVariableImpl implements Variable{
-
     private final VmyType type;
     private Object value;
-
-    public DefaultVariableImpl(VmyType _Type){
-      type = _Type;
-    }
-
-    @Override
-    public VmyType getType() {
-      return type;
-    }
-
-    @Override
-    public Object getValue() {
-      return value;
-    }
-
-    @Override
-    public void setValue(Object _value) {
-      value = _value;
-    }
-
-    @Override
-    public boolean mutable() {
-      return true;
-    }
+    public DefaultVariableImpl(VmyType _Type){ type = _Type; }
+    @Override public VmyType getType() { return type; }
+    @Override public Object getValue() { return value; }
+    @Override public void setValue(Object _value) { value = _value; }
+    @Override public boolean mutable() { return true; }
   }
 
   private static class ImmutableVariable extends DefaultVariableImpl {
-
-    public ImmutableVariable(VmyType _Type) {
-      super(_Type);
-    }
-
-    @Override
-    public boolean mutable() {
-      return false;
-    }
+    public ImmutableVariable(VmyType _Type) { super(_Type); }
+    @Override public boolean mutable() { return false; }
   }
 
-  public static interface WithName {
-    String name();
-  }
-
-  public static interface VariableWithName extends Variable , WithName{}
+  public interface WithName { String name(); }
+  public interface VariableWithName extends Variable , WithName{}
 
   // create a new variable
   private static Variable create_variable(VmyType type, boolean mutable){
@@ -138,14 +96,10 @@ public class Runtime {
     return declare_variable(frame, name, type, null, mutable);
   }
 
-  public static boolean is_declared(Frame frame, String name){
-    return Objects.nonNull(frame.local(name));
-  }
+  public static boolean is_declared(Frame frame, String name){ return Objects.nonNull(frame.local(name)); }
 
   public static Object get_value(String name, Frame frame){
     Variable variable = frame.local(name);
-//    switch
-    // VmyType type = variable.getType();
     if(
         Utils.isType(variable, VmyTypes.BuiltinType.Table) ||
         Utils.isType(variable, VmyTypes.BuiltinType.Function) ||

@@ -8,26 +8,13 @@ import java.util.Objects;
 public class CharReaders {
 
   public record CharInFile(char c, int row, int col) {
-    boolean isDigital(){
-      return Character.isDigit(c);
-    }
-
-    boolean isAlphabetic(){
-      return Character.isAlphabetic(c);
-    }
-
-    long location(){
-      return Tokens.location(row, col);
-    }
-
-    boolean charIs(char literal){
-      return c() == literal;
-    }
+    boolean isDigital()   { return Character.isDigit(c); }
+    boolean isAlphabetic(){ return Character.isAlphabetic(c); }
+    long location()       { return Tokens.location(row, col); }
+    boolean charIs(char literal){ return c() == literal; }
   }
 
-  public static CharReader fromString(String source){
-    return new FromStringCharReader(source);
-  }
+  public static CharReader fromString(String source){ return new FromStringCharReader(source); }
 
   public static CharReader fromFile(String name) throws FileNotFoundException {
     return new FromFileCharReader(name);
@@ -78,9 +65,7 @@ public class CharReaders {
       return position >= charArray.length && Objects.isNull(cache);
     }
 
-    @Override
-    public void close() {
-    }
+    @Override public void close() { }
   }
 
   private static class FromFileCharReader implements CharReader {
@@ -127,9 +112,6 @@ public class CharReaders {
       return Objects.isNull(lineReader) || lineReader.empty();
     }
 
-    @Override
-    public void close() throws IOException {
-      file.close();
-    }
+    @Override public void close() throws IOException { file.close(); }
   }
 }

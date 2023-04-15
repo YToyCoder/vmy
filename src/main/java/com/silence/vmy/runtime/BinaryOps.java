@@ -144,54 +144,18 @@ public enum BinaryOps {
   }
   
   public abstract Object apply(Object obj1, Object obj2);
-
-  public static boolean lt(int a, int b){
-    return a < b;
-  }
-
-  public static boolean lt(double a, double b){
-    return a < b;
-  }
-
-  public static boolean eq(int a, int b){
-    return a == b;
-  }
-
-  public static boolean eq(double a, double b){
-    return a == b;
-  }
-  public static boolean gt(int a, int b){
-    return a > b;
-  }
-
-  public static boolean gt(double a, double b){
-    return a > b;
-  }
-
-  public static int divide(int a, int b){
-    return a / b;
-  }
-
-  public static double divide(double a, double b){
-    return a / b;
-  }
-
-  public static  int multi(int a, int b) {
-    return a * b;
-  }
-  public static  double multi(double a, double b){
-    return a * b;
-  }
-  public static int add(int a, int b){
-    return a + b;
-  }
-  public static int sub(int a, int b){
-    return a - b;
-  }
-  public static double add(double a, double b) {
-    return a + b;
-  }
-  public static double sub(double a, double b){
-    return a - b;
-  }
+  public static boolean lt(int a, int b){ return a < b; }
+  public static boolean lt(double a, double b){ return a < b; }
+  public static boolean eq(int a, int b){ return a == b; }
+  public static boolean eq(double a, double b){ return a == b; }
+  public static boolean gt(int a, int b){ return a > b; }
+  public static boolean gt(double a, double b){ return a > b; }
+  public static int divide(int a, int b){ return a / b; }
+  public static double divide(double a, double b){ return a / b; }
+  public static  int multi(int a, int b) { return a * b; }
+  public static  double multi(double a, double b){ return a * b; }
+  public static int add(int a, int b){ return a + b; }
+  public static int sub(int a, int b){ return a - b; }
+  public static double add(double a, double b) { return a + b; }
+  public static double sub(double a, double b) { return a - b; }
 }

@@ -16,16 +16,9 @@ public class AssignNode extends AbstractTree implements Tree {
         expression = expr;
     }
 
-    public Tree variable(){
-        return variable;
-    }
-
-    public Tree expression(){
-        return expression;
-    }
+    public Tree variable(){ return variable; }
+    public Tree expression(){ return expression; }
 
     @Override
-    public void accept(NodeVisitor visitor) {
-        visitor.visitAssignment(this);
-    }
+    public void accept(NodeVisitor visitor) { visitor.visitAssignment(this); }
 }

@@ -9,30 +9,16 @@ public class DeclareNode extends AbstractTree implements Tree {
     final String type;
     final IdentifierNode identifier;
 
-    public String declare(){
-        return declare;
-    }
+    public String declare() { return declare; }
+    public String type()    { return type; }
+    public IdentifierNode identifier() { return identifier; }
+    @Override public void accept(NodeVisitor visitor) { visitor.visitDeclareNode(this); }
 
-    public String type(){
-        return type;
-    }
-
-    public IdentifierNode identifier(){
-        return identifier;
-    }
-
+    public DeclareNode(String _declare, IdentifierNode _identifier) { this(_declare, _identifier, null); }
     public DeclareNode(String _declare, IdentifierNode _identifier, String _type) {
         declare = _declare;
         identifier = _identifier;
         type = _type;
     }
 
-    public DeclareNode(String _declare, IdentifierNode _identifier) {
-        this(_declare, _identifier, null);
-    }
-
-    @Override
-    public void accept(NodeVisitor visitor) {
-        visitor.visitDeclareNode(this);
-    }
 }

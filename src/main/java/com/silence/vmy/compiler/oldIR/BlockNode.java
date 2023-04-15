@@ -13,16 +13,7 @@ import java.util.List;
  */
 public class BlockNode extends AbstractTree implements Tree {
     List<Tree> process;
-
-    public List<Tree> process(){
-        return process;
-    }
-    public BlockNode(List<Tree> _process) {
-        process = _process;
-    }
-
-    @Override
-    public void accept(NodeVisitor visitor) {
-        visitor.visitBlockNode(this);
-    }
+    public List<Tree> process(){ return process; }
+    public BlockNode(List<Tree> _process) { process = _process; }
+    @Override public void accept(NodeVisitor visitor) { visitor.visitBlockNode(this); }
 }

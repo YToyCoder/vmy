@@ -11,17 +11,10 @@ public class FunctionNode extends AbstractTree implements Tree {
     final Tree body;
     final String name;
 
-    public List<DeclareNode> params() {
-        return params;
-    }
-
-    public Tree body() {
-        return body;
-    }
-
-    public String name() {
-        return name;
-    }
+    public List<DeclareNode> params() { return params; }
+    public Tree body() { return body; }
+    public String name() { return name; }
+    @Override public void accept(NodeVisitor visitor) { visitor.visitFunction(this); }
 
     public FunctionNode(String _name, List<DeclareNode> _params, Tree _body) {
         // the last one is return type
@@ -29,10 +22,4 @@ public class FunctionNode extends AbstractTree implements Tree {
         body = _body;
         name = _name;
     }
-
-    @Override
-    public void accept(NodeVisitor visitor) {
-        visitor.visitFunction(this);
-    }
-
 }

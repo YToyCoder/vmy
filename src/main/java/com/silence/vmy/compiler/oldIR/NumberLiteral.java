@@ -10,9 +10,5 @@ public class NumberLiteral extends LiteralNode {
         val = _number;
     }
 
-
-    @Override
-    public Object val() {
-        return val;
-    }
+    @Override public Object val() { return val; }
 }

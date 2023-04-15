@@ -24,9 +24,7 @@ public class FileInputScanner implements Scanner, AutoCloseable {
     public FileInputScanner(
             String file_path
     ) throws FileNotFoundException {
-
         this(file_path, true);
-
     }
 
     public FileInputScanner(
@@ -193,9 +191,7 @@ public class FileInputScanner implements Scanner, AutoCloseable {
      *
      * @return
      */
-    private int pos() {
-        return pos;
-    }
+    private int pos() { return pos; }
 
     /**
      * handle annotation which start with "#“
@@ -270,9 +266,7 @@ public class FileInputScanner implements Scanner, AutoCloseable {
 
     }
 
-    private boolean is_qid_char(char c){
-        return Character.isDigit(c) || Character.isAlphabetic(c) || c == '_';
-    }
+    private boolean is_qid_char(char c){ return Character.isDigit(c) || Character.isAlphabetic(c) || c == '_'; }
 
     /**
      * identifier things, variable name , function name or declaration
@@ -363,9 +357,7 @@ public class FileInputScanner implements Scanner, AutoCloseable {
     /**
      * record current position
      */
-    private void record_position() {
-        record = pos();
-    }
+    private void record_position() { record = pos(); }
 
     /**
      * get the recorded position
@@ -373,9 +365,7 @@ public class FileInputScanner implements Scanner, AutoCloseable {
      * @return recorded position
      * @see FileInputScanner#get_record()
      */
-    private int get_record() {
-        return lineN;
-    }
+    private int get_record() { return lineN; }
 
     /**
      * remove the black between two token

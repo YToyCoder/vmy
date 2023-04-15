@@ -6,17 +6,11 @@ import java.util.Objects;
 
 public class CommonFrame implements Frame {
   private Frame parent;
-
   private ObjPool objPool = Runtime.create_pool();
   private Map<String, Runtime.Variable> variables = new HashMap<>();
 
-  private CommonFrame(Frame frame){
-    parent = frame;
-  }
-
-  static CommonFrame create(Frame frame){
-    return new CommonFrame(frame);
-  }
+  private CommonFrame(Frame frame){ parent = frame; }
+  static CommonFrame create(Frame frame){ return new CommonFrame(frame); }
 
   @Override
   public Runtime.Variable local(String _name) {

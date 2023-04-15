@@ -13,8 +13,8 @@ import java.util.Stack;
 
 public class VisitingEvaluator implements Evaluator, NodeVisitor {
   Frame _g = Global.getInstance();
-  private Stack<Object> interval_op_val = new Stack<>();
-  private RuntimeContext runtimeContext = new LinkedListRuntimeContext();
+  private final Stack<Object> interval_op_val = new Stack<>();
+  private final RuntimeContext runtimeContext = new LinkedListRuntimeContext();
   private Object return_value;
 
   @Override
@@ -29,17 +29,9 @@ public class VisitingEvaluator implements Evaluator, NodeVisitor {
       throw new EvaluateException("unrecognized AST");
   }
 
-  private void put_stack(Object obj){
-    interval_op_val.add(obj);
-  }
-
-  private Object get_from_stack(boolean remove){
-    return remove ? interval_op_val.pop() : interval_op_val.peek();
-  }
-
-  private Object get_from_stack(){
-    return get_from_stack(true);
-  }
+  private void put_stack(Object obj){ interval_op_val.add(obj); }
+  private Object get_from_stack(boolean remove){ return remove ? interval_op_val.pop() : interval_op_val.peek(); }
+  private Object get_from_stack(){ return get_from_stack(true); }
 
   @Override
   public void visitBinaryOperator(BinaryOperatorNode node) {
@@ -139,9 +131,7 @@ public class VisitingEvaluator implements Evaluator, NodeVisitor {
   }
 
   @Override
-  public void visitLiteralNode(LiteralNode node) {
-    put_stack(node.val());
-  }
+  public void visitLiteralNode(LiteralNode node) { put_stack(node.val()); }
 
   @Override
   public void visitCallNode(CallNode node) {
@@ -221,9 +211,7 @@ public class VisitingEvaluator implements Evaluator, NodeVisitor {
   }
 
   @Override
-  public void visitEmpty(EmptyNode node) {
-    put_stack(null);
-  }
+  public void visitEmpty(EmptyNode node) { put_stack(null); }
 
 
   boolean eval_elif(List<ConditionNode> ifEls){

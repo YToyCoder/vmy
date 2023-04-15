@@ -8,9 +8,5 @@ public class WhileLoop extends ConditionNode {
         super(_cond, _body);
     }
 
-
-    @Override
-    public void accept(NodeVisitor visitor) {
-        visitor.visitWhileLoop(this);
-    }
+    @Override public void accept(NodeVisitor visitor) { visitor.visitWhileLoop(this); }
 }

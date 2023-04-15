@@ -74,16 +74,9 @@ public class Scanners {
 
   }
 
-  public static Scanner scanner(String source){
-    return new VmyScanner(source, getHandler());
-  }
-
+  public static Scanner scanner(String source){ return new VmyScanner(source, getHandler()); }
   static final VmyScanner SCANNER = new VmyScanner(getHandler());
-
-  public static List<Token> scan(final String source){
-    return scanner(source).scan(source);
-  }
-
+  public static List<Token> scan(final String source){ return scanner(source).scan(source); }
   static SourceStringHandler HANDLER;
 
   static interface SourceStringHandler {
@@ -96,21 +89,17 @@ public class Scanners {
    */
   static abstract class BaseHandler implements SourceStringHandler {
     private BaseHandler next;
-    public void setNext(BaseHandler next){
-      this.next = next;
-    }
-
-    @Override
-    public final int handle(List<Token> tokens, final String source, final int start){
-      return canHandle(tokens, source, start) ? 
-      doHandle(tokens, source, start) : Objects.nonNull(next) ? 
-      next.handle(tokens, source, start) : 
-      start;
-    }
-
+    public void setNext(BaseHandler next){ this.next = next; }
     protected abstract boolean canHandle(List<Token> tokens, final String source, final int start);
     protected abstract int doHandle(List<Token> tokens, final String source, final int start);
 
+    @Override
+    public final int handle(List<Token> tokens, final String source, final int start){
+      if(canHandle(tokens, source, start)) {
+        return doHandle(tokens, source, start);
+      }
+      return Objects.nonNull(next) ?  next.handle(tokens, source, start) : start;
+    }
   }
 
   /**
@@ -120,15 +109,8 @@ public class Scanners {
    */
   static abstract class OrderedHandler extends BaseHandler implements Ordering<OrderedHandler> {
     private int order;
-
-    public OrderedHandler(int _order){
-      order = _order;
-    }
-
-    @Override
-    final public int compare(OrderedHandler other) {
-      return order - other.order;
-    }
+    public OrderedHandler(int _order){ order = _order; }
+    @Override  final public int compare(OrderedHandler other) { return order - other.order; }
   }
 
   static final class OperatorHandler extends BaseHandler{
@@ -202,9 +184,7 @@ public class Scanners {
   static final class DefaultHandler extends BaseHandler {
 
     @Override
-    protected boolean canHandle(List<Token> tokens, String source, int start) {
-      return true;
-    }
+    protected boolean canHandle(List<Token> tokens, String source, int start) { return true; }
 
     @Override
     protected int doHandle(List<Token> tokens, String source, int start) {
@@ -344,13 +324,14 @@ public class Scanners {
     .next(new BlackHandler())
     .next(new CommaHandler())
     .next(new BracesHandler())
-//        .next(new )
     .next(new DefaultHandler())
     .build();
   }
 
   static class SimpleHandlerBuilder implements HandlerBuilder{
     private List<BaseHandler> handlers = new LinkedList<>();
+    @Override
+    public HandlerBuilder next(BaseHandler handler) { handlers.add(handler); return this; }
 
     @Override
     public SourceStringHandler build() {
@@ -365,14 +346,9 @@ public class Scanners {
       return head;
     }
 
-    @Override
-    public HandlerBuilder next(BaseHandler handler) {
-      handlers.add(handler);
-      return this;
-    }
   }
 
-  static interface HandlerBuilder{
+  interface HandlerBuilder{
     SourceStringHandler build();
     HandlerBuilder next(BaseHandler handler);
   }

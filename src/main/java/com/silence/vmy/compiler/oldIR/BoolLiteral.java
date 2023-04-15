@@ -10,8 +10,5 @@ public class BoolLiteral extends LiteralNode {
         value = _value;
     }
 
-    @Override
-    public Object val() {
-        return value;
-    }
+    @Override public Object val() { return value; }
 }

@@ -55,23 +55,6 @@ public class Utils {
       super(msg);
     }
   }
-
-  // if two obj is equal
-  // a == b
-  public static <T extends Ordering<T>> boolean eq(T a , T b){
-    return a.compare(b) == 0;
-  }
-
-  // like : a > b
-  public static <T extends Ordering<T>> boolean gt(T a , T b){
-    return a.compare(b) > 0;
-  }
-
-  // like : a < b
-  public static <T extends Ordering<T>> boolean lt(T a , T b){
-    return a.compare(b) < 0;
-  }
-
   public enum Order {
     // 5 level : 1 -> 5
     One(1),
@@ -163,31 +146,11 @@ public class Utils {
     Runtime.Variable variable
   ){
     return new Runtime.VariableWithName() {
-
-      @Override
-      public String name() {
-        return name;
-      }
-
-      @Override
-      public VmyType getType() {
-        return variable.getType();
-      }
-
-      @Override
-      public Object getValue() {
-        return variable.getValue();
-      }
-
-      @Override
-      public void setValue(Object value) {
-        variable.setValue(value);
-      }
-
-      @Override
-      public boolean mutable() {
-        return variable.mutable();
-      }
+      @Override public String name()      { return name; }
+      @Override public VmyType getType()  { return variable.getType(); }
+      @Override public Object getValue()  { return variable.getValue(); }
+      @Override public void setValue(Object value) { variable.setValue(value); }
+      @Override public boolean mutable()  { return variable.mutable(); }
     };
 
   }
@@ -227,17 +190,9 @@ public class Utils {
 
   }
 
-  public static void log(String msg){
-    System.out.println("[vmy-info] " + msg);
-  }
-
-  public static void warning(String msg){
-    System.out.println("[vmy-warning] " + msg);
-  }
-
-  public static void error(String msg) {
-    System.err.println("[vmy-error]" + msg);
-  }
+  public static void log(String msg)    { System.out.println("[vmy-info] " + msg); }
+  public static void warning(String msg){ System.out.println("[vmy-warning] " + msg); }
+  public static void error(String msg)  { System.err.println("[vmy-error]" + msg); }
 
   /**
    * convert \n and \r\n to \\n , \\r\\n
@@ -295,29 +250,12 @@ public class Utils {
     return equal(next.value, token.value) && equal(next.tag, token.tag);
   }
 
-  public static Token OpenParenthesis(){
-    return new Token(Token.Identifier, Identifiers.OpenParenthesis);
-  }
-
-  public static Token ClosingParenthesis(){
-    return new Token(Token.Identifier, Identifiers.ClosingParenthesis);
-  }
-
-  public static Token OpenBrace(){
-    return new Token(Token.Identifier, Identifiers.OpenBrace);
-  }
-
-  public static Token ClosingBrace(){
-    return new Token(Token.Identifier, Identifiers.ClosingBrace);
-  }
-
-  public static Token Colon(){
-    return new Token(Token.Identifier, Identifiers.Colon);
-  }
-
-  public static Token Comma(){
-    return new Token(Token.Identifier, Identifiers.Comma);
-  }
+  public static Token OpenParenthesis(){ return new Token(Token.Identifier, Identifiers.OpenParenthesis); }
+  public static Token ClosingParenthesis(){ return new Token(Token.Identifier, Identifiers.ClosingParenthesis); }
+  public static Token OpenBrace(){ return new Token(Token.Identifier, Identifiers.OpenBrace); }
+  public static Token ClosingBrace(){ return new Token(Token.Identifier, Identifiers.ClosingBrace); }
+  public static Token Colon(){ return new Token(Token.Identifier, Identifiers.Colon); }
+  public static Token Comma(){ return new Token(Token.Identifier, Identifiers.Comma); }
 
   public static void should_has_next_token(Scanner scanner, Supplier<RuntimeException> err_supplier){
     if(!scanner.hasNext())
@@ -333,8 +271,6 @@ public class Utils {
     return  next_token_is(scanner, token);
   }
 
-  public interface PeekTokenAbility{
-    Token peek();
-  }
+  public interface PeekTokenAbility { Token peek(); }
 
 }
