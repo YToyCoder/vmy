@@ -1,7 +1,7 @@
 package com.silence.vmy.evaluate
 
 import com.silence.vmy.compiler.tree.Tree.Tag
-import com.silence.vmy.compiler.tree.{AssignmentExpression, BinaryOperateExpression, BlockStatement, CallExpr, Expression, FunctionDecl, IdExpr, ListExpr, LiteralExpression, ReturnExpr, Root, TreeVisitor, TypeExpr, Unary, VariableDecl}
+import com.silence.vmy.compiler.tree.{AssignmentExpression, BinaryOperateExpression, BlockStatement, CallExpr, Expression, FunctionDecl, IdExpr, IfStatement, ListExpr, LiteralExpression, ReturnExpr, Root, TreeVisitor, TypeExpr, Unary, VariableDecl}
 import com.silence.vmy.evaluate.EmulatingValue.{BaseEV, RetValue, initValue}
 import com.silence.vmy.compiler.{BuiltinTypeString, Modifiers}
 
@@ -312,4 +312,6 @@ class TreeEmulator extends TreeVisitor[EmulatingValue, EmulatingValue] with Emul
   override def run(): EmulatingValue = null
 
   override def visitIdExpr(expr: IdExpr, payload: EmulatingValue): EmulatingValue = null
+
+  override def visitIfStatement(statement: IfStatement, payload: EmulatingValue): EmulatingValue = null
 }

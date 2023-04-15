@@ -1,5 +1,4 @@
 package com.silence.vmy.compiler.tree;
 
 //
-public interface Statement extends Tree{
-}
+public interface Statement extends Tree, Expression{ }

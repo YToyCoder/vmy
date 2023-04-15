@@ -182,7 +182,7 @@ public class GeneralScanner implements Lexer{
   protected Tokens.Token handle_string_literal(){
     CharReaders.CharInFile startChar = nextChar();
     StringBuilder builder = new StringBuilder();
-    while (hasChar() && !charIs(peekChar(), '"') && !charIs(peekChar(),'"')){
+    while (hasChar() && !charIs(peekChar(), '"')){
       builder.append(nextChar().c());
     }
     if(!hasChar() || !charIs(peekChar(), '"')){
@@ -196,9 +196,6 @@ public class GeneralScanner implements Lexer{
         builder.toString());
   }
 
-  protected boolean charIs(CharReaders.CharInFile c, char literal){
-    return c.c() == literal;
-  }
 
   // start with #
   protected Tokens.Token handle_annotation(){
@@ -240,18 +237,12 @@ public class GeneralScanner implements Lexer{
         builder.toString());
   }
 
-  boolean hasChar(){
-    return !charReader.empty();
-  }
-
-  private CharReaders.CharInFile peekChar() {
-    return charReader.peek();
-  }
-
-  private CharReaders.CharInFile nextChar() {
-    return charReader.next();
-  }
-
+  boolean hasChar(){ return !charReader.empty(); }
+  private CharReaders.CharInFile peekChar() { return charReader.peek(); }
+  private CharReaders.CharInFile nextChar() { return charReader.next(); }
+  protected boolean charIs(CharReaders.CharInFile c, char literal){ return c.c() == literal; }
+  @Override
+  public Tokens.Token last() { return pre; }
 
   @Override
   public boolean hasNext() {
@@ -268,8 +259,4 @@ public class GeneralScanner implements Lexer{
     return tok = fetchToken();
   }
 
-  @Override
-  public Tokens.Token last() {
-    return pre;
-  }
 }

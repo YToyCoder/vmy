@@ -8,7 +8,7 @@ public record FunctionDecl(
     TypeExpr ret,
     BlockStatement body,
     long position
-) implements Tree{
+) implements Statement{
 
   @Override
   public <R, T> R accept(TreeVisitor<R, T> visitor, T payload) {

@@ -14,4 +14,5 @@ public interface TreeVisitor<R,T> {
   R visitTypeExpr(TypeExpr expr, T payload);
   R visitCallExpr(CallExpr expr, T payload);
   R visitIdExpr(IdExpr expr, T payload);
+  R visitIfStatement(IfStatement statement, T payload);
 }

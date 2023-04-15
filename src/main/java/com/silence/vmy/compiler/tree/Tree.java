@@ -36,17 +36,26 @@ public interface Tree {
         DoubleLiteral,
         FunctionLiteral,
         //
-        Fun,
-        VarDecl,
-        // 
         Param,
         Id,
         TypeDecl,
-        CallExpr
+        CallExpr,
+
+        // reserved keys
+        /** declaration */
+        Fun,
+        VarDecl,
+        /** condition */
+        If,
+        Elif,
+        Else,
+        /** loop */
+        For
     };
 
     static String opTag2String(Tag tag){
         return switch (tag){
+            /* operator */
             case Add -> "+";
             case AddEqual -> "+=";
             case Sub -> "-";
@@ -57,7 +66,13 @@ public interface Tree {
             case MultiEqual -> "*=";
             case DivEqual -> "/=";
             case Concat -> "++";
-            default -> "";
+            /* condition */
+            case If -> "if";
+            case Elif -> "elif";
+            case Else -> "else";
+            /* loop */
+            case For -> "for";
+            default -> ">> no mapping tag <<";
         };
     }
 }

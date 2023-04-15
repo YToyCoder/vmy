@@ -126,6 +126,25 @@ public abstract class IrTransforms {
       return new IdentifierNode(expr.name());
     }
 
+    @Override
+    public Tree visitIfStatement(IfStatement statement, Object payload) {
+      ConditionStatement ifStatement = statement.ifStatement();
+      return new IfElse(
+          new ConditionNode( // if
+              ifStatement.condition().accept(this, payload),
+              (BlockNode) ifStatement.block().accept(this, payload)),
+
+          statement.elif() // else if
+              .stream()
+              .map(state -> /* transform to ConditionNode */
+                  new ConditionNode(
+                      state.condition().accept(this, payload),
+                      (BlockNode) state.block().accept(this, payload)))
+              .toList(),
+
+          statement.el().accept(this, payload)); // else
+    }
+
     List<Tree> listMap(List<? extends Tree> origin,Object payload){
       return origin
           .stream()

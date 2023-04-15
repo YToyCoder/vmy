@@ -1,4 +1,3 @@
-# test for if-else
 if(true){
     print("true")
 }elif(false){
@@ -14,7 +13,6 @@ if( condition_if ) {
 
 
 elif( condition_else_if ) {
-    print( a + b > c)
 }
 
 

@@ -41,6 +41,8 @@ public abstract class TVisitor<T> {
   public boolean enterLiteral(LiteralExpression literal, T t) { return enterDefault(literal, t); }
   public Tree leaveLiteral(LiteralExpression literal, T t) { return leaveDefault(literal, t); }
 
+  public boolean enterIfStatement(IfStatement ifStatement, T t) { return enterDefault(ifStatement, t); }
+  public Tree leaveIfStatement(IfStatement ifStatement, T t) { return leaveDefault(ifStatement, t); }
 
   protected boolean enterDefault(Tree tree, T t) { return true; }
   protected Tree leaveDefault(Tree tree, T t) { return tree; }

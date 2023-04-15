@@ -89,9 +89,7 @@ public class ASTTest {
     );
   }
 
-  void cases4(Set<String> cases, Consumer<String> test){
-    cases.forEach(test);
-  }
+  void cases4(Set<String> cases, Consumer<String> test){ cases.forEach(test); }
 
   @Test
   public void string_literal_test(){
@@ -198,7 +196,7 @@ public class ASTTest {
   public void function_support_test() {
     Scripts.run_with_file_input_scanner(
       """
-        function a(param : Int) : Int {
+        fun a(param : Int) : Int {
           param = 1
         }
           """, 
@@ -210,7 +208,7 @@ public class ASTTest {
 
     Scripts.run_with_file_input_scanner(
       """
-        function a(name: String, age : Int) : void {
+        fun a(name: String, age : Int) : void {
           print(\"hello\")
         }
           """,
@@ -220,7 +218,7 @@ public class ASTTest {
 
     Scripts.run_with_file_input_scanner(
       """
-        function func(name: String) : String {
+        fun func(name: String) : String {
           return \"return\"
         }
           """,

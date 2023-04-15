@@ -4,6 +4,7 @@ import com.silence.vmy.compiler.Tokens.TokenKind;
 import com.silence.vmy.compiler.tree.*;
 import com.silence.vmy.compiler.tree.Tree.Tag;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -19,6 +20,7 @@ public class GeneralParser implements Parser{
   GeneralParser(Lexer _lexer){
     this.lexer = _lexer;
     do_next(); // fill token
+    ignoreAnnotation();
   }
 
   public static Parser create(Lexer lexer){ return new GeneralParser(lexer); }
@@ -98,10 +100,7 @@ public class GeneralParser implements Parser{
     return pre;
   }
 
-  protected Tokens.Token token(){
-    return token(0);
-  }
-
+  protected Tokens.Token token(){ return token(0); }
   protected Tokens.Token token(int lookahead) {
     if(lookahead == 0) {
       if(token == null && hasTok()){
@@ -119,9 +118,7 @@ public class GeneralParser implements Parser{
       savedTokens.add(lexer.next());
   }
 
-  protected boolean hasTok(){
-    return Objects.nonNull(token) || !savedTokens.isEmpty() || lexer.hasNext();
-  }
+  protected boolean hasTok(){ return Objects.nonNull(token) || !savedTokens.isEmpty() || lexer.hasNext(); }
 
   boolean peekTok(Predicate<Tokens.TokenKind> tk){
     ensureLookahead(0);
@@ -164,8 +161,10 @@ public class GeneralParser implements Parser{
   }
 
   private void ignoreEmptyLines(){
+    ignoreAnnotation();
     while(peekTok(tk -> tk == TokenKind.newline)){
       ignore(TokenKind.newline);
+      ignoreAnnotation();
     }
   }
 
@@ -250,7 +249,9 @@ public class GeneralParser implements Parser{
    //            | expr3
    //            | e_fun
    //            | "return" expr3
-  private Tree expression(){
+  //             | ifStatement
+  private Expression expression(){
+    System.out.printf("parsing expression %s%n", token().toString());
     if(peekTok(tk -> tk == TokenKind.Fun)){/* function */
       return compileFunc();
     }
@@ -285,6 +286,9 @@ public class GeneralParser implements Parser{
       Tokens.Token ret = next();
       return new ReturnExpr(ret.start(), null, expr3());
     }
+
+    if(peekTok(tk -> tk == TokenKind.If))
+      return if_statement();
     //expr3
     return expr3();
   }
@@ -304,6 +308,8 @@ public class GeneralParser implements Parser{
       case IntLiteral,
           StringLiteral,
           DoubleLiteral,
+          True,
+          False,
           CharLiteral -> literal();
 
       case LParenthesis -> {
@@ -351,11 +357,69 @@ public class GeneralParser implements Parser{
     };
   }
 
-  /**
-   * add = multi
-   *    | multi "+" multi
-   *    | multi "-" multi
-   */
+  private void ifThenIgnore(TokenKind tk){
+    if(peekTok(tokenKind -> tk == tokenKind)){
+      ignore(tk);
+    }
+  }
+
+  // if_statement = "if" "(" expression ")"
+  private Statement if_statement(){
+    ConditionStatement ifHead = statementTemplate(TokenKind.If);
+    // parsing elif
+    List<ConditionStatement> elifs = new ArrayList<>();
+    ignoreEmptyLines();
+    while (peekTok(tk -> TokenKind.Elif == tk)){
+      elifs.add(statementTemplate(TokenKind.Elif));
+      ignoreEmptyLines();
+    }
+
+    // parsing else
+    BlockStatement elseStatement = null;
+    if(peekTok(tk -> tk == TokenKind.Else)){
+      next(); // else
+      /*
+      * two case:
+      * 1.
+      *  else {
+      * 2.
+      * else
+      * newline
+      * ...
+      * newline
+      * {
+      **/
+      ignoreEmptyLines();
+      elseStatement = compileBlock(TokenKind.LBrace, TokenKind.RBrace);
+    }
+    return new IfStatement(ifHead, elifs, elseStatement);
+  }
+
+  private Tag tempateStartkind2Tag(TokenKind tokenKind){
+    return switch (tokenKind){
+      case If -> Tag.If;
+      case Elif -> Tag.Elif;
+      default -> null;
+    };
+  }
+
+  // statementTemplate = "startToken" "(" expression ")"
+  private ConditionStatement statementTemplate(TokenKind startTokenkind){
+    Tokens.Token startToken = next_must(startTokenkind);
+    next_must(TokenKind.LParenthesis);
+    Tree expression = expression();
+    next_must(TokenKind.RParenthesis);
+    return new ConditionStatement(
+        expression,
+        compileBlock(TokenKind.LBrace, TokenKind.RBrace),
+        tempateStartkind2Tag(startTokenkind),
+        startToken.start());
+  }
+
+
+   // add = multi
+   //    | multi "+" multi
+   //    | multi "-" multi
   Expression add(){
     Expression left = multi();
     while(peekTok(

@@ -243,7 +243,7 @@ public class ScannerTest {
   }
 
   private static String ofScript(String name){
-    return String.format("%s/%s", Utils.get_dir_of_project("scripts"), name);
+    return String.format("%s/%s", Utils.get_dir_of_project("example"), name);
   }
   @Test
   public void file_scanner_test(){
