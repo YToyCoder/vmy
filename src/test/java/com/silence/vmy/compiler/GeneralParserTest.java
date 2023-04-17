@@ -1,10 +1,13 @@
 package com.silence.vmy.compiler;
 
+import com.silence.vmy.compiler.tree.Root;
+import com.silence.vmy.tools.Eval;
 import com.silence.vmy.tools.Utils;
 import org.junit.Test;
 
 import java.io.FileNotFoundException;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 // test for GeneralParser
 public class GeneralParserTest {
@@ -18,6 +21,20 @@ public class GeneralParserTest {
     }
   }
 
+  public static void evalScript(
+      String script,
+      Function<GeneralScanner, Root> parsing,
+      Consumer<Root> evalRoot
+  ) {
+    try {
+      GeneralScanner scanner = new GeneralScanner(Utils.ofScript(script), true);
+      Root ast = parsing.apply(scanner);;
+      evalRoot.accept(ast);
+    }catch(Exception e){
+      throw new RuntimeException(e);
+    }
+  }
+
   public static void run_of_script(String script, Consumer<GeneralScanner> run){
     try {
       GeneralScanner scanner = new GeneralScanner(Utils.ofScript(script), true);
@@ -25,6 +42,9 @@ public class GeneralParserTest {
     } catch (FileNotFoundException e){
       throw new RuntimeException(e);
     }
+  }
+  private Function<GeneralScanner,Root> doParsing() {
+    return scanner -> GeneralParser.create(scanner).parse();
   }
 
   Consumer<GeneralScanner> parsing(){
@@ -112,6 +132,7 @@ public class GeneralParserTest {
   public void script(){
     run_of_script("general_parser.vmy", parsing());
     run_of_script("hello_word.vmy", parsing());
+    evalScript("general_parser.vmy", doParsing() , Eval::evalRoot);
   }
 
 }
