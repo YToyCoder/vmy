@@ -3,6 +3,7 @@ package com.silence.vmy.tools;
 import com.silence.vmy.compiler.*;
 import com.silence.vmy.compiler.transform.IrTransforms;
 import com.silence.vmy.compiler.tree.Root;
+import com.silence.vmy.compiler.tree.Trees;
 import com.silence.vmy.runtime.Evaluator;
 import com.silence.vmy.runtime.Evaluators;
 
@@ -34,7 +35,7 @@ public class Eval {
 
       try{
         Root parsing = parsing(input, false);
-        Root transformedIr = (Root) parsing.accept(new IrTransforms.Convert2OldIR(), null);
+        Root transformedIr = transformToOldTree(parsing);
         Object ans = evaluator.eval(transformedIr);
         if(Objects.nonNull(ans))
           Utils.log(ans.toString());
@@ -69,11 +70,27 @@ public class Eval {
   public static Object eval(String filenameOrCode, boolean is_file) {
     try {
       Root parsing = parsing(filenameOrCode, is_file);
-      Root transformedIr = (Root) parsing.accept(new IrTransforms.Convert2OldIR(), null);
-      return Evaluators.evaluator(true).eval(transformedIr);
+      return Evaluators.evaluator(true).eval(transformToOldTree(parsing));
     }catch (Exception e){
       throw new RuntimeException(e);
     }
+  }
+
+  public static void evalRoot(Root unit){
+    try {
+      Evaluators.evaluator(true).eval(transformToOldTree(unit));
+    }catch(Exception e){
+      throw new RuntimeException(e);
+    }
+  }
+
+  private static Root transformToOldTree(Root root){
+    if(root instanceof AST.VmyAST)
+      return root;
+    else if(root instanceof Trees.CompileUnit)
+      return (Root) root.accept(new IrTransforms.Convert2OldIR(), null);
+    else 
+      throw new RuntimeException("not support transforming tree");
   }
 
 }
