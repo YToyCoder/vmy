@@ -11,7 +11,7 @@ import java.util.List;
  * <p>a = 1 </p>
  * <p>print(a)</p>
  */
-public class BlockNode extends AbstractTree implements Tree {
+public class BlockNode extends AbstractTree {
     List<Tree> process;
     public List<Tree> process(){ return process; }
     public BlockNode(List<Tree> _process) { process = _process; }

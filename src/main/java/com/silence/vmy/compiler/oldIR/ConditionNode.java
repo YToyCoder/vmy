@@ -3,7 +3,7 @@ package com.silence.vmy.compiler.oldIR;
 import com.silence.vmy.compiler.tree.Tree;
 import com.silence.vmy.compiler.visitor.NodeVisitor;
 
-public class ConditionNode extends AbstractTree implements Tree {
+public class ConditionNode extends AbstractTree {
     final Tree condition;
     final BlockNode body;
 

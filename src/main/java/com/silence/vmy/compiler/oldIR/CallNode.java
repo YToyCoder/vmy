@@ -1,10 +1,9 @@
 package com.silence.vmy.compiler.oldIR;
 
-import com.silence.vmy.compiler.tree.Tree;
 import com.silence.vmy.compiler.visitor.NodeVisitor;
 
 // call expression , it should be like : print("print")
-public class CallNode extends AbstractTree implements Tree {
+public class CallNode extends AbstractTree {
     final String identifier;
     final ListExpression params;
 

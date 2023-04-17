@@ -8,7 +8,6 @@ import com.silence.vmy.compiler.oldIR.*;
 import com.silence.vmy.compiler.tree.*;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.ToIntFunction;

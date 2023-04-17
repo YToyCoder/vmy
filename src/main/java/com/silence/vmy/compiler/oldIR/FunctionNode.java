@@ -6,7 +6,7 @@ import com.silence.vmy.compiler.visitor.NodeVisitor;
 import java.util.List;
 
 // function declaration
-public class FunctionNode extends AbstractTree implements Tree {
+public class FunctionNode extends AbstractTree {
     final List<DeclareNode> params;
     final Tree body;
     final String name;

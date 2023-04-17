@@ -7,7 +7,7 @@ import java.util.List;
 
 // a list expression should be like this below:
 // a, b, c  or print(a, b, c)
-public class ListExpression extends AbstractTree implements Tree {
+public class ListExpression extends AbstractTree {
     final List<Tree> elements;
 
     public List<Tree> elements() { return elements; }

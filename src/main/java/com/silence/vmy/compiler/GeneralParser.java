@@ -355,11 +355,11 @@ public class GeneralParser implements Parser{
     };
   }
 
-  private void ifThenIgnore(TokenKind tk){
-    if(peekTok(tokenKind -> tk == tokenKind)){
-      ignore(tk);
-    }
-  }
+  // private void ifThenIgnore(TokenKind tk){
+  //   if(peekTok(tokenKind -> tk == tokenKind)){
+  //     ignore(tk);
+  //   }
+  // }
 
   // if_statement = "if" "(" expression ")"
   private Statement if_statement(){

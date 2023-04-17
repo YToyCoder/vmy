@@ -30,7 +30,7 @@ public class AST {
     @Override public void accept(NodeVisitor visitor) { }
     @Override public <R, T> R accept(TreeVisitor<R, T> visitor, T payload) { return null; }
     @Override public Tree body() { return root; }
-    public Object accept(TreeVisitor visitor) { return null; }
+    public Object accept(TreeVisitor<?,?> visitor) { return null; }
   }
 
   // main for support old version test
@@ -870,9 +870,6 @@ public class AST {
     return Objects.equals(operator, token.value);
   }
 
-  // a static instance
-  private static TokenHandler HANDLER;
-
   public static TokenHandler getTokenHandler(TokenHistoryRecorder recorder){
 //    if(Objects.isNull(HANDLER))
 //      buildHandler(recorder);
@@ -988,25 +985,6 @@ public class AST {
       Utils.should_has_next_token(remains, () -> new ASTProcessingException("function declaration err : " + declaration));
       return new DeclareNode("", null, remains.next().value);
     }
-  }
-
-  private static void buildHandler(TokenHistoryRecorder recorder){
-    HANDLER = new HandlerBuilder()
-    .next(new FunctionDeclarationHandler())
-    .next(new NumberHandler())
-    .next(new CallHandler())
-    .next(new OperatorHandler())
-    .next(new AssignmentHandler())
-    .next(new DeclarationHandler())
-    .next(new VariableNameHandler())
-    .next(new LiteralHandler())
-    .next(new BlockHandler())
-    .next(new WhileHandler())
-    .next(new NewlineHandler())
-    .next(new IfElHandler())
-    .next(new DefaultHandler())
-    .build_with_each(el -> el.setTokenRecorder(recorder))
-    .build();
   }
 
   public static TokenHandler createHandler(TokenHistoryRecorder recorder){

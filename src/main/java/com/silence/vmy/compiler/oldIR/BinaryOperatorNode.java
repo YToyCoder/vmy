@@ -3,7 +3,7 @@ package com.silence.vmy.compiler.oldIR;
 import com.silence.vmy.compiler.tree.Tree;
 import com.silence.vmy.compiler.visitor.NodeVisitor;
 
-public class BinaryOperatorNode extends AbstractTree implements Tree {
+public class BinaryOperatorNode extends AbstractTree {
     final String OP;
     Tree left;
     Tree right;

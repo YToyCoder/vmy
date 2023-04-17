@@ -88,7 +88,6 @@ public class FileInputScanner implements Scanner, AutoCloseable {
     private ByteBuffer buffer;
     private final String file_path;
     private int pos;
-    private int record;
     private int lineN; // line number
     private LinkedList<Character> cs;
     private boolean end_of_file;
@@ -357,7 +356,7 @@ public class FileInputScanner implements Scanner, AutoCloseable {
     /**
      * record current position
      */
-    private void record_position() { record = pos(); }
+    private void record_position() { pos(); }
 
     /**
      * get the recorded position

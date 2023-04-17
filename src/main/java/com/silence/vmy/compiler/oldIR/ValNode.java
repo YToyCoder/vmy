@@ -1,9 +1,8 @@
 package com.silence.vmy.compiler.oldIR;
 
-import com.silence.vmy.compiler.tree.Tree;
 import com.silence.vmy.compiler.visitor.NodeVisitor;
 
-public class ValNode extends AbstractTree implements Tree {
+public class ValNode extends AbstractTree {
     private final Number value;
 
     public Number val() { return value; }

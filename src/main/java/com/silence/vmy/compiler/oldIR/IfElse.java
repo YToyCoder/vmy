@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.Objects;
 
 public class IfElse
-    extends AbstractTree
-    implements Tree {
+    extends AbstractTree{
+
     final ConditionNode TheIf;
     final List<ConditionNode> Elif;
     final Tree Else;

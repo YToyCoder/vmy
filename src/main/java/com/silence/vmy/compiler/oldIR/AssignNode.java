@@ -7,7 +7,7 @@ import com.silence.vmy.compiler.visitor.NodeVisitor;
 // like :
 //      let a : Type = 1
 //      a = 2
-public class AssignNode extends AbstractTree implements Tree {
+public class AssignNode extends AbstractTree {
     Tree variable;
     Tree expression;
 

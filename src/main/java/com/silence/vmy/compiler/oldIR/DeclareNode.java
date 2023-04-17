@@ -1,10 +1,9 @@
 package com.silence.vmy.compiler.oldIR;
 
-import com.silence.vmy.compiler.tree.Tree;
 import com.silence.vmy.compiler.visitor.NodeVisitor;
 
 // node for Declaration, like let a : Type , val a : Type
-public class DeclareNode extends AbstractTree implements Tree {
+public class DeclareNode extends AbstractTree {
     final String declare;
     final String type;
     final IdentifierNode identifier;
