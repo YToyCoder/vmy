@@ -6,12 +6,12 @@ if(true){
     print("else")
 }
 
-
+let condition_if = true
+let condition_else_if = true
+let x = "x"
 if( condition_if ) {
-    print("")
+    print("print condition_if")
 }
-
-
 elif( condition_else_if ) {
 }
 
