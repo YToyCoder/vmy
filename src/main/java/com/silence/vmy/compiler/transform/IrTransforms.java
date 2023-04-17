@@ -76,16 +76,21 @@ public abstract class IrTransforms {
     public Tree visitFunctionDecl(FunctionDecl function, Object payload) {
       // todo
       List<VariableDecl> params = new ArrayList<>(function.params());
-      params.add(new VariableDecl("", Modifiers.Const, function.ret(), function.ret().position()));
+      // handle return type
+      TypeExpr retType = function.ret();
+      long retTypePosition = Objects.isNull(retType) ? -1 : retType.position();
+      params.add(new VariableDecl("", Modifiers.Const, function.ret(), retTypePosition));
       return new FunctionNode(
           function.name(),
           params
           .stream()
-          .map(el ->
-              new DeclareNode(
+          .map(param -> {
+            TypeExpr paramType = param.t();
+            return new DeclareNode(
                 Identifiers.ConstDeclaration,
-                new IdentifierNode(el.name()),
-                el.t().typeId()))
+                new IdentifierNode(param.name()),
+                Objects.isNull(paramType) ? null : paramType.typeId());
+          })
           .toList(),
           function.body().accept(this, payload));
     }
