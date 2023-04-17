@@ -2,7 +2,7 @@ package com.silence.vmy.compiler.tree;
 
 public abstract class Trees {
   // CompileUnit -> a file
-  protected static class CompileUnit extends BaseTree implements Root{
+  public static class CompileUnit extends BaseTree implements Root{
     private final Tree body;
 
     protected CompileUnit(Tree tree) {
