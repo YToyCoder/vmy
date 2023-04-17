@@ -21,24 +21,11 @@ public class ASTTest {
 
   @Test
   public void testBuildException(){
-    assertThrows(ASTProcessingException.class, () -> {
-      AST.build(Scanners.scan("1 + 2)"));
-    });
-
-    assertThrows(ASTProcessingException.class, () -> {
-      AST.build(Scanners.scan("1 +++ 2"));
-    });
-
-    assertThrows(ASTProcessingException.class, () -> {
-      AST.build(Scanners.scan(" * 2"));
-    });
-
-    assertThrows(ASTProcessingException.class, () -> {
-      AST.build(Scanners.scan("1 * "));
-    });
-    assertThrows(ASTProcessingException.class, () -> {
-      AST.build(Scanners.scan(" + 2"));
-    });
+    assertThrows(ASTProcessingException.class, () -> AST.build(Scanners.scan("1 + 2)")));
+    assertThrows(ASTProcessingException.class, () -> AST.build(Scanners.scan("1 +++ 2")));
+    assertThrows(ASTProcessingException.class, () -> AST.build(Scanners.scan(" * 2")));
+    assertThrows(ASTProcessingException.class, () -> AST.build(Scanners.scan("1 * ")));
+    assertThrows(ASTProcessingException.class, () -> AST.build(Scanners.scan(" + 2")));
   }
 
   @Test
