@@ -4,6 +4,7 @@ import com.silence.vmy.compiler.Tokens.Token;
 import com.silence.vmy.compiler.Tokens.TokenKind;
 import com.silence.vmy.compiler.tree.*;
 import com.silence.vmy.compiler.tree.Tree.Tag;
+import com.silence.vmy.runtime.VmyRuntimeException;
 import com.silence.vmy.tools.Utils;
 
 import java.util.ArrayList;
@@ -396,7 +397,7 @@ public class GeneralParser implements Parser{
       case StringLiteral -> LiteralExpression.ofStringify(tok.payload(), LiteralExpression.Kind.String);
       case IntLiteral -> LiteralExpression.ofStringify(tok.payload(), LiteralExpression.Kind.Int);
       case DoubleLiteral -> LiteralExpression.ofStringify(tok.payload(), LiteralExpression.Kind.Double);
-      default -> null;
+      default -> throw new VmyRuntimeException("literal expression not support start token : " + tok);
     };
   }
 
