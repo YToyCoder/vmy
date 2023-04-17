@@ -26,6 +26,77 @@ public class GeneralParser implements Parser{
 
   public static Parser create(Lexer lexer){ return new GeneralParser(lexer); }
 
+  protected Tokens.Token next(){
+    ignoreAnnotation();
+    return do_next();
+  }
+
+  protected Tokens.Token do_next(){
+    pre = token;
+    if(!savedTokens.isEmpty()) // move cache to token
+      token = savedTokens.remove(0);
+    else if(lexer.hasNext()) // get token from lexer
+      token = lexer.next();
+    else // no token
+      token = null;
+    return pre;
+  }
+
+  protected Tokens.Token token(){ return token(0); }
+  protected Tokens.Token token(int lookahead) {
+    if(lookahead == 0) {
+      if(token == null && hasTok()){
+        token = do_next();
+      }
+      return token;
+    }else {
+      ensureLookahead(lookahead);
+      return savedTokens.get(lookahead - 1);
+    }
+  }
+
+  protected void ensureLookahead(int lookahead) {
+    for(int i= savedTokens.size(); i < lookahead && lexer.hasNext() ; i++)
+      savedTokens.add(lexer.next());
+  }
+
+  protected boolean hasTok(){ return Objects.nonNull(token) || !savedTokens.isEmpty() || lexer.hasNext(); }
+
+  boolean peekTok(Predicate<Tokens.TokenKind> tk){
+    ensureLookahead(0);
+    return hasTok() && tk.test(token().kind());
+  }
+
+  boolean peekTok(Predicate<Tokens.TokenKind> tk, Predicate<Tokens.TokenKind> tk1){
+    ensureLookahead(2);
+    return hasTok() && tk.test(token().kind()) && savedTokens.size() > 1 && tk1.test(token(1).kind());
+  }
+
+  protected Tokens.Token next_must(TokenKind tk){
+    if(hasTok() && peekTok(tokenKind -> tokenKind != tk))
+      error("expect token kind : %s , current token is %s".formatted(tk, token.toString()));
+    return do_next();
+  }
+
+  protected void ignore(TokenKind tokenKind){
+    while(peekTok(tk -> tk == tokenKind)){
+      next();
+    }
+  }
+
+  private void ignoreEmptyLines(){
+    ignoreAnnotation();
+    while(peekTok(tk -> tk == TokenKind.newline)){
+      ignore(TokenKind.newline);
+      ignoreAnnotation();
+    }
+  }
+
+  void error(String msg){
+    Utils.error("error in " + msg);
+    throw new LexicalException("<<error>>");
+  }
+
   @Override
   public Root parse() { return Trees.createCompileUnit(hasTok() ? compileBlock(TokenKind.EOF) : null); }
 
@@ -85,52 +156,6 @@ public class GeneralParser implements Parser{
     return new VariableDecl(id.payload(), Modifiers.Const, parsingType(), id.start());
   }
 
-  protected Tokens.Token next(){
-    ignoreAnnotation();
-    return do_next();
-  }
-
-  protected Tokens.Token do_next(){
-    pre = token;
-    if(!savedTokens.isEmpty()) // move cache to token
-      token = savedTokens.remove(0);
-    else if(lexer.hasNext()) // get token from lexer
-      token = lexer.next();
-    else // no token
-      token = null;
-    return pre;
-  }
-
-  protected Tokens.Token token(){ return token(0); }
-  protected Tokens.Token token(int lookahead) {
-    if(lookahead == 0) {
-      if(token == null && hasTok()){
-        token = do_next();
-      }
-      return token;
-    }else {
-      ensureLookahead(lookahead);
-      return savedTokens.get(lookahead - 1);
-    }
-  }
-
-  protected void ensureLookahead(int lookahead) {
-    for(int i= savedTokens.size(); i < lookahead && lexer.hasNext() ; i++)
-      savedTokens.add(lexer.next());
-  }
-
-  protected boolean hasTok(){ return Objects.nonNull(token) || !savedTokens.isEmpty() || lexer.hasNext(); }
-
-  boolean peekTok(Predicate<Tokens.TokenKind> tk){
-    ensureLookahead(0);
-    return hasTok() && tk.test(token().kind());
-  }
-
-  boolean peekTok(Predicate<Tokens.TokenKind> tk, Predicate<Tokens.TokenKind> tk1){
-    ensureLookahead(2);
-    return hasTok() && tk.test(token().kind()) && savedTokens.size() > 1 && tk1.test(token(1).kind());
-  }
-
   // expr2 =  expr3
   //        | expr2 "," expr3
   private List<Expression> expr2(){
@@ -147,26 +172,6 @@ public class GeneralParser implements Parser{
     ignore(TokenKind.newline);
     next_must(start);
     return compileBlock(end);
-  }
-
-  protected Tokens.Token next_must(TokenKind tk){
-    if(hasTok() && peekTok(tokenKind -> tokenKind != tk))
-      error("expect token kind : %s , current token is %s".formatted(tk, token.toString()));
-    return do_next();
-  }
-
-  protected void ignore(TokenKind tokenKind){
-    while(peekTok(tk -> tk == tokenKind)){
-      next();
-    }
-  }
-
-  private void ignoreEmptyLines(){
-    ignoreAnnotation();
-    while(peekTok(tk -> tk == TokenKind.newline)){
-      ignore(TokenKind.newline);
-      ignoreAnnotation();
-    }
   }
 
   // e_block = [ expression ]
@@ -215,6 +220,7 @@ public class GeneralParser implements Parser{
     }
     return concat();
   }
+ 
 
   // concat = add
   //         | add "++" concat
@@ -290,11 +296,6 @@ public class GeneralParser implements Parser{
       return if_statement();
     //expr3
     return expr3();
-  }
-
-  void error(String msg){
-    Utils.error("error in " + msg);
-    throw new LexicalException("<<error>>");
   }
 
   // one = identifier
