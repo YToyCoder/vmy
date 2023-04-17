@@ -146,7 +146,8 @@ public class GeneralScanner implements Lexer{
     // case _ , like name_age
     if(!hasChar() || !peekChar().charIs('_')){
       final String string = builder.toString();
-      Function<Tokens.TokenKind, Tokens.Token> createToken = kind -> createTok(kind, startChar.location(), startChar.location() + builder.length());
+      Function<Tokens.TokenKind, Tokens.Token> createToken =
+          kind -> createTok(kind, startChar.location(), startChar.location() + builder.length());
       return switch (string){
         case "fun" -> createToken.apply(Tokens.TokenKind.Fun);
         case "val" -> createToken.apply(Tokens.TokenKind.Val);

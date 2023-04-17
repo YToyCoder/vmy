@@ -1,9 +1,6 @@
 package com.silence.vmy.compiler;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.stream.IntStream;
 
 final public class Identifiers {
@@ -72,8 +69,8 @@ final public class Identifiers {
     identifiers.addAll(
         //
         IntStream.range(0, 26)
-            .mapToObj(el -> List.of(Character.valueOf((char) (el + 'a')), Character.valueOf((char)(el + 'A'))))
-            .flatMap(ls -> ls.stream())
+            .mapToObj(el -> List.of((char) (el + 'a'), (char) (el + 'A')))
+            .flatMap(Collection::stream)
             .toList()
     );
     // _ 下划线
@@ -87,7 +84,7 @@ final public class Identifiers {
 
   public static boolean isOperator(String ids){
     return ids.chars()
-        .mapToObj(i -> Character.valueOf((char)i))
+        .mapToObj(i -> (char) i)
         .allMatch(operatorCharacters::contains);
   }
 
