@@ -14,12 +14,6 @@ public class SimpleParser implements Parser {
   private final Scanner scanner;
   private final AST.TokenHandler token_handler;
 
-  private SimpleParser(Scanner _scanner, AST.TokenHandler _token_handler, int _token_record_size){
-    token_handler = _token_handler;
-    scanner = _scanner;
-    token_recorder = new FixedSizeCapabilityTokenRecorder(_token_record_size);
-  }
-
   private SimpleParser(Scanner _scanner, AST.TokenHandler _token_handler, TokenHistoryRecorder _recorder){
     scanner = _scanner;
     token_handler = _token_handler;
