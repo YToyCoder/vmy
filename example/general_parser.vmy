@@ -12,3 +12,11 @@ type(a = name = "hello")
 
 val variable = 1.00
 variable += 1.201
+
+val comp = 1 + 2 < 4
+
+if(comp == true){
+    print("comparation result is true")
+}else {
+    print("comparation result is false")
+}
