@@ -28,7 +28,10 @@ public class GeneralParserTest {
   }
 
   Consumer<GeneralScanner> parsing(){
-    return scanner -> GeneralParser.create(scanner).parse();
+    return scanner -> {
+      var r = GeneralParser.create(scanner).parse();
+      System.out.println("parsing r:" + r);
+    };
   }
 
   @Test
@@ -93,6 +96,16 @@ public class GeneralParserTest {
             """,
         parsing()
     );
+  }
+
+  @Test
+  public void comparingExpression(){
+    run_with_scanner_s(
+      """
+        1 < 2
+        2 * 4 - 3 <= 7 * variable
+          """, 
+      parsing());
   }
 
   @Test

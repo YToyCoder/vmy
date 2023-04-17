@@ -1,5 +1,6 @@
 package com.silence.vmy.compiler;
 
+import com.silence.vmy.compiler.Tokens.Token;
 import com.silence.vmy.compiler.Tokens.TokenKind;
 import com.silence.vmy.compiler.tree.*;
 import com.silence.vmy.compiler.tree.Tree.Tag;
@@ -95,6 +96,10 @@ public class GeneralParser implements Parser{
   void error(String msg){
     Utils.error("error in " + msg);
     throw new LexicalException("<<error>>");
+  }
+
+  private Predicate<TokenKind> tokenkindIsEqual(TokenKind tk){
+    return tokenkind -> tokenkind == tk;
   }
 
   @Override
@@ -198,7 +203,7 @@ public class GeneralParser implements Parser{
    //       | identifier "-=" expr3
    //       | identifier "*=" expr3
    //       | identifier "/=" expr3
-   //       | concat
+   //       | expression4
   private Expression expr3(){
     if(peekTok(tk -> tk == TokenKind.Id, tk -> tk == TokenKind.Assignment)) {
       Tokens.Token id = next();
@@ -218,9 +223,48 @@ public class GeneralParser implements Parser{
           kind2tag(op.kind())
       );
     }
-    return concat();
+    return expression4();
   }
- 
+
+  // comparing = add
+  //           | add "++" concat
+  //           | add comparingOp add
+  // comparingOp = "=="
+  //             | "!=" 
+  //             | "<" 
+  //             | "<=" 
+  //             | ">" 
+  //             | ">=" 
+  private Expression expression4(){
+    Expression addExpression = add();
+    if( /* add "++" concat */
+      peekTok(tokenkindIsEqual(TokenKind.Concat)))
+    {
+      return new BinaryOperateExpression(
+        addExpression, 
+        concat(), 
+        Tag.Concat);
+    }
+
+    if(/* add comparingOp add */
+      peekTok(this::isComparingOp))
+    {
+      Token comparingOp = next();
+      return new BinaryOperateExpression(
+        addExpression, 
+        add(), 
+        kind2tag(comparingOp.kind()));
+    }
+    // add
+    return addExpression;
+  }
+
+  private boolean isComparingOp(TokenKind tk){
+    return switch (tk) {
+      case Equal, NotEqual, Less, Greater, Le, Ge -> true;
+      default -> false;
+    };
+  }
 
   // concat = add
   //         | add "++" concat
@@ -464,6 +508,12 @@ public class GeneralParser implements Parser{
       case SubEqual -> Tag.SubEqual;
       case MultiEqual -> Tag.MultiEqual;
       case AddEqual -> Tag.AddEqual;
+      case Equal -> Tag.Equal;
+      case NotEqual -> Tag.NotEqual;
+      case Less -> Tag.Less;
+      case Greater -> Tag.Greater;
+      case Le -> Tag.Le;
+      case Ge -> Tag.Ge;
       default -> null;
     };
   }

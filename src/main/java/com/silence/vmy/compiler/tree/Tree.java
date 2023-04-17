@@ -30,6 +30,15 @@ public interface Tree {
         Div, // /
         DivEqual, // /=
         Assign,
+
+        /* comparations */
+        Equal, // ==
+        NotEqual, // !=
+        Less, // <
+        Greater, // >
+        Le, // <=
+        Ge, // >=
+
         // literal
         IntLiteral,
         StringLiteral,
