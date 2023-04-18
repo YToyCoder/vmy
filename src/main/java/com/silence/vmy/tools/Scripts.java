@@ -31,10 +31,7 @@ public class Scripts {
    */
   public static void run(String[] script_files){
     for (String file_path : script_files)
-      do_with_file_input_scanner(
-          file_path,
-          eval_with_scanner()
-      );
+      Eval.eval(file_path, true);
   }
 
   public static void run(String[] script_files, String evaluator_type){
