@@ -69,7 +69,9 @@ public abstract class IrTransforms {
 
     @Override
     public Tree visitAssignment(AssignmentExpression expression, Object payload) {
-      return new AssignNode(expression.left().accept(this, payload), expression.right().accept(this, payload));
+      return new AssignNode(
+        expression.left().accept(this, payload), 
+        expression.right().accept(this, payload));
     }
 
     @Override
@@ -146,7 +148,7 @@ public abstract class IrTransforms {
                       (BlockNode) state.block().accept(this, payload)))
               .toList(),
 
-          statement.el().accept(this, payload)); // else
+          Objects.isNull(statement.el()) ? null : statement.el().accept(this, payload)); // else
     }
 
     List<Tree> listMap(List<? extends Tree> origin,Object payload){
