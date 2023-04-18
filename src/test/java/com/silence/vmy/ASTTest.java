@@ -3,6 +3,8 @@ package com.silence.vmy;
 import static org.junit.Assert.assertThrows;
 
 import com.silence.vmy.compiler.AST;
+import com.silence.vmy.compiler.GeneralParser;
+import com.silence.vmy.compiler.GeneralParserTest;
 import com.silence.vmy.compiler.visitor.ASTProcessingException;
 import com.silence.vmy.compiler.Scanners;
 import com.silence.vmy.compiler.SimpleParser;
@@ -166,7 +168,7 @@ public class ASTTest {
   @Test
   public void script_negative_value_test() {
     FileInputScannerTestUtils.do_with_instance(
-            FileInputScannerTestUtils.ofScript("negative_number_test.vmy"), 
+      FileInputScannerTestUtils.ofScript("negative_number_test.vmy"), 
       FileInputScannerTestUtils.build_with_scanner()
     );
   }
@@ -203,14 +205,13 @@ public class ASTTest {
       scanner -> SimpleParser.create(scanner).parse()
       );
 
-    Scripts.run_with_file_input_scanner(
+    GeneralParserTest.run_with_scanner_s(
       """
         fun func(name: String) : String {
-          return \"return\"
+          return "return"
         }
           """,
-      false,
-      scanner -> SimpleParser.create(scanner).parse()
+      scanner -> GeneralParser.create(scanner).parse()
     );
   }
 }
