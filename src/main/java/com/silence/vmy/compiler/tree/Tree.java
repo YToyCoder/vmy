@@ -39,6 +39,8 @@ public interface Tree {
 		StringLiteral,
 		DoubleLiteral,
 		FunctionLiteral,
+		// obj
+		Arr,
 		//
 		Param,
 		Id,

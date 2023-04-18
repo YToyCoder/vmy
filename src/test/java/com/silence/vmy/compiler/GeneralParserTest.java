@@ -43,11 +43,13 @@ public class GeneralParserTest {
       throw new RuntimeException(e);
     }
   }
+
+  static void runParsing(String sourceCode){ run_with_scanner_s(sourceCode, parsing()); }
   private Function<GeneralScanner,Root> doParsing() {
     return scanner -> GeneralParser.create(scanner).parse();
   }
 
-  Consumer<GeneralScanner> parsing(){
+  static Consumer<GeneralScanner> parsing(){
     return scanner -> {
       var r = GeneralParser.create(scanner).parse();
       System.out.println("parsing r:" + r);
@@ -126,6 +128,15 @@ public class GeneralParserTest {
         2 * 4 - 3 <= 7 * variable
           """, 
       parsing());
+  }
+
+  @Test
+  public void arrayExpression(){
+    runParsing(
+      """
+        let a = [1, 2, 3]
+        let b = ["hello", "world"]
+        """);
   }
 
   @Test

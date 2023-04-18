@@ -157,6 +157,11 @@ public abstract class IrTransforms {
           .map(el -> el.accept(this, payload))
           .toList();
     }
+
+    @Override
+    public Tree visitArr(ArrExpression arr, Object t) {
+      throw new UnsupportedOperationException("Unimplemented method 'visitArr'");
+    }
   }
 
 }

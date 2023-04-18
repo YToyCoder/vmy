@@ -37,6 +37,9 @@ public class Tokens {
     CharLiteral,
     True,
     False,
+    // obj
+    ArrOpen, // [
+    ArrClose, // ]
     // control flow
     For,
     While,

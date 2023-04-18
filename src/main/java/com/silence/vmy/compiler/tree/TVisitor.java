@@ -44,6 +44,9 @@ public abstract class TVisitor<T> {
   public boolean enterIfStatement(IfStatement ifStatement, T t) { return enterDefault(ifStatement, t); }
   public Tree leaveIfStatement(IfStatement ifStatement, T t) { return leaveDefault(ifStatement, t); }
 
+  public boolean enterArrExpression(ArrExpression arr, T t) { return enterDefault(arr, t); }
+  public Tree leaveArrExpression(ArrExpression arr, T t) { return leaveDefault(arr, t); }
+
   protected boolean enterDefault(Tree tree, T t) { return true; }
   protected Tree leaveDefault(Tree tree, T t) { return tree; }
 

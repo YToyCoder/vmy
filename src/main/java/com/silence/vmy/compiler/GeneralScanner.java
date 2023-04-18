@@ -4,6 +4,8 @@ import java.io.FileNotFoundException;
 import java.util.Objects;
 import java.util.function.Function;
 
+import com.silence.vmy.compiler.Tokens.TokenKind;
+
 public class GeneralScanner implements Lexer{
   private CharReader charReader;
   private final String fileName;
@@ -42,6 +44,8 @@ public class GeneralScanner implements Lexer{
         case '{' -> one_char(Tokens.TokenKind.LBrace);
         case '}' -> one_char(Tokens.TokenKind.RBrace);
         case ':' -> one_char(Tokens.TokenKind.Colon);
+        case '[' -> one_char(TokenKind.ArrOpen);
+        case ']' -> one_char(TokenKind.ArrClose);
         case '>' -> {
           CharReaders.CharInFile startChar = nextChar();
           if(hasChar() && peekChar().charIs('='))

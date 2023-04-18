@@ -348,6 +348,7 @@ public class GeneralParser implements Parser{
   //     | literal
   //     | "(" expr3 ")"
   //     | call
+  //     | arr
   Expression one(){
     Tokens.Token peek = token();
     return switch (peek.kind()){
@@ -364,13 +365,31 @@ public class GeneralParser implements Parser{
         next_must(TokenKind.RParenthesis);
         yield  ret;
       }
+
       case Id -> {
         if(peekTok(tk -> tk == TokenKind.Id, tk -> tk == TokenKind.LParenthesis))
           yield call();
         else yield new IdExpr(peek.start(), Tag.Id, next().payload());
       }
+
+      case ArrOpen -> arrExpression();
+
       default -> null; // error
     };
+  }
+
+  // arr = "[" one oneRest "]"
+  // oneRest = { "," one }
+  private Expression arrExpression(){
+    Token arrayToken = next_must(TokenKind.ArrOpen);
+    List<Expression> elements = new ArrayList<>();
+    elements.add(one());
+    while(peekTok(tokenkindIsEqual(TokenKind.ArrClose).negate() /* not equal */)){
+      next_must(TokenKind.Comma);
+      elements.add(one());
+    }
+    next_must(TokenKind.ArrClose);
+    return new ArrExpression(elements, Tag.Arr, arrayToken.start());
   }
 
    // unary = one
