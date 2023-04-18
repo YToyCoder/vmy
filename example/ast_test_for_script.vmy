@@ -4,6 +4,6 @@ let c  = "hello, word"
 
 print(a + 1 < 4 + 4)
 
-while(true){
+if(true){
     print("hello, this is while loop")
 }
