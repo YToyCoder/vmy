@@ -241,6 +241,7 @@ public class GeneralParser implements Parser{
     if( /* add "++" concat */
       peekTok(tokenkindIsEqual(TokenKind.Concat)))
     {
+      next(); // drop "++"
       return new BinaryOperateExpression(
         addExpression, 
         concat(), 
