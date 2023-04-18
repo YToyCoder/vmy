@@ -58,7 +58,8 @@ public class VisitingEvaluator implements Evaluator, NodeVisitor {
   public void visitBlockNode(BlockNode node) {
     for(Tree sub : node.process()){
       sub.accept(this);
-      get_from_stack(); // drop result
+      if(!(sub instanceof IfElse)) // if-else do not return value
+        get_from_stack(); // drop result
     }
     put_stack(null);
   }
@@ -113,11 +114,11 @@ public class VisitingEvaluator implements Evaluator, NodeVisitor {
     final VmyType declaration_type = Objects.isNull(node.type()) ? expression_type : Utils.to_type(node.type());
     TreeEvaluatorHelper.can_assign(declaration_type, expression_type);
     put_stack(node.identifier().val());
-    com.silence.vmy.runtime.Runtime.declare_variable(
-        runtimeContext.current_frame(),
-        node.identifier().val(),
-        declaration_type,
-        Utils.is_mutable(node.declare())
+    Runtime.declare_variable(
+      runtimeContext.current_frame(),
+      node.identifier().val(),
+      declaration_type,
+      Utils.is_mutable(node.declare())
     );
   }
 
