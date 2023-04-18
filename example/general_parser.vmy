@@ -1,22 +1,23 @@
-let a = "1"
+let a : String = "1"
 
 fun function(){
-    val c = 1.0
+  val c = 1.0
 }
 
 fun type(m: Int): Double {
-    return 0.0
+  return 0.0
 }
 
+val name = "name"
 type(a = name = "hello")
 
 val variable = 1.00
-variable += 1.201
+variable = variable + 1.201
 
 val comp = 1 + 2 < 4
 
 if(comp == true){
-    print("comparison result is true")
+  print("comparison result is true")
 }else {
-    print("comparison result is false")
+  print("comparison result is false")
 }
