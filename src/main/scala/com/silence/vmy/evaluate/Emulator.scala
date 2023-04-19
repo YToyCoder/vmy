@@ -124,7 +124,6 @@ object EmulatingValue {
       this
     }
     override def toString() = value.toString()
-
     def name: String = n
 
     override def update(v: EmulatingValue): EmulatingValue = {
@@ -154,7 +153,7 @@ object EmulatingValue {
         case EVLong(value) => value != 0 
         case EVInt(value) => value != 0
         case EVDouble(value) => value != 0
-        case EVString(value) => value == "true"
+        case EVString(value) => value != null
         case EVBool(value) => value
         case EVFunction(value) => value != null
         case EVEmpty => false
@@ -177,17 +176,7 @@ object EmulatingValue {
         case (left : PrimaryOpSupportType, right : PrimaryOpSupportType) => (left, right)
         case _ => throw new VmyRuntimeException(s"should not reach this")
       }
-    // private final def doOps[T, X](
-    //   two : (PrimaryOpSupportType, PrimaryOpSupportType), 
-    //   op : (T, X) => T | X
-    // ): PrimaryOpSupportType =  
-    //   two match {
-    //     case (l: Int, r: Int) => op(l, r)
-    //     case (l: Double, r: Int) => op(l, r)
-    //     case (l: Int, r: Double) => op(l, r)
-    //     case (l: Double, r: Double) => op(l, r)
-    //   }
-    
+
 //    @targetName("add")
     override def +(other: EmulatingValue): EmulatingValue = {
       @tailrec
@@ -212,7 +201,6 @@ object EmulatingValue {
               add(pl, pr)
             }
           }
-
       }
       EmulatingValue(addResult)
     }
@@ -232,16 +220,43 @@ object EmulatingValue {
         }
       (this.value, other.value) match {
         case (l: PrimaryOpSupportType, r: PrimaryOpSupportType) => EmulatingValue(sub(l,r))
-        case (l, r) => {
-          // if(debug) println(s"sub ops l:${l} r:${r}")
-          EmulatingValue.EVEmpty
-        } 
+        case (l, r) => EmulatingValue.EVEmpty
       }
     }
 //    @targetName("multi")
-    override def *(other: EmulatingValue): EmulatingValue = null
+    override def *(other: EmulatingValue): EmulatingValue = 
+      @tailrec
+      def multi(two: (PrimaryOpSupportType, PrimaryOpSupportType)): PrimaryOpSupportType = 
+        two match {
+          case (l: Int, r: Int) => l * r
+          case (l: Double, r: Int) => l * r
+          case (l: Double, r: Double) => l * r
+          case (l: Long, r: Int) => l * r
+          case (l: Long, r: Double) => l * r
+          case (l: Long, r: Long) => l * r
+          case (l, r)=> multi(r, l)
+        }
+      (this.value, other.value) match {
+        case (l: PrimaryOpSupportType, r: PrimaryOpSupportType) => EmulatingValue(multi(l,r))
+        case (l, r) => EmulatingValue.EVEmpty
+      }
 //    @targetName("div")
-    override def /(other: EmulatingValue):  EmulatingValue = null
+    override def /(other: EmulatingValue):  EmulatingValue = 
+      @tailrec
+      def div(two: (PrimaryOpSupportType, PrimaryOpSupportType)): PrimaryOpSupportType = 
+        two match {
+          case (l: Int, r: Int) => l / r
+          case (l: Double, r: Int) => l / r
+          case (l: Double, r: Double) => l / r
+          case (l: Long, r: Int) => l / r
+          case (l: Long, r: Double) => l / r
+          case (l: Long, r: Long) => l / r
+          case (l, r)=> div(r, l)
+        }
+      (this.value, other.value) match {
+        case (l: PrimaryOpSupportType, r: PrimaryOpSupportType) => EmulatingValue(div(l,r))
+        case (l, r) => EmulatingValue.EVEmpty
+      }
   }
 
   private case class EVLong(value: Long) extends BaseEV //{ type ValueType = Long }
@@ -335,7 +350,7 @@ class TreeEmulator extends TreeVisitor[EmulatingValue, EmulatingValue] {
     val left = expression.left().accept(this, payload)
     val right= expression.right().accept(this, payload)
     expression.tag() match {
-      case Tag.Add => left + right
+      case Tag.Add | Tag.Concat => left + right
       case Tag.Sub => left - right
       case Tag.Multi => left * right
       case Tag.Div => left / right
@@ -472,8 +487,8 @@ class TreeEmulator extends TreeVisitor[EmulatingValue, EmulatingValue] {
     val elifs = statement.elif()
     for(i <- 0 until elifs.size()){
       val oneElif = elifs.get(i)
-      if(oneElif.accept(this, payload).toBool){
-        return (true, oneElif.accept(this, payload))
+      if(oneElif.condition().accept(this, payload).toBool){
+        return (true, oneElif.block().accept(this, payload))
       }
     }
     (false, EmulatingValue.EVEmpty)
