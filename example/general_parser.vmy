@@ -13,12 +13,14 @@ type(a = name = "hello")
 
 val variable = 1.00
 variable = variable + 1.201
+val comp = 1 + 2 + 4 + 3 - 1 * 0.2
 
-val comp = 1 + 2 < 4
-
-if(comp == true){
+if(comp > 0){
   println("comparison result is true")
+  println("comp => " ++ comp)
   println(variable)
-}else {
+}elif(comp == 0) {
   print("comparison result is false")
+}else {
+  println("comp is less than 0, it's " ++ comp)
 }
