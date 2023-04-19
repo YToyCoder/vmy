@@ -1,23 +1,19 @@
 package com.silence.vmy
 
-import com.silence.vmy.compiler.{GeneralParser, GeneralScanner}
 import com.silence.vmy.evaluate.TreeEmulator
+import com.silence.vmy.tools.Eval
 
-import java.io.FileNotFoundException
+object ScalaMain {
 
-object ScalaMain  extends  App{
-  def run_with_scanner_s(content: String, run: GeneralScanner => Unit ) = {
-    try{
-      val scanner = new GeneralScanner(content, false);
-      run(scanner)
-    }catch {
-      case e: FileNotFoundException => e
-    }
+  private def evalScript(script: String) : Unit = {
+    println(s"parsing script ${script}")
+    val ast = Eval.parsing(script, true)
+    // println(ast)
+    ast.accept(new TreeEmulator(), null)
   }
-  println("hello, emulator")
-  run_with_scanner_s(
-    "let a: Int = 1 * (2 + 3)",
-    scanner => GeneralParser.create(scanner).parse().accept(new TreeEmulator(), null)
-  )
-  println("hello, emulator")
+
+  def main(args: Array[String]): Unit = {
+    for(file <- args)
+      evalScript(file)
+  }
 }
