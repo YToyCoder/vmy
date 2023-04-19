@@ -4,15 +4,20 @@ import com.silence.vmy.evaluate.TreeEmulator
 import com.silence.vmy.tools.Eval
 
 object ScalaMain {
+  val debug = false
 
   private def evalScript(script: String) : Unit = {
-    println(s"parsing script ${script}")
+    if( debug )
+      println(s"parsing script ${script}")
     val ast = Eval.parsing(script, true)
     // println(ast)
-    println("parsing finished")
-    println("starting eval ...")
+    if(debug) {
+      println("parsing finished")
+      println("starting eval ...")
+    }
     ast.accept(new TreeEmulator(), null)
-    println("eval finished")
+    if(debug)
+      println("eval finished")
   }
 
   def main(args: Array[String]): Unit = {

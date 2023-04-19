@@ -18,7 +18,7 @@ public class GeneralParser implements Parser{
   private Lexer lexer;
   private Tokens.Token token;
   private Tokens.Token pre;
-  private boolean debug = true;
+  private boolean debug = false;
   private List<Tokens.Token> savedTokens = new LinkedList<>();
 
   GeneralParser(Lexer _lexer){

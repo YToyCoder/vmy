@@ -32,4 +32,5 @@ val a = [
       return "fn=>b"
     }
 ]
-print(arr)
+val f = a(0)
+println(f() ++ "??")

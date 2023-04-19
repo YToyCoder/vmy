@@ -13,6 +13,7 @@ import com.silence.vmy.evaluate.EmulatingValue.EVEmpty.mkOrderingOps
 import com.silence.vmy.runtime.VmyFunctions
 
 import java.util.List
+import java.util.ArrayList
 
 import scala.annotation.tailrec
 import scala.collection.mutable
@@ -254,15 +255,18 @@ object EmulatingValue {
       }
   }
 
-  private case class EVLong(value: Long) extends BaseEV //{ type ValueType = Long }
-  private case class EVInt(value: Int) extends BaseEV //{ type ValueType = Int }
-  private case class EVDouble(value: Double) extends BaseEV //{ type ValueType = Double }
-  private case class EVString(value: String) extends BaseEV //{ type ValueType = String }
-  private case class EVBool(value: Boolean) extends BaseEV //{ type ValueType = Boolean }
+  case class EVLong(value: Long) extends BaseEV //{ type ValueType = Long }
+  case class EVInt(value: Int) extends BaseEV //{ type ValueType = Int }
+  case class EVDouble(value: Double) extends BaseEV //{ type ValueType = Double }
+  case class EVString(value: String) extends BaseEV //{ type ValueType = String }
+  case class EVBool(value: Boolean) extends BaseEV //{ type ValueType = Boolean }
   {
     override def toString(): String = if(value) "true" else "false"
   }
-  case class EVFunction(value: FunctionDecl) extends BaseEV {}
+  case class EVFunction(value: FunctionDecl) extends BaseEV {
+    override def toString(): String = 
+      s"Fn(${value.name}) => ${if(value.ret == null) "?" else value.ret.typeId}"
+  }
   case class RetValue(_value: EmulatingValue) extends BaseEV {
     // type ValueType = EmulatingValue
     override def value = _value.value
@@ -289,13 +293,19 @@ object EmulatingValue {
 }
 
 class TreeEmulator extends TreeVisitor[EmulatingValue, EmulatingValue] {
-  import EmulatingValue.{EVEmpty, EVFunction,Zero}
+  import EmulatingValue.{EVEmpty, EVFunction, EVList, Zero}
   val debug: Boolean = false
 
   private var frame: TreeEmulator.Frame = _
   private def createFrame() : TreeEmulator.Frame = {
     frame = TreeEmulator.Frame(frame)
     frame
+  }
+  private def exitFrame() : Unit = {
+    frame match {
+      case null | TreeEmulator.Frame(null) => 
+      case TreeEmulator.Frame(preOne) => frame = preOne
+    }
   }
 
   private def declareVariable(name: String, initValue: EmulatingValue.valueType, mutable: Boolean): EmulatingValue = {
@@ -341,7 +351,13 @@ class TreeEmulator extends TreeVisitor[EmulatingValue, EmulatingValue] {
         else visitEach(i + 1)
       }
     }
-    visitEach(0)
+    visitEach(0) match {
+      case RetValue(value) => {
+        exitFrame()
+        value
+      }
+      case _ => EVEmpty
+    }
   }
 
   override def visitBinary(expression: BinaryOperateExpression, payload: EmulatingValue): EmulatingValue = {
@@ -417,7 +433,7 @@ class TreeEmulator extends TreeVisitor[EmulatingValue, EmulatingValue] {
     EVEmpty
   }
 
-  override def visitReturnExpr(expr: ReturnExpr, payload: EmulatingValue): EmulatingValue = expr.body().accept(this, payload)
+  override def visitReturnExpr(expr: ReturnExpr, payload: EmulatingValue): EmulatingValue = RetValue(expr.body().accept(this, payload))
 
   override def visitTypeExpr(expr: TypeExpr, payload: EmulatingValue): EmulatingValue = null
 
@@ -425,30 +441,49 @@ class TreeEmulator extends TreeVisitor[EmulatingValue, EmulatingValue] {
     def paramsEval() = call.params.body.stream()
       .map(_.accept(this, null))
       .toList()
-    def list2arr(ls: List[EmulatingValue]): Array[EmulatingValue] = {
-      val arr: Array[EmulatingValue] = new Array(ls.size())
-      for(i <- 0 until ls.size()){
-        arr(i) = ls.get(i)
+    def callJavaNative(fnName: String, params: List[EmulatingValue]): EmulatingValue = {
+       VmyFunctions.lookupFn(fnName) match {
+        case Some(fn) => VmyFunctions.runNative(fn, params)
+        case None => 
+          throw new VmyRuntimeException(s"not exists function : ${call.callId()}")
       }
-      arr
+    }
+    def listConcat(a: List[EmulatingValue], b : List[EmulatingValue]) = {
+      a.addAll(b)
+      a
     }
     if(debug) println(s"visiting call ${call.callId()}")
     frame.lookup(call.callId()) match {
       // function in frame
       case Some(value) if (value.isInstanceOf[EVFunction]) => {
+        if(debug) println(s"Fn : ${call.callId} is user defined")
         createFrame()
         paramsEval()
-        value.asInstanceOf[EVFunction].value.accept(this, null)
+        value.asInstanceOf[EVFunction].value.body.accept(this, null)
       } 
-      case _ => {
-        VmyFunctions.lookupFn(call.callId()) match {
-          case Some(fn) => 
-            VmyFunctions.runNative(
-              fn, 
-              list2arr(paramsEval()))
-          case None => 
-            throw new VmyRuntimeException(s"not exists function : ${call.callId()}")
+      /* =>>> list function call
+       * list has two function : 
+       *  1. element get
+       *  2. update
+       **/
+      case Some(value) if value.isInstanceOf[EVList] => {
+        if(debug) println(s"Fn : ${call.callId} is arr method")
+        call.params.body.size() match {
+          case 1 => 
+            callJavaNative(
+              VmyFunctions.ListElementGetter, 
+              listConcat(new ArrayList(List.of(value)),paramsEval()))
+          case 2 => 
+            callJavaNative(
+              VmyFunctions.ListElementUpdate,
+              listConcat(new ArrayList(List.of(value)), paramsEval()))
+          case _ => throw new VmyRuntimeException(s"EVList have no ${call.callId} method")
         }
+      }
+      // function defined in java
+      case _ => {
+        if(debug) println(s"Fn : ${call.callId} is java native method")
+        callJavaNative(call.callId(), paramsEval())
       } 
     }
   }
