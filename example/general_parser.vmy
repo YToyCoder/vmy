@@ -17,7 +17,8 @@ variable = variable + 1.201
 val comp = 1 + 2 < 4
 
 if(comp == true){
-  print("comparison result is true")
+  println("comparison result is true")
+  println(variable)
 }else {
   print("comparison result is false")
 }
