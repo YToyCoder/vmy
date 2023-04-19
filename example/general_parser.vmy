@@ -26,4 +26,10 @@ if(comp > 0){
 }
 val arr = [1, 2, 3]
 val ar = [1 * 2 + 3- (10 / 3 + 9 * 0.2), "arr"]
+val a = [
+  fun a() { return "in array function" } ,
+  fun b() {
+      return "fn=>b"
+    }
+]
 print(arr)

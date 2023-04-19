@@ -28,11 +28,7 @@ public class GeneralParser implements Parser{
   }
 
   public static Parser create(Lexer lexer){ return new GeneralParser(lexer); }
-
-  protected Tokens.Token next(){
-    ignoreAnnotation();
-    return do_next();
-  }
+  protected Tokens.Token next(){ ignoreAnnotation(); return do_next(); }
 
   protected Tokens.Token do_next(){
     pre = token;
@@ -90,10 +86,25 @@ public class GeneralParser implements Parser{
     }
   }
 
+  private void ignoreAnnotation() {
+    while (peekTok(tk -> tk == TokenKind.Annotation)){
+      next_must(TokenKind.Annotation);
+      if(debug) {
+        System.out.println("comman next token => " + token);
+      }
+    }
+  }
+
+
   private void ignoreEmptyLines(){
-    ignoreAnnotation();
-    while(peekTok(tk -> tk == TokenKind.newline)){
+    while(peekTok(tokenkindIsEqual(TokenKind.newline))){
       ignore(TokenKind.newline);
+    }
+  }
+  private void ignoreEmptyLineOrComments() {
+    while(peekTok(tk -> tk == TokenKind.newline || tk == TokenKind.Annotation))
+    {
+      ignoreEmptyLines();
       ignoreAnnotation();
     }
   }
@@ -111,16 +122,18 @@ public class GeneralParser implements Parser{
 
   // e_fun = fun identifier expr "{" e_block "}"
   private FunctionDecl compileFunc(){
-    if(peekTok(tk -> tk != TokenKind.Fun))
+    if( // not start with function declaration
+        peekTok(tokenkindIsEqual(TokenKind.Fun).negate()))
       error(next().toString());
     Tokens.Token decl = next();
-    String name = null;
-    if(peekTok(tk -> tk == TokenKind.Id))
+    String name = "";
+    if(peekTok(tokenkindIsEqual(TokenKind.Id))){
       name = next().payload();
+    }
     return new FunctionDecl(
         name,
         parameters().body(),
-        peekTok(tk -> tk == TokenKind.Colon) ? parsingType() : null,
+        peekTok(tokenkindIsEqual(TokenKind.Colon)) ? parsingType() : null,
         compileBlock(TokenKind.LBrace, TokenKind.RBrace),
         decl.start()
     );
@@ -187,17 +200,16 @@ public class GeneralParser implements Parser{
   private BlockStatement compileBlock(TokenKind end){
     final long pos = token().start();
     List<Tree> ret = new LinkedList<>();
-    ignoreEmptyLines();
-    ignoreAnnotation();
+    ignoreEmptyLineOrComments();
     while(
       hasTok() &&
       !peekTok(tk -> tk == end) &&
       !peekTok(tk -> tk == TokenKind.newline, tk -> tk == end)
     ){
       ret.add(expression());
-      ignoreEmptyLines();
+      ignoreEmptyLineOrComments();
     }
-    ignoreEmptyLines();
+    ignoreEmptyLineOrComments();
     next_must(end);
     return new BlockStatement(ret, pos);
   }
@@ -291,30 +303,29 @@ public class GeneralParser implements Parser{
     Tokens.Token id = next_must(TokenKind.Id);
     return new TypeExpr(start.start(), Tag.TypeDecl, id.payload());
   }
-
-  private void ignoreAnnotation() {
-    while (peekTok(tk -> tk == TokenKind.Annotation)){
-      next_must(TokenKind.Annotation);
-      if(debug) {
-        System.out.println("comman next token => " + token);
-      }
-      if(peekTok(tk -> tk == TokenKind.newline || tk == TokenKind.EOF))
-        do_next(); // newline & end of file
+  // theExpression = expr3
+  //               | e_fun
+  private Expression theExpression(){
+    if(/* function */
+        peekTok(tokenkindIsEqual(TokenKind.Fun)))
+    {
+      var fn = compileFunc();
+      if(debug) System.out.println(fn);
+      return fn;
     }
+    // expr3
+    return expr3();
   }
 
+   /* this expression can exists in one line alone */
    //expression = varDecl "=" expr4
-   //            | expr3
-   //            | e_fun
    //            | "return" expr3
   //             | ifStatement
+   //            | theExpression
   private Expression expression(){
-    if(peekTok(tk -> tk == TokenKind.Fun)){/* function */
-      return compileFunc();
-    }
     if( /* variable declaration */
-        peekTok(tk -> tk == TokenKind.Let || tk == TokenKind.Val)){
-
+        peekTok(tk -> tk == TokenKind.Let || tk == TokenKind.Val))
+    {
       Tokens.Token decl = next();
       if(peekTok(tk -> tk != TokenKind.Id))
         error(token().toString());
@@ -347,7 +358,7 @@ public class GeneralParser implements Parser{
         peekTok(tk -> tk == TokenKind.If))
       return if_statement();
     //expr3
-    return expr3();
+    return theExpression();
   }
 
   // one = identifier
@@ -384,15 +395,22 @@ public class GeneralParser implements Parser{
     };
   }
 
-  // arr = "[" expr3 oneRest "]"
-  // oneRest = { "," expr3}
+  // arr = "[" theExpression oneRest "]"
+  // oneRest = { "," theExpression }
   private Expression arrExpression(){
     Token arrayToken = next_must(TokenKind.ArrOpen);
+    ignoreEmptyLineOrComments();
     List<Expression> elements = new ArrayList<>();
-    elements.add(expr3());
+    elements.add(theExpression());
+    ignoreEmptyLineOrComments();
+    if(debug){
+      System.out.println("after first expression, next token is " + token);
+    }
     while(peekTok(tokenkindIsEqual(TokenKind.ArrClose).negate() /* not equal */)){
       next_must(TokenKind.Comma);
-      elements.add(expr3());
+      ignoreEmptyLineOrComments();
+      elements.add(theExpression());
+      ignoreEmptyLineOrComments();
     }
     next_must(TokenKind.ArrClose);
     return new ArrExpression(elements, Tag.Arr, arrayToken.start());
