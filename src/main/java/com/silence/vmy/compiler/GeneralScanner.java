@@ -104,13 +104,24 @@ public class GeneralScanner implements Lexer{
           }
           yield createTok(Tokens.TokenKind.Div, startChar.location(), startChar.location() + 1);
         }
-        case '\n' -> createTok(Tokens.TokenKind.newline, nextChar().location(), peekChar.location() + 1);
+        case '\n','\r' -> {
+          CharReaders.CharInFile startChar = nextChar();
+          if(hasChar() && peekChar().charIs('\r'))
+            System.out.printf("newline char is %d%n", (int)nextChar().c());
+          yield createTok(Tokens.TokenKind.newline, startChar.location(), peekChar.location() + 1);
+        }
+        // ignore token start with blank char
+        case ' ' -> { nextChar(); yield fetchToken();}
         // TODO: 2022/12/
         default -> {
           if(peekChar.isAlphabetic()){
             yield handle_alphabetic_start();
           }
-          throw new IllegalStateException("Unexpected value: %c, row: %d, col: %d".formatted(peekChar.c(), peekChar.row(), peekChar.col()));
+          throw new IllegalStateException("Unexpected value: %c/%d, row: %d, col: %d".formatted(
+              peekChar.c(),
+              (int)peekChar.c(),
+              peekChar.row(),
+              peekChar.col()));
         }
       };
     }
