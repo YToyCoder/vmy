@@ -1,5 +1,7 @@
 package com.silence.vmy.compiler.tree;
 
+import java.util.Objects;
+
 public abstract class Trees {
   // CompileUnit -> a file
   public static class CompileUnit extends BaseTree implements Root{
@@ -21,19 +23,10 @@ public abstract class Trees {
       return this;
     }
 
-    @Override
-    public Tree body() {
-      return body;
-    }
-
-    @Override
-    public Tag tag() {
-      return Tag.Root;
-    }
+    @Override public Tree body() { return body; }
+    @Override public Tag tag() { return Tag.Root; }
+    @Override public String toString() { return Objects.isNull(body) ?"null" : body.toString(); }
   }
-
-  public static CompileUnit createCompileUnit(Tree content){
-    return new CompileUnit(content);
-  }
+  public static CompileUnit createCompileUnit(Tree content){ return new CompileUnit(content); }
 
 }
