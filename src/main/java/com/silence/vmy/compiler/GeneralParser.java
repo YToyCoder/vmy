@@ -18,7 +18,7 @@ public class GeneralParser implements Parser{
   private Lexer lexer;
   private Tokens.Token token;
   private Tokens.Token pre;
-  private boolean debug = true;
+  private boolean debug = false;
   private List<Tokens.Token> savedTokens = new LinkedList<>();
 
   GeneralParser(Lexer _lexer){
@@ -103,12 +103,11 @@ public class GeneralParser implements Parser{
     throw new LexicalException("<<error>>");
   }
 
-  private Predicate<TokenKind> tokenkindIsEqual(TokenKind tk){
-    return tokenkind -> tokenkind == tk;
-  }
+  private Predicate<TokenKind> tokenkindIsEqual(TokenKind tk){ return tokenkind -> tokenkind == tk; }
+  @Override public 
+  Root parse() { return Trees.createCompileUnit(hasTok() ? compileBlock(TokenKind.EOF) : emptyBlock() ); }
+  private BlockStatement emptyBlock() { return new BlockStatement(List.of(), 0); }
 
-  @Override
-  public Root parse() { return Trees.createCompileUnit(hasTok() ? compileBlock(TokenKind.EOF) : null); }
 
   // e_fun = fun identifier expr "{" e_block "}"
   private FunctionDecl compileFunc(){
@@ -296,9 +295,10 @@ public class GeneralParser implements Parser{
   private void ignoreAnnotation() {
     while (peekTok(tk -> tk == TokenKind.Annotation)){
       next_must(TokenKind.Annotation);
-      while (peekTok(tk -> tk != TokenKind.newline && tk != TokenKind.EOF))
-        do_next(); // remove token of this line
-      if(peekTok(tk -> tk != TokenKind.newline && tk != TokenKind.EOF))
+      if(debug) {
+        System.out.println("comman next token => " + token);
+      }
+      if(peekTok(tk -> tk == TokenKind.newline || tk == TokenKind.EOF))
         do_next(); // newline & end of file
     }
   }
