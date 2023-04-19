@@ -63,8 +63,9 @@ object TreeEmulator {
 }
 
 object EmulatingValue {
-  type valueType = PrimaryOpSupportType | String| Boolean | EmulatingValue | FunctionDecl
+  type valueType = PrimaryOpSupportType | String| Boolean | EmulatingValue | FunctionDecl | ArrayT /* array */
   type PrimaryOpSupportType = Int | Double | Long 
+  type ArrayT = List[EmulatingValue]
   def apply(value: valueType): BaseEV = apply(value, null)
   // must value use 
   def apply(value: valueType, name: String): BaseEV = apply(value, name, true)
@@ -72,6 +73,7 @@ object EmulatingValue {
   // function declaration use
   def apply(value: valueType, name: String, mutable: Boolean): BaseEV = {
     val ret = value match {
+      case null => EVEmpty
       case e: Int => EVInt(e)
       case e: Double => EVDouble(e)
       case e: Long => EVLong(e)
@@ -79,10 +81,11 @@ object EmulatingValue {
       case e: Boolean => EVBool(e)
       case e: FunctionDecl => EVFunction(e)
       case e: RetValue => RetValue(e)
-      case e: EmulatingValue => apply(e.value)
+      case e: ArrayT => EVList(e) 
+      case e: EmulatingValue => apply(e.value) // rec
     }
-    ret.setName(name)
-    if (mutable) ret else ret.immutable()
+    ret.setName(name) // set name
+    if (mutable) ret else ret.immutable() // set mutable
   }
   val Zero : EmulatingValue = EVInt(0)
 
@@ -190,17 +193,9 @@ object EmulatingValue {
           case (l: Long, r: Long) => l + r
           case (l, r)=> add(r, l)
         }
-      val addResult : valueType = (this, other) match {
-        case (EVFunction(_), _) | (_, EVFunction(_)) => this.toString + other.toString
-        case (left, right) => 
-          (left.value, right.value) match {
-            case (l:String, r) => l + r
-            case (l, r:String) => r + l
-            case two => {
-              val (pl,pr) = toPrimaryOpType(two)  
-              add(pl, pr)
-            }
-          }
+      val addResult : valueType = (this.value, other.value) match {
+        case (l: PrimaryOpSupportType, r: PrimaryOpSupportType) => add((l,r)) 
+        case (l, r) => l.toString + r.toString
       }
       EmulatingValue(addResult)
     }
@@ -271,6 +266,9 @@ object EmulatingValue {
   case class RetValue(_value: EmulatingValue) extends BaseEV {
     // type ValueType = EmulatingValue
     override def value = _value.value
+  }
+  case class EVList(value: ArrayT) extends BaseEV {
+    override def toString() = s"[${value.stream().map(_.toString).reduce(_ + "," + _).get}]"
   }
   object EVEmpty extends BaseEV {
     override def value = null 
@@ -494,6 +492,6 @@ class TreeEmulator extends TreeVisitor[EmulatingValue, EmulatingValue] {
     (false, EmulatingValue.EVEmpty)
   }
   override def visitArr(arr: ArrExpression, payload: EmulatingValue) : EmulatingValue = {
-    EmulatingValue.EVEmpty
+    EmulatingValue(arr.elements.stream().map(_.accept(this, payload)).toList)
   }
 }

@@ -24,3 +24,5 @@ if(comp > 0){
 }else {
   println("comp is less than 0, it's " ++ comp)
 }
+val arr = [1, 2, 3]
+print(arr)
