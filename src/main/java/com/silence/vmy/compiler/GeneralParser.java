@@ -18,7 +18,7 @@ public class GeneralParser implements Parser{
   private Lexer lexer;
   private Tokens.Token token;
   private Tokens.Token pre;
-  private boolean debug = false;
+  private boolean debug = true;
   private List<Tokens.Token> savedTokens = new LinkedList<>();
 
   GeneralParser(Lexer _lexer){
@@ -384,15 +384,15 @@ public class GeneralParser implements Parser{
     };
   }
 
-  // arr = "[" one oneRest "]"
-  // oneRest = { "," one }
+  // arr = "[" expr3 oneRest "]"
+  // oneRest = { "," expr3}
   private Expression arrExpression(){
     Token arrayToken = next_must(TokenKind.ArrOpen);
     List<Expression> elements = new ArrayList<>();
-    elements.add(one());
+    elements.add(expr3());
     while(peekTok(tokenkindIsEqual(TokenKind.ArrClose).negate() /* not equal */)){
       next_must(TokenKind.Comma);
-      elements.add(one());
+      elements.add(expr3());
     }
     next_must(TokenKind.ArrClose);
     return new ArrExpression(elements, Tag.Arr, arrayToken.start());

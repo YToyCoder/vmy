@@ -9,7 +9,10 @@ object ScalaMain {
     println(s"parsing script ${script}")
     val ast = Eval.parsing(script, true)
     // println(ast)
+    println("parsing finished")
+    println("starting eval ...")
     ast.accept(new TreeEmulator(), null)
+    println("eval finished")
   }
 
   def main(args: Array[String]): Unit = {
