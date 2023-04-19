@@ -18,6 +18,7 @@ public class GeneralParser implements Parser{
   private Lexer lexer;
   private Tokens.Token token;
   private Tokens.Token pre;
+  private boolean debug = true;
   private List<Tokens.Token> savedTokens = new LinkedList<>();
 
   GeneralParser(Lexer _lexer){
@@ -66,6 +67,9 @@ public class GeneralParser implements Parser{
 
   boolean peekTok(Predicate<Tokens.TokenKind> tk){
     ensureLookahead(0);
+    if(debug) {
+      System.out.println("peek => "+token);
+    }
     return hasTok() && tk.test(token().kind());
   }
 
@@ -218,11 +222,11 @@ public class GeneralParser implements Parser{
     if(peekTok(tk -> tk == TokenKind.Id, is_assign_op::apply)){
       Tokens.Token id = next();
       Tokens.Token op = next();
-      return new BinaryOperateExpression(
+      return (Expression) new BinaryOperateExpression(
           new IdExpr(id.start(), Tag.Id, id.payload()),
           expr3(),
           kind2tag(op.kind())
-      );
+      ).setPos(id.start());
     }
     return expression4();
   }
@@ -294,7 +298,8 @@ public class GeneralParser implements Parser{
       next_must(TokenKind.Annotation);
       while (peekTok(tk -> tk != TokenKind.newline && tk != TokenKind.EOF))
         do_next(); // remove token of this line
-      do_next(); // newline & end of file
+      if(peekTok(tk -> tk != TokenKind.newline && tk != TokenKind.EOF))
+        do_next(); // newline & end of file
     }
   }
 
@@ -338,7 +343,8 @@ public class GeneralParser implements Parser{
       return new ReturnExpr(ret.start(), null, expr3());
     }
 
-    if(peekTok(tk -> tk == TokenKind.If))
+    if( /* if-statement */
+        peekTok(tk -> tk == TokenKind.If))
       return if_statement();
     //expr3
     return expr3();
