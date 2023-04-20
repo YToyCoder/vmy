@@ -1,25 +1,26 @@
 package com.silence.vmy.compiler
 
-import com.silence.vmy.compiler.tree.{
-  AssignmentExpression, 
-  BinaryOperateExpression, 
-  BlockStatement, 
-  CallExpr, 
-  Expression, 
-  FunctionDecl, 
-  IdExpr, 
-  IfStatement, 
-  ListExpr, 
-  LiteralExpression, 
-  ReturnExpr, 
-  Root, 
-  Tree, 
-  TreeVisitor, 
-  TypeExpr, 
-  Unary, 
-  VariableDecl,
-  ArrExpression
-}
+import com.silence.vmy.compiler.tree._
+// {
+  // AssignmentExpression, 
+  // BinaryOperateExpression, 
+  // BlockStatement, 
+  // CallExpr, 
+  // Expression, 
+  // FunctionDecl, 
+  // IdExpr, 
+  // IfStatement, 
+  // ListExpr, 
+  // LiteralExpression, 
+  // ReturnExpr, 
+  // Root, 
+  // Tree, 
+  // TreeVisitor, 
+  // TypeExpr, 
+  // Unary, 
+  // VariableDecl,
+  // ArrExpression
+// }
 
 sealed class TheType(val name:String) extends CompilingPhaseType
 
@@ -58,6 +59,10 @@ class TypeCheck extends TreeVisitor[CompilingPhaseType, CompilingPhaseType]{
     // visit both and compare
     val lTp = expression.left().accept(this, payload)
     val rTp = expression.right().accept(this, payload)
+    null
+  }
+
+  override def visitForStatement(statement: ForStatement, payload: CompilingPhaseType): CompilingPhaseType= {
     null
   }
 

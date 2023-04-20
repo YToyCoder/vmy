@@ -10,8 +10,8 @@ object ScalaMain {
     if( debug )
       println(s"parsing script ${script}")
     val ast = Eval.parsing(script, true)
-    // println(ast)
     if(debug) {
+      println(ast)
       println("parsing finished")
       println("starting eval ...")
     }

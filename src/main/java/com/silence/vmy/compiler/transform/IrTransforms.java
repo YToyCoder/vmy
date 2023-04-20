@@ -132,6 +132,11 @@ public abstract class IrTransforms {
       return new IdentifierNode(expr.name());
     }
 
+    @Override public
+    Tree visitForStatement(ForStatement statement, Object payload) {
+      return null;
+    }
+
     @Override
     public Tree visitIfStatement(IfStatement statement, Object payload) {
       ConditionStatement ifStatement = statement.ifStatement();

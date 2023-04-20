@@ -175,6 +175,7 @@ public class GeneralScanner implements Lexer{
         case "return" -> createToken.apply(Tokens.TokenKind.Return);
         case "true"  -> createToken.apply(Tokens.TokenKind.True);
         case "false"  -> createToken.apply(Tokens.TokenKind.False);
+        case "in" -> createToken.apply(Tokens.TokenKind.In);
         default -> createPayloadTok(
             Tokens.TokenKind.Id,
             startChar.location(),

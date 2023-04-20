@@ -16,4 +16,5 @@ public interface TreeVisitor<R,T> {
   R visitIdExpr(IdExpr expr, T payload);
   R visitIfStatement(IfStatement statement, T payload);
   R visitArr(ArrExpression arr, T t);
+  R visitForStatement(ForStatement forStatement, T t);
 }

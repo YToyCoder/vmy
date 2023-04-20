@@ -2,6 +2,7 @@ package com.silence.vmy.evaluate
 
 import com.silence.vmy.compiler.tree.Tree.Tag
 import com.silence.vmy.compiler.tree._
+import com.silence.vmy.tools.Log
 import com.silence.vmy.compiler.{Modifiers, Tokens}
 import com.silence.vmy.evaluate.EmulatingValue.{RetValue, initValue}
 import com.silence.vmy.runtime.VmyRuntimeException
@@ -9,7 +10,6 @@ import math.Fractional.Implicits.infixFractionalOps
 import math.Integral.Implicits.infixIntegralOps
 import math.Numeric.Implicits.infixNumericOps
 import com.silence.vmy.evaluate.EmulatingValue.EVEmpty.mkOrderingOps
-
 import com.silence.vmy.runtime.VmyFunctions
 
 import java.util.List
@@ -141,7 +141,7 @@ object EmulatingValue {
         case None => throw new VmyRuntimeException("not in scope")
         case Some(value) => {
           scope(name) = v copyPropsFrom value
-          value
+          v
         }
       }
     }
@@ -196,7 +196,7 @@ object EmulatingValue {
         }
       val addResult : valueType = (this.value, other.value) match {
         case (l: PrimaryOpSupportType, r: PrimaryOpSupportType) => add((l,r)) 
-        case (l, r) => l.toString + r.toString
+        case (l, r) => this.toString + other.toString
       }
       EmulatingValue(addResult)
     }
@@ -292,9 +292,9 @@ object EmulatingValue {
   }
 }
 
-class TreeEmulator extends TreeVisitor[EmulatingValue, EmulatingValue] {
+class TreeEmulator extends Log with TreeVisitor[EmulatingValue, EmulatingValue]  {
   import EmulatingValue.{EVEmpty, EVFunction, EVList, Zero}
-  val debug: Boolean = true
+  val debug: Boolean = false
 
   private var frame: TreeEmulator.Frame = _
   private def createFrame() : TreeEmulator.Frame = {
@@ -345,19 +345,16 @@ class TreeEmulator extends TreeVisitor[EmulatingValue, EmulatingValue] {
       else {
         val el = expressions.get(i)
         val v = el.accept(this, payload)
-        if(debug)
-          println(s"block-elemtent => ${el} \n|>> is RetValue => ${v.isInstanceOf[RetValue]}")
+        if(debug) {
+          log(">#"*10)
+          log(s"block-elemtent => ${el} \n|>> is RetValue => ${v.isInstanceOf[RetValue]}")
+          log("<#"*10)
+        }
         if(v.isInstanceOf[RetValue]) v
         else visitEach(i + 1)
       }
     }
-    visitEach(0) match {
-      case RetValue(value) => {
-        exitFrame()
-        value
-      }
-      case _ => EVEmpty
-    }
+    visitEach(0)
   }
 
   override def visitBinary(expression: BinaryOperateExpression, payload: EmulatingValue): EmulatingValue = {
@@ -412,7 +409,15 @@ class TreeEmulator extends TreeVisitor[EmulatingValue, EmulatingValue] {
 
   override def visitAssignment(expression: AssignmentExpression, payload: EmulatingValue): EmulatingValue = {
     val value = expression.right().accept(this, payload)
-    expression.left().accept(this, value)
+    val left = expression.left
+    val destination = left.accept(this, value)
+    if(debug) {
+      log(s"assignment ${destination} <= ${value} ")
+    }
+    if(!left.isInstanceOf[VariableDecl]) {
+      return destination() = value
+    }
+    return destination
   }
 
   override def visitFunctionDecl(function: FunctionDecl, payload: EmulatingValue): EmulatingValue = {
@@ -452,14 +457,16 @@ class TreeEmulator extends TreeVisitor[EmulatingValue, EmulatingValue] {
       a.addAll(b)
       a
     }
-    if(debug) println(s"visiting call ${call.callId()}")
+    if(debug) log(s"visiting call ${call.callId()}")
     frame.lookup(call.callId()) match {
       // function in frame
       case Some(value) if (value.isInstanceOf[EVFunction]) => {
-        if(debug) println(s"Fn : ${call.callId} is user defined")
+        if(debug) log(s"Fn : ${call.callId} is user defined")
         createFrame()
         paramsEval()
-        value.asInstanceOf[EVFunction].value.body.accept(this, null)
+        val result = value.asInstanceOf[EVFunction].value.body.accept(this, null)
+        exitFrame()
+        result
       } 
       /* =>>> list function call
        * list has two function : 
@@ -467,7 +474,7 @@ class TreeEmulator extends TreeVisitor[EmulatingValue, EmulatingValue] {
        *  2. update
        **/
       case Some(value) if value.isInstanceOf[EVList] => {
-        if(debug) println(s"Fn : ${call.callId} is arr method")
+        if(debug) log(s"Fn : ${call.callId} is arr method")
         call.params.body.size() match {
           case 1 => 
             callJavaNative(
@@ -482,7 +489,7 @@ class TreeEmulator extends TreeVisitor[EmulatingValue, EmulatingValue] {
       }
       // function defined in java
       case _ => {
-        if(debug) println(s"Fn : ${call.callId} is java native method")
+        if(debug) log(s"Fn : ${call.callId} is java native method")
         callJavaNative(call.callId(), paramsEval())
       } 
     }
@@ -515,6 +522,56 @@ class TreeEmulator extends TreeVisitor[EmulatingValue, EmulatingValue] {
       }
     }
   }
+
+  override def visitForStatement(statement: ForStatement, payload: EmulatingValue): EmulatingValue = {
+    if(debug) 
+      log("enter ForStatement")
+  // create new frame for for-statement
+    val heads = statement.heads
+    // heads.stream().forEach(declareVariableForId _)
+    val arrId = statement.arrId.name
+    val result: EmulatingValue = statement.arrId.accept(this, payload) match {
+      case EVList(value) => {
+        createFrame() 
+        // declare all variables : element id  and index id 
+        for(index <- 0 until value.size){
+          val indexExpr = LiteralExpression.ofStringify(index.toString, LiteralExpression.Kind.Int)
+          // generate assign element expression
+          val createdExpression = createCall(arrId, List.of(indexExpr))
+          if(debug) {
+            log(createdExpression.toString)
+          }
+          // eval element assignment 
+          declareVariable(heads.get(0).name, createdExpression.accept(this, payload), false)
+          if(statement.isWithIndex()){
+            // assign index
+            // val indexAssignExpression = createAssignment(heads.get(1), indexExpr)
+            if(debug){
+              log(s"set index variale ")
+            }
+            // eval index assignment
+            declareVariable(heads.get(1).name, indexExpr.accept(this, payload))
+          }
+          statement.body.accept(this, payload) match{
+            case e : RetValue => {
+              return e
+            }
+            case _ => 
+          }
+        }
+        exitFrame()
+        EVEmpty
+      } 
+      case e => throw new VmyRuntimeException(s"${e.name} not support for iterate")
+    }
+    result
+  }
+
+  // private def createAssignArrayElementToVariable(variableId: String, arrId: String, index: Int): AssignmentExpression =  
+  private def createBlock(statements: List[Tree]) = new BlockStatement(statements, 0)
+  private def createAssignment(l: Expression, r: Expression) = new AssignmentExpression(l, r, 0)
+  private def createCall(id: String, params: List[Expression]) = CallExpr.create(0, id, new ListExpr(0, Tag.Param, params))
+  private def declareVariableForId(id: IdExpr): Unit = declareVariable(id.name, null)
 
   private[this] def doWithElif(statement: IfStatement, payload: EmulatingValue): (Boolean, EmulatingValue) = {
     val elifs = statement.elif()

@@ -41,7 +41,8 @@ public class Tokens {
     ArrOpen, // [
     ArrClose, // ]
     // control flow
-    For,
+    For, // for
+    In, // in
     While,
     If,
     Elif,

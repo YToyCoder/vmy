@@ -6,6 +6,7 @@ import com.silence.vmy.compiler.tree.*;
 import com.silence.vmy.compiler.tree.Tree.Tag;
 import com.silence.vmy.runtime.VmyRuntimeException;
 import com.silence.vmy.tools.Utils;
+import com.silence.vmy.tools.Log;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -14,7 +15,7 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-public class GeneralParser implements Parser{
+public class GeneralParser extends Log implements Parser{
   private Lexer lexer;
   private Tokens.Token token;
   private Tokens.Token pre;
@@ -38,6 +39,9 @@ public class GeneralParser implements Parser{
       token = lexer.next();
     else // no token
       token = null;
+    if(debug) {
+      log("fetch token => "+ pre);
+    }
     return pre;
   }
 
@@ -63,9 +67,7 @@ public class GeneralParser implements Parser{
 
   boolean peekTok(Predicate<Tokens.TokenKind> tk){
     ensureLookahead(0);
-    if(debug) {
-      System.out.println("peek => "+token);
-    }
+    
     return hasTok() && tk.test(token().kind());
   }
 
@@ -317,12 +319,51 @@ public class GeneralParser implements Parser{
     return expr3();
   }
 
+  // for-statement = "for" for-head block 
+  // for-head = id "," id "in" id
+  //          | id "in" id
+  private Statement parsingForStatement(){
+    if(debug){ log("enter parsing for"); }
+    if(/*case not start with for */
+        peekTok(tokenkindIsEqual(TokenKind.For).negate()))
+    {
+      error("not for");
+    }
+    var forDecl = next();
+    List<IdExpr> forHeads = new ArrayList<>();
+    forHeads.add(getIdExpresion());
+    boolean withIndex = false;
+    if(peekTok(tokenkindIsEqual(TokenKind.Comma)))
+    {
+      next(); // drop ,
+      forHeads.add(getIdExpresion());
+      withIndex = true;
+    }
+    next_must(TokenKind.In);
+    var arrId = getIdExpresion();
+    ignoreEmptyLineOrComments();
+    var position = forDecl.start();
+    var block = compileBlock(TokenKind.LBrace, TokenKind.RBrace);
+    return withIndex ? 
+      ForStatement.withIndex(forHeads, arrId, block, position) : 
+      ForStatement.withoutIndex(forHeads, arrId, block, position);
+  }
+
+  private IdExpr getIdExpresion(){
+    var one = one();
+    if(one instanceof IdExpr id){
+      return id;
+    }
+    throw new CompilationException("expect id expression, but meet with " + one.getClass().getName());
+  }
+
    /* this expression can exists in one line alone */
    //expression = varDecl "=" expr4
    //            | "return" expr3
    //            | ifStatement
    //            | theExpression
-   //               | arrUpdate
+   //            | arrUpdate
+   //            | for-statement 
    // arrUpdate = identifier "(" expression ")" Assignment expression
   private Expression expression(){
     if( /* variable declaration */
@@ -354,6 +395,10 @@ public class GeneralParser implements Parser{
     if(peekTok(tk -> tk == TokenKind.Return)){
       Tokens.Token ret = next();
       return new ReturnExpr(ret.start(), null, expr3());
+    }
+
+    if(peekTok(tokenkindIsEqual(TokenKind.For))) {
+      return parsingForStatement();
     }
 
     if( /* if-statement */
