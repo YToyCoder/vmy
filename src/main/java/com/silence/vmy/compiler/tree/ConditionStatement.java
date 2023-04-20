@@ -11,4 +11,8 @@ public record ConditionStatement(
   public <R, T> R accept(TreeVisitor<R, T> visitor, T payload) { return null; }
   @Override
   public <T> Tree accept(TVisitor<T> visitor, T t) { return null; }
+  @Override public
+  String toString() {
+    return "" + tag + "(" + condition + ")" +"{\n" + block + "\n}";
+  }
 }

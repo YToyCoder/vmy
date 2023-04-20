@@ -17,4 +17,5 @@ public record VariableDecl(String name, Modifiers modifiers, TypeExpr t, long po
 
   @Override
   public Tag tag() { return Tag.VarDecl; }
+  @Override public String toString() { return "" + name + ":" + (t == null ? "?" : t.typeId());}
 }

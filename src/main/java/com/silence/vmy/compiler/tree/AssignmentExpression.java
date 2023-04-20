@@ -33,4 +33,5 @@ public record AssignmentExpression(Expression left, Expression right, long posit
 
   @Override
   public Tag tag() { return Tag.Assign; }
+  @Override public String toString() { return left + "=" + right; }
 }

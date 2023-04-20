@@ -12,4 +12,8 @@ public record IdExpr(long position, Tag tag, String name) implements Expression 
       return visitor.leaveIdExpr(this, t);
     return this;
   }
+  @Override 
+  public String toString() {
+    return "id(" + name + ")";
+  }
 }

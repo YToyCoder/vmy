@@ -19,7 +19,7 @@ public abstract class LiteralExpression
     Double
   }
 
-  private final Kind kind;
+  protected final Kind kind;
   public boolean isInt()    { return kind == Kind.Int; }
   public boolean isDouble() { return kind == Kind.Double; }
   public boolean isBoolean(){ return kind == Kind.Boolean; }
@@ -54,6 +54,10 @@ public abstract class LiteralExpression
       if(visitor.enterLiteral(this, t))
         return visitor.leaveLiteral(this, t);
       return this;
+    }
+    @Override public 
+    String toString() {
+      return "" + kind + ":" + content; 
     }
   }
 

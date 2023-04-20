@@ -21,6 +21,9 @@ public class Unary extends OperatorExpression{
     return this;
   }
 
-  @Override
-  public Tag tag() { return tag; }
+  @Override public Tag tag() { return tag; }
+  @Override 
+  public String toString() { 
+    return "" + tag + "|" + body;
+  }
 }

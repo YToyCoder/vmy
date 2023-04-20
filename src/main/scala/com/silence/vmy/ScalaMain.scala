@@ -4,7 +4,7 @@ import com.silence.vmy.evaluate.TreeEmulator
 import com.silence.vmy.tools.Eval
 
 object ScalaMain {
-  val debug = false
+  val debug = true
 
   private def evalScript(script: String) : Unit = {
     if( debug )

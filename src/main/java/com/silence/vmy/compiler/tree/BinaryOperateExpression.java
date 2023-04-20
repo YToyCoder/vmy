@@ -40,5 +40,5 @@ public class BinaryOperateExpression extends OperatorExpression{
   public Expression left() { return lhe; }
   public Expression right(){ return rhe; }
   @Override public Tag tag() { return tag; }
-  public String toString() { return "Binary[left=%s,right=%s,tag=%s]".formatted(lhe.toString(), rhe.toString(), tag.toString()); }
+  public String toString() { return "%s [%s] %s".formatted(lhe.toString(), tag.toString(), rhe.toString()); }
 }

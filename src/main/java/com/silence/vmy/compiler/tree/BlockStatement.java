@@ -27,4 +27,12 @@ public record BlockStatement(List<Tree> exprs, long position) implements Stateme
 
   @Override
   public Tag tag() { return null; }
+  @Override 
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    for(var el : exprs){
+      sb.append(el + "\n");
+    }
+    return sb.substring(0, sb.length() - 1);
+  }
 }

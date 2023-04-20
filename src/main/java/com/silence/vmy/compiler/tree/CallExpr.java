@@ -14,6 +14,10 @@ public record CallExpr(
   public <R, T> R accept(TreeVisitor<R, T> visitor, T payload) {
     return visitor.visitCallExpr(this, payload);
   }
+  @Override public 
+  String toString() {
+    return "" + callId + "(" + params + ")";
+  }
 
   @Override
   public <T> Tree accept(TVisitor<T> visitor, T t) {

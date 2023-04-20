@@ -16,5 +16,14 @@ public record ArrExpression(
       return visitor.leaveArrExpression(this, t);
     return this;
   }
+
+  @Override public
+  String toString() {
+    StringBuilder sb = new StringBuilder("[");
+    for(var el : elements) {
+      sb.append(el + ",\n");
+    }
+    return sb.append("]").toString();
+  }
   
 }

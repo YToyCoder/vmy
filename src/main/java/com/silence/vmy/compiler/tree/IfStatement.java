@@ -21,5 +21,18 @@ public record IfStatement(
       return visitor.leaveIfStatement(this, t);
     return this;
   }
+  @Override public 
+  String toString() {
+    StringBuilder sb = new StringBuilder();
+    for(var el : elif){
+      sb.append(el + "\n");
+    }
+    if(el != null) {
+      sb.append(el);
+    }else {
+      return "" + ifStatement + "\n" + sb.substring(0, sb.length() - 1) ;
+    }
+    return "" + ifStatement + "\n" + sb;
+  }
 
 }

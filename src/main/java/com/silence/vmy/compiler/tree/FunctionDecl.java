@@ -1,6 +1,7 @@
 package com.silence.vmy.compiler.tree;
 
 import java.util.List;
+import java.util.Objects;
 
 public record FunctionDecl(
     String name,
@@ -21,7 +22,21 @@ public record FunctionDecl(
   }
 
   @Override
-  public Tag tag() {
-    return Tag.Fun;
+  public Tag tag() { return Tag.Fun; }
+
+  @Override
+  public String toString() { 
+    StringBuilder sb = new StringBuilder("(");
+    for(int i=0; i<params.size() - 1; i++){
+      VariableDecl decl = params.get(0);
+      sb.append(decl + ",");
+    }
+    if(params.size() > 0) {
+      sb.append(params.get(params.size() - 1));
+    }
+    sb.append(") => " + (Objects.isNull(ret) ? "?" : ret.typeId()));
+    return "Fn: " + sb.toString() + "{\n" +
+      body.toString() + "\n" +
+      "}";
   }
 }

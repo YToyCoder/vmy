@@ -12,4 +12,9 @@ public record ReturnExpr(long position, Tag tag, Tree body) implements Expressio
       return visitor.leaveReturn(this, t);
     return this;
   }
+
+  @Override
+  public String toString() {
+    return "ret => " + body;
+  }
 }
