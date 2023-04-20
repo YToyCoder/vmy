@@ -48,6 +48,22 @@ object VmyFunctions{
       }
     }
   )
+
+  register(
+    ListElementUpdate,
+    params => {
+      params.size() match {
+        case 3 => 
+          (params.get(0), params.get(1), params.get(2)) match {
+            case (EVList(arr), EVInt(index), value) => arr.set(index, value)
+            case _ => 
+              throw new VmyRuntimeException(s"${ListElementGetter} need parameters (arr, int, ?)")
+          }
+        case _ => 
+          throw new VmyRuntimeException(s"${ListElementGetter} need exactly 3 parameters")
+      }
+    }
+  )
 }
 
 
