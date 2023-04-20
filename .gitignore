@@ -6,3 +6,5 @@ target
 build
 .bloop
 bin
+.bsp
+project
