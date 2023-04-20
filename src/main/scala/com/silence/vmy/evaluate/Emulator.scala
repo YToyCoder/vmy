@@ -294,7 +294,7 @@ object EmulatingValue {
 
 class TreeEmulator extends TreeVisitor[EmulatingValue, EmulatingValue] {
   import EmulatingValue.{EVEmpty, EVFunction, EVList, Zero}
-  val debug: Boolean = false
+  val debug: Boolean = true
 
   private var frame: TreeEmulator.Frame = _
   private def createFrame() : TreeEmulator.Frame = {
@@ -527,6 +527,6 @@ class TreeEmulator extends TreeVisitor[EmulatingValue, EmulatingValue] {
     (false, EmulatingValue.EVEmpty)
   }
   override def visitArr(arr: ArrExpression, payload: EmulatingValue) : EmulatingValue = {
-    EmulatingValue(arr.elements.stream().map(_.accept(this, payload)).toList)
+    EmulatingValue(new ArrayList(arr.elements.stream().map(_.accept(this, payload)).toList))
   }
 }
