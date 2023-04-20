@@ -320,8 +320,10 @@ public class GeneralParser implements Parser{
    /* this expression can exists in one line alone */
    //expression = varDecl "=" expr4
    //            | "return" expr3
-  //             | ifStatement
+   //            | ifStatement
    //            | theExpression
+   //               | arrUpdate
+   // arrUpdate = identifier "(" expression ")" Assignment expression
   private Expression expression(){
     if( /* variable declaration */
         peekTok(tk -> tk == TokenKind.Let || tk == TokenKind.Val))
@@ -357,8 +359,23 @@ public class GeneralParser implements Parser{
     if( /* if-statement */
         peekTok(tk -> tk == TokenKind.If))
       return if_statement();
-    //expr3
-    return theExpression();
+    // theExpression
+    var theExpression = theExpression();
+    if( /* try if it's a arrUpdate */
+        theExpression instanceof CallExpr call)
+    {
+      var params = call.params();
+      if(params.body().size() == 1 && peekTok(tokenkindIsEqual(TokenKind.Assignment))){
+        next_must(TokenKind.Assignment);
+        var value = expression();
+        // change to arrUpdate
+        return CallExpr.create(
+            call.position(), 
+            call.callId(), 
+            new ListExpr<>(params.position(), params.tag(), List.of(params.body().get(0), value)));
+      }
+    }
+    return theExpression;
   }
 
   // one = identifier
