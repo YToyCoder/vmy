@@ -1,2 +1,5 @@
 # iterator feature support
+let arr = [1, 2, 3]
+arr(0) = "update"
+println(arr)
 
