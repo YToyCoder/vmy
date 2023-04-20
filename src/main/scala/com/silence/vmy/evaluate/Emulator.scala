@@ -135,7 +135,7 @@ object EmulatingValue {
         throw new Exception(s"variable-update-error=>no scope for variable ${name}")
       }
       if(!this.updatable)
-        throw new VmyRuntimeException("const variable can't updated")
+        throw new VmyRuntimeException(s"const variable (${name}) can't updated")
 
       scope.lookup(name) match {
         case None => throw new VmyRuntimeException("not in scope")
@@ -412,7 +412,7 @@ class TreeEmulator extends Log with TreeVisitor[EmulatingValue, EmulatingValue] 
     val left = expression.left
     val destination = left.accept(this, value)
     if(debug) {
-      log(s"assignment ${destination} <= ${value} ")
+      log(s"assignment: ${destination.name}(variable-name) <= ${value} ")
     }
     if(!left.isInstanceOf[VariableDecl]) {
       return destination() = value
@@ -466,7 +466,10 @@ class TreeEmulator extends Log with TreeVisitor[EmulatingValue, EmulatingValue] 
         paramsEval()
         val result = value.asInstanceOf[EVFunction].value.body.accept(this, null)
         exitFrame()
-        result
+        result match {
+          case RetValue(value) => value
+          case _ => result
+        }
       } 
       /* =>>> list function call
        * list has two function : 
@@ -532,9 +535,9 @@ class TreeEmulator extends Log with TreeVisitor[EmulatingValue, EmulatingValue] 
     val arrId = statement.arrId.name
     val result: EmulatingValue = statement.arrId.accept(this, payload) match {
       case EVList(value) => {
-        createFrame() 
         // declare all variables : element id  and index id 
         for(index <- 0 until value.size){
+          createFrame() 
           val indexExpr = LiteralExpression.ofStringify(index.toString, LiteralExpression.Kind.Int)
           // generate assign element expression
           val createdExpression = createCall(arrId, List.of(indexExpr))
@@ -558,8 +561,8 @@ class TreeEmulator extends Log with TreeVisitor[EmulatingValue, EmulatingValue] 
             }
             case _ => 
           }
+          exitFrame()
         }
-        exitFrame()
         EVEmpty
       } 
       case e => throw new VmyRuntimeException(s"${e.name} not support for iterate")
