@@ -29,7 +29,13 @@ public record ForStatement(
   public boolean isWithIndex() { return forkind() == ForKind.WithIndex; }
   @Override public 
   <R,T> R accept(TreeVisitor<R,T> visitor, T payload) { return visitor.visitForStatement(this, payload); }
-  @Override public <T> Tree accept(TVisitor<T> visitor, T t) { return null; } // visitor.visitForStatement(this, payload); }
+  @Override 
+  public <T> Tree accept(TVisitor<T> visitor, T t) { 
+    if(visitor.enterForStatement(this, t)) {
+      return visitor.leaveForStatement(this, t);
+    }
+    return this; 
+  } 
   public static ForStatement withIndex(List<IdExpr> heads, IdExpr arrId, BlockStatement body, long position) { 
     return new ForStatement(ForKind.WithIndex, heads, arrId, body, position); 
   }

@@ -47,6 +47,9 @@ public abstract class TVisitor<T> {
   public boolean enterArrExpression(ArrExpression arr, T t) { return enterDefault(arr, t); }
   public Tree leaveArrExpression(ArrExpression arr, T t) { return leaveDefault(arr, t); }
 
+  public boolean enterForStatement(ForStatement state, T t) { return enterDefault(state, t); }
+  public Tree leaveForStatement(ForStatement state, T t) { return leaveDefault(state, t); }
+
   protected boolean enterDefault(Tree tree, T t) { return true; }
   protected Tree leaveDefault(Tree tree, T t) { return tree; }
 
