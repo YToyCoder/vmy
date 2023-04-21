@@ -196,6 +196,10 @@ object EmulatingValue {
         }
       val addResult : valueType = (this.value, other.value) match {
         case (l: PrimaryOpSupportType, r: PrimaryOpSupportType) => add((l,r)) 
+        case (value: ArrayT, _) => { 
+          value.add(other)
+          this
+        }
         case (l, r) => this.toString + other.toString
       }
       EmulatingValue(addResult)
