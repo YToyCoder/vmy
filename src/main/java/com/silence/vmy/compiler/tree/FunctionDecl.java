@@ -9,7 +9,7 @@ public record FunctionDecl(
     TypeExpr ret,
     BlockStatement body,
     long position
-) implements Statement{
+    ) implements Statement{
 
   @Override
   public <R, T> R accept(TreeVisitor<R, T> visitor, T payload) {
@@ -18,14 +18,21 @@ public record FunctionDecl(
 
   @Override
   public <T> Tree accept(TVisitor<T> visitor, T t) {
-    return null;
+    if(visitor.enterFunctionDecl(this, t)){
+      return visitor.leaveFunctionDecl(setBody((BlockStatement)body.accept(visitor, t)), t);
+    }
+    return this;
   }
 
-  @Override
-  public Tag tag() { return Tag.Fun; }
+  private FunctionDecl setBody(BlockStatement states){
+    if(states == body){
+      return this;
+    }
+    return new FunctionDecl(name, params, ret, states, position);
+  }
 
-  @Override
-  public String toString() { 
+  @Override public Tag tag() { return Tag.Fun; }
+  @Override public String toString() { 
     StringBuilder sb = new StringBuilder("(");
     for(int i=0; i<params.size() - 1; i++){
       VariableDecl decl = params.get(0);

@@ -19,8 +19,14 @@ public abstract class Trees {
     @Override
     public <T> Tree accept(TVisitor<T> visitor, T t) {
       if(visitor.enterRoot(this, t))
-        return visitor.leaveRoot(this, t);
+        return visitor.leaveRoot(setBody(body.accept(visitor, t)), t);
       return this;
+    }
+    private CompileUnit setBody(Tree tree){
+      if(tree == body) {
+        return this;
+      }
+      return createCompileUnit(tree); 
     }
 
     @Override public Tree body() { return body; }

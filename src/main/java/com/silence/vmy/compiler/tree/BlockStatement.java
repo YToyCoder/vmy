@@ -14,21 +14,24 @@ public record BlockStatement(List<Tree> exprs, long position) implements Stateme
 
   <T> BlockStatement doWithList(TVisitor<T> visitor, T t){
     boolean anyChanged = false;
-    List<Tree> ret = new ArrayList<>(exprs.size());
+    List<Tree> states = new ArrayList<>(exprs.size());
     for(Tree el : exprs){
       Tree mayChanged = el.accept(visitor, t);
       if(mayChanged != el){
         anyChanged = true;
       }
-      ret.add(mayChanged);
+      states.add(mayChanged);
     }
-    return anyChanged ? new BlockStatement(ret, position) : this;
+    return anyChanged ? new BlockStatement(states, position) : this;
   }
 
   @Override
   public Tag tag() { return null; }
   @Override 
   public String toString() {
+    if(exprs.size() == 0) {
+      return "";
+    }
     StringBuilder sb = new StringBuilder();
     for(var el : exprs){
       sb.append(el + "\n");

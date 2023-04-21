@@ -12,12 +12,21 @@ public class Unary extends OperatorExpression{
   public Tree body(){ return body; }
 
   @Override
-  public <R,T> R accept(TreeVisitor<R,T> visitor, T payload) { return visitor.visitUnary(this, payload); }
+  public <R,T> R accept(TreeVisitor<R,T> visitor, T payload) { 
+    return visitor.visitUnary(this, payload); 
+  }
+
+  private Unary setBody(Tree tree){
+    if(tree == body) {
+      return this;
+    }
+    return (Unary) new Unary(tag, tree).setPos(position());
+  }
 
   @Override
   public <T> Tree accept(TVisitor<T> visitor, T t) {
     if(visitor.enterUnary(this, t))
-      return visitor.leaveUnary(this, t);
+      return visitor.leaveUnary(setBody(body.accept(visitor, t)), t);
     return this;
   }
 

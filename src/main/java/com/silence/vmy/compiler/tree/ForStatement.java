@@ -32,10 +32,16 @@ public record ForStatement(
   @Override 
   public <T> Tree accept(TVisitor<T> visitor, T t) { 
     if(visitor.enterForStatement(this, t)) {
-      return visitor.leaveForStatement(this, t);
+      return visitor.leaveForStatement(setBody((BlockStatement)body.accept(visitor, t)), t);
     }
     return this; 
   } 
+  private ForStatement setBody(BlockStatement states) {
+    if(states == body) {
+      return this;
+    }
+    return new ForStatement(forkind, heads, arrId, states, position);
+  }
   public static ForStatement withIndex(List<IdExpr> heads, IdExpr arrId, BlockStatement body, long position) { 
     return new ForStatement(ForKind.WithIndex, heads, arrId, body, position); 
   }
