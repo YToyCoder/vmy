@@ -1,5 +1,11 @@
 fun a(): Double {
   --2 + -3
+  if(3 > --2) {
+    println("1" ++ +4)
+  }elif(true){
+    println("true")
+  }
   return 2 + m
 }
+--2 + -3
 
