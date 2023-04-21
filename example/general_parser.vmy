@@ -24,7 +24,7 @@ if(comp > 0){
 }else {
   println("comp is less than 0, it's " ++ comp)
 }
-val arr = [1, 2, 3]
+let arr = [1, 2, 3]
 val ar = [1 * 2 + 3 - (10 / 3 + 9 * 0.2), "arr"]
 val a = [
   fun a() { return "in array function" } ,
@@ -34,3 +34,5 @@ val a = [
 ]
 val f = a(0)
 println(f() ++ "??")
+arr += 2
+println(arr)
