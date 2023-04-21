@@ -5,7 +5,6 @@ import com.silence.vmy.compiler.tree.Tree.Tag
 
 class ConstFold extends TVisitor[Int] {
   override def leaveUnary(expression: Unary, t : Int): Tree = {
-    println("leave fold unary")
     unfoldUnary(expression, t)
   }
 
