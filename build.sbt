@@ -7,5 +7,6 @@ val vmyLanguage = (project in file("."))
     name := "vmyLanguage"
     scalaVersion := "3.2.2"
     javacOptions ++= Seq("-source", "17")
+    Compile / packageBin / mainClass := Some("com.silence.vmy.ScalaMain")
   }
 
