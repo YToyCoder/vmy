@@ -25,13 +25,15 @@ public class GeneralParser extends Log implements Parser{
   private boolean debug = false;
   private List<Tokens.Token> savedTokens = new LinkedList<>();
 
-  GeneralParser(Lexer _lexer){
+  GeneralParser(Lexer _lexer, boolean debug){
     this.lexer = _lexer;
     do_next(); // fill token
     ignoreAnnotation();
+    this.debug = debug;
   }
 
-  public static Parser create(Lexer lexer){ return new GeneralParser(lexer); }
+  public static Parser create(Lexer lexer, boolean debug){ return new GeneralParser(lexer, debug); }
+  public static Parser create(Lexer lexer){ return new GeneralParser(lexer, false); }
   protected Tokens.Token next(){ ignoreAnnotation(); return do_next(); }
 
   protected Tokens.Token do_next(){

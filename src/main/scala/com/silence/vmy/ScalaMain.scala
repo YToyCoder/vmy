@@ -22,7 +22,7 @@ object ScalaMain extends Log {
     }
     val emulator = new TreeEmulator()
     emulator.debug = debug
-    ast.accept(emulator, null)
+    foldTree.accept(emulator, null)
     if(debug)
       log("eval finished")
   }

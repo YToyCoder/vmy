@@ -61,10 +61,15 @@ public class Eval {
                         .parse()));
   }
 
-  public static Root parsing(String filenameOrCode, boolean isFile) throws FileNotFoundException {
+  public static Root parsing(String filenameOrCode, boolean isFile) 
+    throws FileNotFoundException {
+    return parsing(filenameOrCode, isFile, false);
+  }
+  public static Root parsing(String filenameOrCode, boolean isFile, boolean debug) 
+    throws FileNotFoundException {
     return GeneralParser
-            .create(new GeneralScanner(filenameOrCode, isFile))
-            .parse();
+      .create(new GeneralScanner(filenameOrCode, isFile), debug)
+      .parse();
   }
 
   public static Object eval(String filenameOrCode, boolean is_file) {
