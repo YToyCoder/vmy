@@ -7,8 +7,11 @@ import com.silence.vmy.compiler.tree.Tree.Tag;
 import com.silence.vmy.runtime.VmyRuntimeException;
 import com.silence.vmy.tools.Utils;
 import com.silence.vmy.tools.Log;
+import com.silence.vmy.tools.Tuples;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -67,7 +70,6 @@ public class GeneralParser extends Log implements Parser{
 
   boolean peekTok(Predicate<Tokens.TokenKind> tk){
     ensureLookahead(0);
-    
     return hasTok() && tk.test(token().kind());
   }
 
@@ -374,7 +376,7 @@ public class GeneralParser extends Log implements Parser{
    //            | "return" expr3
    //            | ifStatement
    //            | theExpression
-   //            | arrUpdate
+   //            | Update
    //            | for-statement 
    // arrUpdate = identifier "(" expression ")" Assignment expression
   private Expression expression(){
@@ -418,7 +420,7 @@ public class GeneralParser extends Log implements Parser{
       return if_statement();
     // theExpression
     var theExpression = theExpression();
-    if( /* try if it's a arrUpdate */
+    if( /* try if it's an Update */
         theExpression instanceof CallExpr call)
     {
       var params = call.params();
@@ -440,6 +442,7 @@ public class GeneralParser extends Log implements Parser{
   //     | "(" expr3 ")"
   //     | call
   //     | arr
+  //     | vmyObject
   Expression one(){
     Tokens.Token peek = token();
     return switch (peek.kind()){
@@ -458,15 +461,55 @@ public class GeneralParser extends Log implements Parser{
       }
 
       case Id -> {
-        if(peekTok(tk -> tk == TokenKind.Id, tk -> tk == TokenKind.LParenthesis))
+        if(peekTok(
+              tokenkindIsEqual(TokenKind.Id), 
+              tokenkindIsEqual(TokenKind.LParenthesis)))
+        {
           yield call();
+        }
         else yield new IdExpr(peek.start(), Tag.Id, next().payload());
       }
-
       case ArrOpen -> arrExpression();
-
+      case LBrace -> parsingObject();
       default -> null; // error
     };
+  }
+
+  // vmyObject = "{" proprety restProps "}"
+  // proprety = id ":" expr3
+  // restProps = { "," proprety }
+  private Expression parsingObject(){
+    var startToken = next_must(TokenKind.LBrace);
+    ignoreEmptyLineOrComments();
+    Map<String,Expression> props = new HashMap<>();
+    if( // handle properties
+      peekTok(tokenkindIsEqual(TokenKind.Id)))
+    {
+      // first prop
+      var prop = parsingProp();
+      props.put(prop._1, prop._2);
+
+      // rest props
+      while(peekTok(tokenkindIsEqual(TokenKind.Comma))){
+        next(); // drop ,
+        ignoreEmptyLineOrComments();
+        prop = parsingProp();
+        props.put(prop._1, prop._2);
+      }
+    }
+    ignoreEmptyLineOrComments();
+    // drop }
+    next_must(TokenKind.RBrace);
+    return new VmyObject(props, startToken.start());
+  }
+
+  private Tuples.Tuple2<String, Expression> parsingProp(){
+    var id = getIdExpresion();
+    ignoreEmptyLineOrComments();
+    next_must(TokenKind.Colon);
+    ignoreEmptyLineOrComments();
+    var value = expr3();
+    return Tuples.tuple(id.name(), value);
   }
 
   // arr = "[" theExpression oneRest "]"
