@@ -36,3 +36,6 @@ val f = a(0)
 println(f() ++ "??")
 arr += 2
 println(arr)
+for i in range(10){
+    println("range " ++ i)
+  }
