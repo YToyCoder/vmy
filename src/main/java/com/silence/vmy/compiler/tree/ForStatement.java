@@ -12,14 +12,14 @@ import java.util.List;
 public record ForStatement(
   ForKind forkind, 
   List<IdExpr> heads, 
-  IdExpr arrId, 
+  Expression arrId, 
   BlockStatement body, 
   long position
   ) implements Statement {
 
   public ForStatement(
     List<IdExpr> heads, 
-    IdExpr arrId, 
+    Expression arrId, 
     BlockStatement body, 
     long position
     ) { this(ForKind.NoIndex, heads, arrId, body, position); }
@@ -42,10 +42,10 @@ public record ForStatement(
     }
     return new ForStatement(forkind, heads, arrId, states, position);
   }
-  public static ForStatement withIndex(List<IdExpr> heads, IdExpr arrId, BlockStatement body, long position) { 
+  public static ForStatement withIndex(List<IdExpr> heads, Expression arrId, BlockStatement body, long position) { 
     return new ForStatement(ForKind.WithIndex, heads, arrId, body, position); 
   }
-  public static ForStatement withoutIndex(List<IdExpr> heads, IdExpr arrId, BlockStatement body, long position) { 
+  public static ForStatement withoutIndex(List<IdExpr> heads, Expression arrId, BlockStatement body, long position) { 
     return new ForStatement(heads, arrId, body, position); 
   }
 }
