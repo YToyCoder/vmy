@@ -167,6 +167,10 @@ public abstract class IrTransforms {
     public Tree visitArr(ArrExpression arr, Object t) {
       throw new UnsupportedOperationException("Unimplemented method 'visitArr'");
     }
+    @Override
+    public Tree visitVmyObject(VmyObject forStatement,Object t){
+      throw new UnsupportedOperationException("Unimplemented method 'visitArr'");
+    }
   }
 
 }
