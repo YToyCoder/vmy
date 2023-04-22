@@ -32,19 +32,21 @@ object VmyFunctions{
       EmulatingValue.EVEmpty
     })
 
-  val ListElementGetter: String = "#arr#get"
+  val ElementGetter: String = "#all#get"
   val ListElementUpdate: String = "#arr#update"
+  val ElementUpdate: String = "#all#update"
   register(
-    ListElementGetter,
+    ElementGetter,
     params => {
       params.size() match {
         case 0 | 1 => 
-          throw new VmyRuntimeException(s"${ListElementGetter} need at least 2 parameters")
+          throw new VmyRuntimeException(s"${ElementGetter} need at least 2 parameters")
         case otherwise => {
           (params.get(0), params.get(1)) match {
             case (EVList(arr),EVInt(index)) => arr.get(index)
+            case (EVObj(obj), EVString(name)) => obj.get(name)
             case _ => 
-              throw new VmyRuntimeException(s"${ListElementGetter} need parameters (arr, int)")
+              throw new VmyRuntimeException(s"${ElementGetter} need parameters (arr, int)")
           }
         } 
       }
@@ -76,17 +78,24 @@ object VmyFunctions{
   private def rangeI(start: Int, end: Int): List[EmulatingValue] = new ArrayList(IntStream.range(start, end).mapToObj(EmulatingValue(_)).toList)
 
   register(
-    ListElementUpdate,
+    ElementUpdate,
     params => {
       params.size() match {
         case 3 => 
           (params.get(0), params.get(1), params.get(2)) match {
-            case (EVList(arr), EVInt(index), value) => arr.set(index, value)
+            case (ret @ EVList(arr), EVInt(index), value) => { 
+              arr.set(index, value)
+              ret
+            }
+            case (ret @ EVObj(obj),  EVString(name), value) => { 
+              obj.put(name, value) 
+              ret
+            }
             case _ => 
-              throw new VmyRuntimeException(s"${ListElementGetter} need parameters (arr, int, ?)")
+              throw new VmyRuntimeException(s"${ElementUpdate} need parameters (arr, int, ?)")
           }
         case _ => 
-          throw new VmyRuntimeException(s"${ListElementGetter} need exactly 3 parameters")
+          throw new VmyRuntimeException(s"${ElementUpdate} need exactly 3 parameters")
       }
     }
   )
