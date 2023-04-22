@@ -164,7 +164,7 @@ public class GeneralScanner implements Lexer{
       Function<Tokens.TokenKind, Tokens.Token> createToken =
           kind -> createTok(kind, startChar.location(), startChar.location() + builder.length());
       return switch (string){
-        case "fun" -> createToken.apply(Tokens.TokenKind.Fun);
+        case "fun", "fn" -> createToken.apply(Tokens.TokenKind.Fun);
         case "val" -> createToken.apply(Tokens.TokenKind.Val);
         case "let" -> createToken.apply(Tokens.TokenKind.Let);
         case "if" -> createToken.apply(Tokens.TokenKind.If);
