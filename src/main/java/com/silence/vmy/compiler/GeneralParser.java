@@ -320,8 +320,11 @@ public class GeneralParser extends Log implements Parser{
   }
 
   // for-statement = "for" for-head block 
-  // for-head = id "," id "in" id
-  //          | id "in" id
+  // for-head = id "," id "in" iterator
+  //          | id "in" iterator
+  // iterator = id 
+  //          | "range" "(" Int ")"
+  //          | "range" "(" ,  ")"
   private Statement parsingForStatement(){
     if(debug){ log("enter parsing for"); }
     if(/*case not start with for */
@@ -340,13 +343,22 @@ public class GeneralParser extends Log implements Parser{
       withIndex = true;
     }
     next_must(TokenKind.In);
-    var arrId = getIdExpresion();
+    var arrId = getIteratorExpression();
     ignoreEmptyLineOrComments();
     var position = forDecl.start();
     var block = compileBlock(TokenKind.LBrace, TokenKind.RBrace);
     return withIndex ? 
       ForStatement.withIndex(forHeads, arrId, block, position) : 
       ForStatement.withoutIndex(forHeads, arrId, block, position);
+  }
+  private Expression getIteratorExpression() {
+    var one = one();
+    if(one instanceof IdExpr id){
+      return id;
+    }else if(one instanceof CallExpr call){
+      return call;
+    }
+    throw new CompilationException("expect id expression, but meet with " + one.getClass().getName());
   }
 
   private IdExpr getIdExpresion(){
