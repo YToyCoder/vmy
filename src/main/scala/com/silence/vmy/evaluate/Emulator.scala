@@ -298,7 +298,7 @@ object EmulatingValue {
 
 class TreeEmulator extends Log with TreeVisitor[EmulatingValue, EmulatingValue]  {
   import EmulatingValue.{EVEmpty, EVFunction, EVList, Zero}
-  val debug: Boolean = false
+  var debug: Boolean = false
 
   private var frame: TreeEmulator.Frame = _
   private def createFrame() : TreeEmulator.Frame = {
@@ -536,7 +536,6 @@ class TreeEmulator extends Log with TreeVisitor[EmulatingValue, EmulatingValue] 
   // create new frame for for-statement
     val heads = statement.heads
     // heads.stream().forEach(declareVariableForId _)
-    val arrId = statement.arrId.name
     val result: EmulatingValue = statement.arrId.accept(this, payload) match {
       case EVList(value) => {
         // declare all variables : element id  and index id 
@@ -544,12 +543,12 @@ class TreeEmulator extends Log with TreeVisitor[EmulatingValue, EmulatingValue] 
           createFrame() 
           val indexExpr = LiteralExpression.ofStringify(index.toString, LiteralExpression.Kind.Int)
           // generate assign element expression
-          val createdExpression = createCall(arrId, List.of(indexExpr))
-          if(debug) {
-            log(createdExpression.toString)
-          }
+          // val createdExpression = createCall(arrId, List.of(indexExpr))
+          // if(debug) {
+          //   log(createdExpression.toString)
+          // }
           // eval element assignment 
-          declareVariable(heads.get(0).name, createdExpression.accept(this, payload), false)
+          declareVariable(heads.get(0).name, value.get(index), false)
           if(statement.isWithIndex()){
             // assign index
             // val indexAssignExpression = createAssignment(heads.get(1), indexExpr)
