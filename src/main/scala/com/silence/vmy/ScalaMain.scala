@@ -6,9 +6,8 @@ import com.silence.vmy.tools.Log
 import com.silence.vmy.compiler.ConstFold
 
 object ScalaMain extends Log {
-  val debug = true
 
-  private def evalScript(script: String) : Unit = {
+  private def evalScript(script: String, debug: Boolean) : Unit = {
     if( debug ) {
       println(s"parsing script ${script}")
     }
@@ -21,13 +20,26 @@ object ScalaMain extends Log {
       log("parsing finished")
       log("starting eval ...")
     }
-    ast.accept(new TreeEmulator(), null)
+    val emulator = new TreeEmulator()
+    emulator.debug = debug
+    ast.accept(emulator, null)
     if(debug)
       log("eval finished")
   }
 
   def main(args: Array[String]): Unit = {
-    for(file <- args)
-      evalScript(file)
+    val (debug, files) = handleArgs(args)
+    for(file <- files)
+      evalScript(file, debug)
+  }
+
+  def handleArgs(args: Array[String]): (Boolean, Array[String]) = {
+    var debug = false
+    var res: List[String] = Nil
+    for(i <- args){
+      if(i == "-dbg") debug = true
+      else res = i :: res
+    }
+    (debug, res.toArray)
   }
 }
