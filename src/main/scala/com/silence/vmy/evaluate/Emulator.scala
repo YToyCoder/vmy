@@ -477,11 +477,19 @@ class TreeEmulator extends Log with TreeVisitor[EmulatingValue, EmulatingValue] 
     if(debug) log(s"visiting call ${call.callId()}")
     frame.lookup(call.callId()) match {
       // function in frame
-      case Some(value) if (value.isInstanceOf[EVFunction]) => {
-        if(debug) log(s"Fn : ${call.callId} is user defined")
+      case Some(fnTreeKeeper) if (fnTreeKeeper.isInstanceOf[EVFunction]) => {
+        if(debug) { log(s"Fn : ${call.callId} is user defined") }
         createFrame()
-        paramsEval()
-        val result = value.asInstanceOf[EVFunction].value.body.accept(this, null)
+        val fnTree = fnTreeKeeper.asInstanceOf[EVFunction].value
+        val paramsValues = paramsEval()
+        // declare variable with initvalue
+        for(i <- 0 until fnTree.params.size){
+          if(i < paramsValues.size){
+            fnTree.params.get(i).accept(this, paramsValues.get(i)) 
+          }else fnTree.params.get(i).accept(this, EVEmpty)
+        }
+        // eval body
+        val result = fnTreeKeeper.asInstanceOf[EVFunction].value.body.accept(this, null)
         exitFrame()
         result match {
           case RetValue(value) => value
