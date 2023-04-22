@@ -5,6 +5,8 @@ import com.silence.vmy.evaluate.EmulatingValue._
 
 import scala.collection.mutable
 import java.util.List
+import java.util.ArrayList
+import java.util.stream.IntStream
 
 object VmyFunctions{
   private val nativeFunctions = mutable.Map[String, VmyFunction]()
@@ -48,6 +50,30 @@ object VmyFunctions{
       }
     }
   )
+
+  // range function:
+  // for a, i in range(3,4) {
+  //
+  // }
+  register(
+    "range", 
+    params => {
+      params.size() match {
+        case 1 => 
+          params.get(0) match{
+            case EVInt(end) => EmulatingValue(rangeI(0, end))
+            case _ => throw new VmyRuntimeException(s"range parameter should be integer")
+          }
+        case 2 => 
+          (params.get(0), params.get(1)) match {
+            case (EVInt(start), EVInt(end)) => EmulatingValue(rangeI(start, end))
+            case _ => throw new VmyRuntimeException(s"range parameter should be integer")
+          }
+        case _ => throw new VmyRuntimeException(s"not support this call for range")
+      }
+    })
+
+  private def rangeI(start: Int, end: Int): List[EmulatingValue] = new ArrayList(IntStream.range(start, end).mapToObj(EmulatingValue(_)).toList)
 
   register(
     ListElementUpdate,
