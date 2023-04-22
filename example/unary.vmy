@@ -9,3 +9,10 @@ fun a(): Double {
 }
 --2 + -3
 
+fn b(): Double {
+  if(a) {
+    println(a)
+  }
+}
+b()
+
