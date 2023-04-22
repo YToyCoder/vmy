@@ -14,6 +14,8 @@ import com.silence.vmy.runtime.VmyFunctions
 
 import java.util.List
 import java.util.ArrayList
+import java.util.HashMap
+import java.util.Map
 
 import scala.annotation.tailrec
 import scala.collection.mutable
@@ -64,9 +66,17 @@ object TreeEmulator {
 }
 
 object EmulatingValue {
-  type valueType = PrimaryOpSupportType | String| Boolean | EmulatingValue | FunctionDecl | ArrayT /* array */
+  type valueType = 
+    PrimaryOpSupportType 
+    | String 
+    | Boolean 
+    | EmulatingValue 
+    | FunctionDecl 
+    | ArrayT /* array */
+    | ObjType
   type PrimaryOpSupportType = Int | Double | Long 
   type ArrayT = List[EmulatingValue]
+  type ObjType = Map[String, EmulatingValue]
   def apply(value: valueType): BaseEV = apply(value, null)
   // must value use 
   def apply(value: valueType, name: String): BaseEV = apply(value, name, true)
@@ -83,6 +93,7 @@ object EmulatingValue {
       case e: FunctionDecl => EVFunction(e)
       case e: RetValue => RetValue(e)
       case e: ArrayT => EVList(e) 
+      case e: ObjType => EVObj(e)
       case e: EmulatingValue => apply(e.value) // rec
     }
     ret.setName(name) // set name
@@ -278,6 +289,8 @@ object EmulatingValue {
   case class EVList(value: ArrayT) extends BaseEV {
     override def toString() = s"[${value.stream().map(_.toString).reduce(_ + "," + _).get}]"
   }
+  case class EVObj(value: ObjType) extends BaseEV {
+  }
   object EVEmpty extends BaseEV {
     override def value = null 
     override def toString(): String = "Null" 
@@ -297,7 +310,7 @@ object EmulatingValue {
 }
 
 class TreeEmulator extends Log with TreeVisitor[EmulatingValue, EmulatingValue]  {
-  import EmulatingValue.{EVEmpty, EVFunction, EVList, Zero}
+  import EmulatingValue.{EVEmpty, EVFunction, EVList, EVObj, Zero}
   var debug: Boolean = false
 
   private var frame: TreeEmulator.Frame = _
@@ -475,21 +488,21 @@ class TreeEmulator extends Log with TreeVisitor[EmulatingValue, EmulatingValue] 
           case _ => result
         }
       } 
-      /* =>>> list function call
-       * list has two function : 
+      /* =>>>two function call
+       * list and obj have two function : 
        *  1. element get
        *  2. update
        **/
-      case Some(value) if value.isInstanceOf[EVList] => {
+      case Some(value) if value.isInstanceOf[EVList] || value.isInstanceOf[EVObj] => {
         if(debug) log(s"Fn : ${call.callId} is arr method")
         call.params.body.size() match {
           case 1 => 
             callJavaNative(
-              VmyFunctions.ListElementGetter, 
+              VmyFunctions.ElementGetter, 
               listConcat(new ArrayList(List.of(value)),paramsEval()))
           case 2 => 
             callJavaNative(
-              VmyFunctions.ListElementUpdate,
+              VmyFunctions.ElementUpdate,
               listConcat(new ArrayList(List.of(value)), paramsEval()))
           case _ => throw new VmyRuntimeException(s"EVList have no ${call.callId} method")
         }
@@ -591,5 +604,18 @@ class TreeEmulator extends Log with TreeVisitor[EmulatingValue, EmulatingValue] 
   }
   override def visitArr(arr: ArrExpression, payload: EmulatingValue) : EmulatingValue = {
     EmulatingValue(new ArrayList(arr.elements.stream().map(_.accept(this, payload)).toList))
+  }
+
+  private def copyMap(map: Map[String, EmulatingValue]): Map[String, EmulatingValue] = new HashMap(map)
+  override def  visitVmyObject(obj: VmyObject, t: EmulatingValue): EmulatingValue = {
+    EmulatingValue{ 
+      copyMap {
+        obj.properties()
+          .entrySet()
+          .stream()
+          .map( entry => Map.of(entry.getKey(), entry.getValue().accept(this, t)) )
+          .reduce(new HashMap[String, EmulatingValue](), (map, each) => { map.putAll(each); map })
+      }
+    }
   }
 }
