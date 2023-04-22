@@ -29,8 +29,8 @@ val ar = [1 * 2 + 3 - (10 / 3 + 9 * 0.2), "arr"]
 val a = [
   fun a() { return "in array function" } ,
   fun b() {
-      return "fn=>b"
-    }
+    return "fn=>b"
+  }
 ]
 val f = a(0)
 println(f() ++ "??")
@@ -39,3 +39,19 @@ println(arr)
 for i in range(10){
     println("range " ++ i)
   }
+let obj = {
+  a: "string",
+  b: "hello",
+  c: a(0)
+}
+println(obj)
+obj("java") = a(1)
+obj("a") = a
+println(obj)
+println(obj("java"))
+
+fn recursive(i: Int): Int {
+  if(i > 10) { return i }
+  return recursive(i + 1)
+}
+println( "recursive result is => " ++ recursive(0) )

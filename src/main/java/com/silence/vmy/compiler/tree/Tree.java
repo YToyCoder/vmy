@@ -41,6 +41,7 @@ public interface Tree {
 		FunctionLiteral,
 		// obj
 		Arr,
+    Obj,
 		//
 		Param,
 		Id,

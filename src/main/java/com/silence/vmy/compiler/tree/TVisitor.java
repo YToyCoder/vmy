@@ -50,6 +50,9 @@ public abstract class TVisitor<T> {
   public boolean enterForStatement(ForStatement state, T t) { return enterDefault(state, t); }
   public Tree leaveForStatement(ForStatement state, T t) { return leaveDefault(state, t); }
 
+  public boolean enterVmyObject(VmyObject obj, T t) { return enterDefault(obj, t); }
+  public Tree leaveVmyObject(VmyObject obj, T t) { return leaveDefault(obj, t); }
+
   protected boolean enterDefault(Tree tree, T t) { return true; }
   protected Tree leaveDefault(Tree tree, T t) { return tree; }
 
