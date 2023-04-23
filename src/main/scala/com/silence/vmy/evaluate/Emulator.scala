@@ -289,8 +289,8 @@ object EmulatingValue {
   case class EVList(value: ArrayT) extends BaseEV {
     override def toString() = s"[${value.stream().map(_.toString).reduce(_ + "," + _).get}]"
   }
-  case class EVObj(value: ObjType) extends BaseEV {
-  }
+
+  case class EVObj(value: ObjType) extends BaseEV {}
   object EVEmpty extends BaseEV {
     override def value = null 
     override def toString(): String = "Null" 
@@ -415,7 +415,9 @@ class TreeEmulator extends Log with TreeVisitor[EmulatingValue, EmulatingValue] 
     val name = expression.name()
     val variable_type = expression.t()
     val initv = payload match {
-      case null => if(variable_type == null) "" else variable_type.typeId() 
+      case null => 
+        if(variable_type == null) "" 
+        else EmulatingValue.initValue(variable_type.typeId())
       case otherwise => payload.value
     }
     declareVariable(
@@ -444,10 +446,9 @@ class TreeEmulator extends Log with TreeVisitor[EmulatingValue, EmulatingValue] 
 
   override def visitRoot(root: Root, payload: EmulatingValue): EmulatingValue = {
     frame = createFrame()
-    root.body().accept(this, payload) match {
-      case EVEmpty => EVEmpty
-      case otherwise => otherwise
-    }
+    val returnValue = root.body().accept(this, payload)
+    exitFrame()
+    returnValue
   }
 
   override def visitListExpr[E <: Expression](expr: ListExpr[E], payload: EmulatingValue): EmulatingValue = {
@@ -455,7 +456,8 @@ class TreeEmulator extends Log with TreeVisitor[EmulatingValue, EmulatingValue] 
     EVEmpty
   }
 
-  override def visitReturnExpr(expr: ReturnExpr, payload: EmulatingValue): EmulatingValue = RetValue(expr.body().accept(this, payload))
+  override def visitReturnExpr(expr: ReturnExpr, payload: EmulatingValue): EmulatingValue = 
+    RetValue(expr.body().accept(this, payload))
 
   override def visitTypeExpr(expr: TypeExpr, payload: EmulatingValue): EmulatingValue = null
 
@@ -537,9 +539,6 @@ class TreeEmulator extends Log with TreeVisitor[EmulatingValue, EmulatingValue] 
       case e if e != EVEmpty && e.toBool => 
         return ifStatement.block().accept(this, payload)
       case _ => {
-    // if(ifStatement.condition().accept(this, payload).toBool){
-    //   return ifStatement.block().accept(this, payload)
-    // }
         val (elifResult, content) = doWithElif(statement, payload)
         if(elifResult) 
           return content
@@ -552,8 +551,9 @@ class TreeEmulator extends Log with TreeVisitor[EmulatingValue, EmulatingValue] 
   }
 
   override def visitForStatement(statement: ForStatement, payload: EmulatingValue): EmulatingValue = {
-    if(debug) 
+    if(debug) {
       log("enter ForStatement")
+    } 
   // create new frame for for-statement
     val heads = statement.heads
     // heads.stream().forEach(declareVariableForId _)
@@ -563,12 +563,6 @@ class TreeEmulator extends Log with TreeVisitor[EmulatingValue, EmulatingValue] 
         for(index <- 0 until value.size){
           createFrame() 
           val indexExpr = LiteralExpression.ofStringify(index.toString, LiteralExpression.Kind.Int)
-          // generate assign element expression
-          // val createdExpression = createCall(arrId, List.of(indexExpr))
-          // if(debug) {
-          //   log(createdExpression.toString)
-          // }
-          // eval element assignment 
           declareVariable(heads.get(0).name, value.get(index), false)
           if(statement.isWithIndex()){
             // assign index
@@ -594,12 +588,6 @@ class TreeEmulator extends Log with TreeVisitor[EmulatingValue, EmulatingValue] 
     result
   }
 
-  // private def createAssignArrayElementToVariable(variableId: String, arrId: String, index: Int): AssignmentExpression =  
-  private def createBlock(statements: List[Tree]) = new BlockStatement(statements, 0)
-  private def createAssignment(l: Expression, r: Expression) = new AssignmentExpression(l, r, 0)
-  private def createCall(id: String, params: List[Expression]) = CallExpr.create(0, id, new ListExpr(0, Tag.Param, params))
-  private def declareVariableForId(id: IdExpr): Unit = declareVariable(id.name, null)
-
   private[this] def doWithElif(statement: IfStatement, payload: EmulatingValue): (Boolean, EmulatingValue) = {
     val elifs = statement.elif()
     for(i <- 0 until elifs.size()){
@@ -610,9 +598,16 @@ class TreeEmulator extends Log with TreeVisitor[EmulatingValue, EmulatingValue] 
     }
     (false, EmulatingValue.EVEmpty)
   }
-  override def visitArr(arr: ArrExpression, payload: EmulatingValue) : EmulatingValue = {
-    EmulatingValue(new ArrayList(arr.elements.stream().map(_.accept(this, payload)).toList))
-  }
+  override def visitArr(arr: ArrExpression, payload: EmulatingValue) : EmulatingValue =
+    EmulatingValue{ 
+      copyList{ 
+        arr.elements
+          .stream()
+          .map(_.accept(this, payload))
+          .toList
+      }
+    }
+  private def copyList[T](origin: List[T]): List[T] = new ArrayList(origin)
 
   private def copyMap(map: Map[String, EmulatingValue]): Map[String, EmulatingValue] = new HashMap(map)
   override def  visitVmyObject(obj: VmyObject, t: EmulatingValue): EmulatingValue = {
