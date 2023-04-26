@@ -1,7 +1,7 @@
 package com.silence.vmy.runtime
 
-import com.silence.vmy.evaluate.EmulatingValue
-import com.silence.vmy.evaluate.EmulatingValue._
+import com.silence.vmy.shared.EmulatingValue
+import com.silence.vmy.shared.EmulatingValue._
 
 import scala.collection.mutable
 import java.util.List
