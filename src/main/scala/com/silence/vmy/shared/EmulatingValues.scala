@@ -6,6 +6,7 @@ import math.Numeric.Implicits.infixNumericOps
 
 import com.silence.vmy.shared.EmulatingValue.EVEmpty.mkOrderingOps
 import com.silence.vmy.runtime.VmyRuntimeException
+import com.silence.vmy.runtime.VmyFunctions
 import com.silence.vmy.compiler.tree._
 
 import java.util.List
@@ -184,6 +185,8 @@ object EmulatingValue {
           case (l, r)=> add(r, l)
         }
       val addResult : valueType = (this.value, other.value) match {
+        case (l: EVList, r) => 
+          VmyFunctions.tryRun(VmyFunctions.ArrayAppend, List.of(this, other))
         case (l: PrimaryOpSupportType, r: PrimaryOpSupportType) => add((l,r)) 
         case (value: ArrayT, _) => { 
           value.add(other)

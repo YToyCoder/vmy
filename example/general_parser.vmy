@@ -37,8 +37,8 @@ println(f() ++ "??")
 arr += 2
 println(arr)
 for i in range(10){
-    println("range " ++ i)
-  }
+  println("range " ++ i)
+}
 let obj = {
   a: "string",
   b: "hello",

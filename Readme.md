@@ -16,14 +16,14 @@
 4. 字面量 ： "12", "1.01", ""string literal"", "true" 
 5. 内建函数 : "print" . "print("hello, world")"
 6. bool类型比较 : "<", ">", ">=", "=="
-7. while循环 : "while(a < 10) { a = 1 + a }" 
+7. array(数组): 数组字面量、数组迭代、元素跟新和添加
 8. 运行脚本
 9. 注释: #
 10. if-else : if, elif, else
 11. 函数声明 : function
 12. 局部变量 : local variable
+13. VmyObject : Vmy结构对象支持， 字面量初始化，成员获取和更新
 
 ##### 2.2 计划支持的特点
-1. 'table' type variable support 
 2. 'import' feature , 引用其他文件
 

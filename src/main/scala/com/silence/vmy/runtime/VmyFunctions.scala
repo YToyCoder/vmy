@@ -17,6 +17,14 @@ object VmyFunctions{
   def runNative(fn: VmyFunction, params: List[EmulatingValue]) : EmulatingValue = {
     fn(params)
   }
+  def tryRun(name: String, params: List[EmulatingValue]): EmulatingValue = 
+  {
+    lookupFn(name) match 
+    {
+      case Some(fn) => fn(params)
+      case None => throw new VmyRuntimeException(s"not found fn ${name}")
+    }
+  }
   trait VmyFunction extends (List[EmulatingValue] => EmulatingValue)
 
   register(
@@ -33,8 +41,8 @@ object VmyFunctions{
     })
 
   val ElementGetter: String = "#all#get"
-  val ListElementUpdate: String = "#arr#update"
   val ElementUpdate: String = "#all#update"
+  val ArrayAppend : String = "#arr#append"
   register(
     ElementGetter,
     params => {
@@ -53,10 +61,6 @@ object VmyFunctions{
     }
   )
 
-  // range function:
-  // for a, i in range(3,4) {
-  //
-  // }
   register(
     "range", 
     params => {
@@ -99,6 +103,25 @@ object VmyFunctions{
       }
     }
   )
+
+  register(
+    ArrayAppend,
+    params => {
+      params.size() match 
+      {
+        case 2 => 
+          (params.get(0), params.get(1)) match {
+            case (one @ EVList(arr), value) => {
+              arr.add(value)
+              one
+            }
+          }
+        case _ => 
+          throw new VmyRuntimeException(s"array append method in wrong parameters ${params.toString}") 
+      }
+    }
+  )
+
 }
 
 
