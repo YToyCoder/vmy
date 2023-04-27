@@ -65,6 +65,19 @@ object EmulatingValue {
     if (mutable) ret else ret.immutable() // set mutable
   }
   val Zero : EmulatingValue = EVInt(0)
+  def createFromLiteralTree(tree: LiteralExpression): EmulatingValue = 
+  {
+    val literal = tree.literal().asInstanceOf[String]
+    if(tree.isInt) EmulatingValue(literal.toInt)
+    else if(tree.isBoolean) EmulatingValue(literal match {
+      case "true" => true
+      case "false" => false
+      case _ => throw new Exception()
+    })
+    else if(tree.isDouble) EmulatingValue(literal.toDouble)
+    else if(tree.isString) EmulatingValue(literal)
+    else throw new Exception("error in visiting literal")
+  }
 
   // get init value for different type value
   def initValue(id: String): valueType = {

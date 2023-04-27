@@ -14,9 +14,9 @@ object ScalaMain extends Log {
     val ast = Eval.parsing(script, true)
     val foldTree = ast.accept(new ConstFold(), 0)
     if(debug) {
-      log(ast.toString)
+      log("origin tree => \n" + ast.toString)
       log("#" * 20)
-      log(foldTree.toString)
+      log("fold tree => \n" + foldTree.toString)
       log("parsing finished")
       log("starting eval ...")
     }

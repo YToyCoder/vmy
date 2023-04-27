@@ -2,18 +2,13 @@ package com.silence.vmy.compiler
 
 import com.silence.vmy.compiler.tree._
 import com.silence.vmy.compiler.tree.Tree.Tag
+import com.silence.vmy.shared._
+import com.silence.vmy.evaluate._
 
-trait FoldLiteralValue {
-  type LiteralValueType = Int | Long | Double
-  def value: LiteralValueType
-}
-object FoldLiteralValue {
-  case class IntValue(value: Int) extends FoldLiteralValue
-}
 class ConstFold extends TVisitor[Int] {
-  import FoldLiteralValue._
+  import EmulatingValue._
+  private val constExpressionEvaluator = new TreeEmulator()
   override def leaveUnary(expression: Unary, t : Int): Tree = {
-    IntValue(1)
     unfoldUnary(expression, t)
   }
 
@@ -22,7 +17,8 @@ class ConstFold extends TVisitor[Int] {
       case body: Unary =>
         (expression.tag, body.tag) match {
           case (Tag.Add, _)  => unfoldUnary(body, t)
-          case (Tag.Sub, Tag.Add) => new Unary(Tag.Sub, body.body).setPos(expression.position)
+          case (Tag.Sub, Tag.Add) => 
+            new Unary(Tag.Sub, body.body).setPos(expression.position)
           case (Tag.Sub, Tag.Sub) => body.body
           case _ => expression
         }
@@ -34,4 +30,29 @@ class ConstFold extends TVisitor[Int] {
     }
   }
 
+  private def toStringAndKind(v: EmulatingValue): (String, LiteralExpression.Kind) = 
+  {
+    import LiteralExpression.Kind
+    var kind = v match {
+      case e: EVInt => Kind.Int
+      case e: EVDouble => Kind.Double
+      case e: EVLong => Kind.Int
+      case e: EVString => Kind.String 
+      case e: EVBool => Kind.Boolean
+      case _ => null
+    }
+    (v.toString, kind)
+  }
+  override def leaveBinary(
+    expression: BinaryOperateExpression , 
+    t: Int) = 
+  { 
+    try {
+      val evaluatedValue = expression.accept(constExpressionEvaluator, null)
+      val (literal, kind) = toStringAndKind(evaluatedValue)
+      LiteralExpression.ofStringify(literal ,kind)
+    }catch {
+      case _ => expression
+    }
+  }
 }
