@@ -103,26 +103,5 @@ object VmyFunctions{
       }
     }
   )
-
-  register(
-    ArrayAppend,
-    params => {
-      params.size() match 
-      {
-        case 2 => 
-          (params.get(0), params.get(1)) match {
-            case (one @ EVList(arr), value) => {
-              arr.add(value)
-              one
-            }
-          }
-        case _ => 
-          throw new VmyRuntimeException(s"array append method in wrong parameters ${params.toString}") 
-      }
-    }
-  )
-
 }
-
-
 
