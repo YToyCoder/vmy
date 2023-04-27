@@ -1,6 +1,5 @@
 package com.silence.vmy;
 
-import com.silence.vmy.compiler.AST;
 import com.silence.vmy.compiler.oldIR.FileInputScanner;
 import com.silence.vmy.compiler.oldIR.Token;
 import com.silence.vmy.runtime.VisitingEvaluator;
@@ -20,10 +19,6 @@ public class FileInputScannerTestUtils {
 
   public static String ofScript(String _name){
     return String.format("%s/%s", Utils.get_dir_of_project("example" ), _name);
-  }
-
-  public static Consumer<FileInputScanner> build_with_scanner(){
-    return scanner -> AST.build(scanner);
   }
 
   public static Consumer<FileInputScanner> eval_with_scanner() {

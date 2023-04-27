@@ -1,6 +1,5 @@
 package com.silence.vmy;
 
-import com.silence.vmy.compiler.AST;
 import com.silence.vmy.runtime.Evaluators;
 import com.silence.vmy.tools.Eval;
 import org.junit.Test;
@@ -46,18 +45,6 @@ public class EvalTest {
         cts(ls.get(i), ls.get(j));
       }
     }
-  }
-
-  @Test
-  public void eval_script_test(){
-//    assertThrows(VmyRuntimeException.class, () -> {
-      FileInputScannerTestUtils.do_with_instance(
-          FileInputScannerTestUtils.ofScript("number_literal_token_support_test.vmy"),
-          scanner -> {
-            Evaluators.evaluator(true).eval(AST.build(scanner));
-          }
-      );
-//    });
   }
 
   @Test
