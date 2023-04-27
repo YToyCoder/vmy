@@ -90,9 +90,7 @@ public class Eval {
   }
 
   private static Root transformToOldTree(Root root){
-    if(root instanceof AST.VmyAST)
-      return root;
-    else if(root instanceof Trees.CompileUnit)
+    if(root instanceof Trees.CompileUnit)
       return (Root) root.accept(new IrTransforms.Convert2OldIR(), null);
     else 
       throw new RuntimeException("not support transforming tree");

@@ -1,6 +1,5 @@
 package com.silence.vmy.compiler.transform;
 
-import com.silence.vmy.compiler.AST;
 import com.silence.vmy.compiler.CompilationException;
 import com.silence.vmy.compiler.Identifiers;
 import com.silence.vmy.compiler.Modifiers;
@@ -99,10 +98,7 @@ public abstract class IrTransforms {
 
     @Override
     public Tree visitRoot(Root root, Object payload) {
-      AST.VmyAST _root = new AST.VmyAST();
-      Tree body = root.body();
-      _root.root = Objects.isNull(body) ? null : root.body().accept(this, payload);
-      return _root;
+      return null;
     }
 
     @Override

@@ -12,36 +12,20 @@ public class SimpleParser implements Parser {
 
   private final TokenHistoryRecorder token_recorder;
   private final Scanner scanner;
-  private final AST.TokenHandler token_handler;
 
-  private SimpleParser(Scanner _scanner, AST.TokenHandler _token_handler, TokenHistoryRecorder _recorder){
+  private SimpleParser(Scanner _scanner, TokenHistoryRecorder _recorder){
     scanner = _scanner;
-    token_handler = _token_handler;
     token_recorder = _recorder;
   }
 
   public static Parser create(Scanner scanner){
     TokenHistoryRecorder recorder = new FixedSizeCapabilityTokenRecorder(3);
     scanner.register(recorder, false);
-    return new SimpleParser(scanner, AST.getTokenHandler(recorder), recorder);
+    return new SimpleParser(scanner, recorder);
   }
 
   @Override
-  public Root parse() {
-    scanner.register(token_recorder, false);
-    Stack<String> operators = new Stack<>();
-    Stack<Tree> nodes = new Stack<>();
-    while(scanner.hasNext()){
-      token_handler.handle(scanner.next(), scanner, operators, nodes);
-    }
-    AST.VmyAST ast = new AST.VmyAST();
-    ast.root = switch (nodes.size()) {
-      case 0 -> null;
-      case 1 -> nodes.get(0);
-      default -> try_merge(operators, nodes);
-    };
-    return ast;
-  }
+  public Root parse() { return null;}
 
   private Tree try_merge(Stack<String> operators, Stack<Tree> nodes){
     if(operators.isEmpty())

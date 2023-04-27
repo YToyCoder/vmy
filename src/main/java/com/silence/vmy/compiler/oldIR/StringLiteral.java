@@ -1,12 +1,10 @@
 package com.silence.vmy.compiler.oldIR;
 
-import com.silence.vmy.compiler.AST;
-
 public class StringLiteral extends LiteralNode {
     private final String value;
 
     public StringLiteral(String value) {
-        super(AST.LiteralKind.String.ordinal());
+        super(0);
         this.value = value;
     }
 

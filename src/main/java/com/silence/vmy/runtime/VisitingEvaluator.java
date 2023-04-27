@@ -1,6 +1,5 @@
 package com.silence.vmy.runtime;
 
-import com.silence.vmy.compiler.AST;
 import com.silence.vmy.compiler.oldIR.*;
 import com.silence.vmy.compiler.visitor.ASTProcessingException;
 import com.silence.vmy.compiler.visitor.NodeVisitor;
@@ -19,15 +18,7 @@ public class VisitingEvaluator implements Evaluator, NodeVisitor {
 
   @Override
   public Object eval(Root tree) {
-    if(tree instanceof AST.VmyAST ast){
-      if(runtimeContext.current_frame() == null)
-        _g = runtimeContext.new_frame();
-      if(Objects.isNull(ast.root))
-        return null;
-      ast.root.accept(this);
-      return get_from_stack();
-    }else
-      throw new EvaluateException("unrecognized AST");
+    throw new EvaluateException("unrecognized AST");
   }
 
   private void put_stack(Object obj){ interval_op_val.add(obj); }

@@ -1,6 +1,5 @@
 package com.silence.vmy.runtime;
 
-import com.silence.vmy.compiler.AST;
 import com.silence.vmy.compiler.oldIR.*;
 import com.silence.vmy.compiler.tree.*;
 
@@ -11,10 +10,7 @@ public class VmyTreeEvaluator implements Evaluator {
 
     @Override
     public Object eval(Root tree) {
-        if (tree instanceof AST.VmyAST ast) {
-            return evalsub(ast.root);
-        } else
-            throw new EvaluateException("unrecognized AST");
+        throw new EvaluateException("unrecognized AST");
     }
 
     Object evalsub(Tree node) {
