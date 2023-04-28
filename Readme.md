@@ -27,3 +27,40 @@
 ##### 2.2 计划支持的特点
 2. 'import' feature , 引用其他文件
 
+#### 2.3 example (示例)
+
+##### 2.3.1 function declaration (函数声明)
+函数声明开始于`fn`或者`fun`
+
+```
+fn fnDecl() 
+{
+    let a = 1 + 2
+    return a ++ ":fnDecl"
+}
+
+fun funDecl()
+{
+    println("funDecl")
+}
+
+```
+
+##### 2.3.2 array
+
+*数组字面量*
+```
+let a = [1,2,3]
+```
+
+*跟新数组元素*
+```
+let a = [1, 2, 3]
+a(0) = 100 # [100, 2, 3]
+```
+
+*添加数组元素*
+```
+let a = [1,2]
+a += 3 # [1,2,3]
+```
