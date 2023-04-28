@@ -2,10 +2,6 @@ fun func(param : Int) : void {
     print("hello, world")
     print("param is " ++ param)
     let b : Int = 10
-    while(b > 5){
-        b = b - 1
-        print(b)
-    }
 }
 
 let a : Int = 10
