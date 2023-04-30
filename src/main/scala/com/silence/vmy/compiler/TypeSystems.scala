@@ -78,24 +78,45 @@ class TypeChecker extends TVisitor[TheType] {
   }
 
   private def biggerType(a: TheType, b: TheType): TheType = {
-    (TypeOrderMap(a), TypeOrderMap(b)) match{
-      case (-1, _) | (_, -1)=> NullExistType
-      case (aOrder, bOrder) => if(aOrder > bOrder) a else b
-    }
+    if(a.getClass() == b.getClass()) then a
+    else
+      (TypeOrderMap(a), TypeOrderMap(b)) match{
+        case (-1, _) | (_, -1)=> NullExistType
+        case (aOrder, bOrder) => if(aOrder > bOrder) a else b
+      }
   }
 
+  private def unwrapReturnValue(rvalue: TheType): TheType = {
+    rvalue match {
+      case ReType(realtype) => realtype
+      case _ => rvalue
+    }
+  }
   override def leaveBlock(state: BlockStatement, t: TheType) = {
     val states = state.exprs
-    var retType = VoidT
+    var retType : TheType = t
     for(i <- 0 until states.size()){
       states.get(i).accept(this, t)
       val stateType = popType()
       if(stateType.isInstanceOf[ReType]) {
-        retType = biggerType(stateType, retType) match {
-          case NullExistType => // not primary type 
-            retType
+        val realtype = unwrapReturnValue(stateType)
+        retType match {
+          case null => // first returned type 
+            realtype 
+          case _ => 
+            biggerType(realtype, retType) match {
+              case NullExistType => 
+                println(s"return type error: type ${realtype} not match ${retType}")
+                retType
+              case betterType => betterType
+            }
         }
+        
       }
+    }
+    retType match {
+      case null => pushType(VoidT)
+      case _    => pushType(retType)
     }
     state
   }
