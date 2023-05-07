@@ -5,14 +5,14 @@ import com.silence.vmy.compiler.tree.Tree.Tag
 import com.silence.vmy.shared._
 import com.silence.vmy.evaluate._
 
-class ConstFold extends TVisitor[Int] {
+trait ConstFold extends PerCompileUnitTVisitor {
   import EmulatingValue._
-  private val constExpressionEvaluator = new TreeEmulator()
-  override def leaveUnary(expression: Unary, t : Int): Tree = {
+  private val constExpressionEvaluator = new TreeEmulator(new EmulatorContext())
+  override def leaveUnary(expression: Unary, t : ContextType): Tree = {
     unfoldUnary(expression, t)
   }
 
-  private def unfoldUnary(expression: Unary, t : Int): Tree = {
+  private def unfoldUnary(expression: Unary, t : ContextType): Tree = {
     expression.body() match {
       case body: Unary =>
         (expression.tag, body.tag) match {
@@ -43,16 +43,14 @@ class ConstFold extends TVisitor[Int] {
     }
     (v.toString, kind)
   }
-  override def leaveBinary(
-    expression: BinaryOperateExpression , 
-    t: Int) = 
+  override def leaveBinary(exp: BinaryOperateExpression, t: ContextType) = 
   { 
     try {
-      val evaluatedValue = expression.accept(constExpressionEvaluator, null)
+      val evaluatedValue = exp.accept(constExpressionEvaluator, null)
       val (literal, kind) = toStringAndKind(evaluatedValue)
       LiteralExpression.ofStringify(literal ,kind)
     }catch {
-      case _ => expression
+      case _ => exp
     }
   }
 }
