@@ -1,6 +1,8 @@
 package com.silence.vmy
 
 import com.silence.vmy.evaluate.TreeEmulator
+import com.silence.vmy.evaluate.EmulatorContext
+import com.silence.vmy.compiler.CompileContext
 import com.silence.vmy.tools.Eval
 import com.silence.vmy.tools.Log
 import com.silence.vmy.compiler.ConstFold
@@ -12,7 +14,8 @@ object ScalaMain extends Log {
       println(s"parsing script ${script}")
     }
     val ast = Eval.parsing(script, true)
-    val foldTree = ast.accept(new ConstFold(), 0)
+    val context = new CompileContext()
+    val foldTree = ast.accept(new ConstFold() {}, context)
     if(debug) {
       log("origin tree => \n" + ast.toString)
       log("#" * 20)
@@ -20,7 +23,7 @@ object ScalaMain extends Log {
       log("parsing finished")
       log("starting eval ...")
     }
-    val emulator = new TreeEmulator()
+    val emulator = new TreeEmulator(context)
     emulator.debug = debug
     foldTree.accept(emulator, null)
     if(debug)
