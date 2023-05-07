@@ -136,7 +136,7 @@ public class GeneralParser extends Log implements Parser{
     if(peekTok(tokenkindIsEqual(TokenKind.Id))){
       name = next().payload();
     }
-    return new FunctionDecl(
+    return FunctionDecl.create(
         name,
         parameters().body(),
         peekTok(tokenkindIsEqual(TokenKind.Colon)) ? parsingType() : null,
