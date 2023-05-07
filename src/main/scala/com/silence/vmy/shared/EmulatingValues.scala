@@ -8,6 +8,7 @@ import com.silence.vmy.shared.EmulatingValue.EVEmpty.mkOrderingOps
 import com.silence.vmy.runtime.VmyRuntimeException
 import com.silence.vmy.runtime.VmyFunctions
 import com.silence.vmy.compiler.tree._
+import com.silence.vmy.evaluate.TreeEmulator
 
 import java.util.List
 import java.util.ArrayList
@@ -288,8 +289,9 @@ object EmulatingValue {
   }
 }
 
-abstract class Scope(pre: Scope) {
+class Scope(pre: Scope) {
   val variables: mutable.Map[String, EmulatingValue] = mutable.Map()
+  def preOne: Scope = pre
   def lookup(name: String): Option[EmulatingValue] = {
     val variable = variables.getOrElse(
       name,

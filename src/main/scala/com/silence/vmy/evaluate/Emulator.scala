@@ -6,12 +6,13 @@ import com.silence.vmy.tools.Log
 import com.silence.vmy.compiler.{Modifiers, Tokens}
 import com.silence.vmy.shared.EmulatingValue.{RetValue, initValue}
 import com.silence.vmy.runtime.VmyRuntimeException
-import math.Fractional.Implicits.infixFractionalOps
-import math.Integral.Implicits.infixIntegralOps
-import math.Numeric.Implicits.infixNumericOps
 import com.silence.vmy.runtime.VmyFunctions
 import com.silence.vmy.shared.EmulatingValue.EVEmpty.mkOrderingOps
 import com.silence.vmy.shared._
+
+import math.Fractional.Implicits.infixFractionalOps
+import math.Integral.Implicits.infixIntegralOps
+import math.Numeric.Implicits.infixNumericOps
 
 import java.util.List
 import java.util.ArrayList
@@ -22,33 +23,39 @@ import scala.annotation.tailrec
 import scala.collection.mutable
 
 object TreeEmulator {
-  case class Frame(pre: Frame) extends Scope(pre)
+  case class Frame(pre: Frame) extends Scope(pre) 
+  {
+    var TopScope: Scope = this
+    def enterScope() = 
+    {
+      TopScope = Scope(TopScope)
+    }
+
+    def leaveScope(): Unit = 
+      if (TopScope != this)
+      {
+        TopScope = TopScope.preOne
+      }
+  }
 }
 
-class TreeEmulator extends Log with TreeVisitor[EmulatingValue, EmulatingValue]  {
+class TreeEmulator(private val context: EmulatorContext) 
+  extends Log 
+  with TreeVisitor[EmulatingValue, EmulatingValue]  {
+
   import EmulatingValue.{EVEmpty, EVFunction, EVList, EVObj, Zero}
   var debug: Boolean = false
+  private def createFrame() : TreeEmulator.Frame = context.enterFrame()
+  private def exitFrame() : Unit = context.leaveFrame()
+  private def createScope() = context.enterScope()
+  private def exitScope() = context.leaveScope()
+  private def lookupVariable(id: String) = context.lookupVariable(id)
 
-  private var frame: TreeEmulator.Frame = _
-  private def createFrame() : TreeEmulator.Frame = {
-    frame = TreeEmulator.Frame(frame)
-    frame
-  }
-  private def exitFrame() : Unit = {
-    frame match {
-      case null | TreeEmulator.Frame(null) => 
-      case TreeEmulator.Frame(preOne) => frame = preOne
-    }
-  }
+  private def declareVariable(name: String, initValue: EmulatingValue.valueType, mutable: Boolean): EmulatingValue = 
+    context.declareVariable(name, initValue, mutable)
 
-  private def declareVariable(name: String, initValue: EmulatingValue.valueType, mutable: Boolean): EmulatingValue = {
-    val vv /* variable and value */= EmulatingValue(initValue, name, mutable)
-    vv.updateScope(frame)
-    frame.update(name, vv)
-    vv
-  }
-
-  private def declareVariable(name: String, initValue: EmulatingValue.valueType): EmulatingValue = declareVariable(name, initValue, true)
+  private def declareVariable(name: String, initValue: EmulatingValue.valueType): EmulatingValue =
+    declareVariable(name, initValue, true)
 
   override def visitLiteral(expression: LiteralExpression, payload: EmulatingValue): EmulatingValue = {
     val literal = expression.literal().asInstanceOf[String]
@@ -161,7 +168,7 @@ class TreeEmulator extends Log with TreeVisitor[EmulatingValue, EmulatingValue] 
   }
 
   override def visitRoot(root: Root, payload: EmulatingValue): EmulatingValue = {
-    frame = createFrame()
+    createFrame()
     val returnValue = root.body().accept(this, payload)
     exitFrame()
     returnValue
@@ -193,7 +200,7 @@ class TreeEmulator extends Log with TreeVisitor[EmulatingValue, EmulatingValue] 
       a
     }
     if(debug) log(s"visiting call ${call.callId()}")
-    frame.lookup(call.callId()) match {
+    lookupVariable(call.callId()) match {
       // function in frame
       case Some(fnTreeKeeper) if (fnTreeKeeper.isInstanceOf[EVFunction]) => {
         if(debug) { log(s"Fn : ${call.callId} is user defined") }
@@ -243,7 +250,7 @@ class TreeEmulator extends Log with TreeVisitor[EmulatingValue, EmulatingValue] 
 
   override def visitIdExpr(expr: IdExpr, payload: EmulatingValue): EmulatingValue = {
     val idName = expr.name()
-    frame.lookup(idName) match {
+    lookupVariable(idName) match {
       case None => throw new VmyRuntimeException(s"not exists ${idName}");
       case Some(value) => value
     }
@@ -253,7 +260,10 @@ class TreeEmulator extends Log with TreeVisitor[EmulatingValue, EmulatingValue] 
     val ifStatement = statement.ifStatement()
     ifStatement.condition().accept(this, payload) match {
       case e if e != EVEmpty && e.toBool => 
-        return ifStatement.block().accept(this, payload)
+        createScope()
+        val v = ifStatement.block().accept(this, payload)
+        exitScope()
+        v
       case _ => {
         val (elifResult, content) = doWithElif(statement, payload)
         if(elifResult) 
@@ -277,7 +287,7 @@ class TreeEmulator extends Log with TreeVisitor[EmulatingValue, EmulatingValue] 
       case EVList(value) => {
         // declare all variables : element id  and index id 
         for(index <- 0 until value.size){
-          createFrame() 
+          createScope() 
           val indexExpr = LiteralExpression.ofStringify(index.toString, LiteralExpression.Kind.Int)
           declareVariable(heads.get(0).name, value.get(index), false)
           if(statement.isWithIndex()){
@@ -295,7 +305,7 @@ class TreeEmulator extends Log with TreeVisitor[EmulatingValue, EmulatingValue] 
             }
             case _ => 
           }
-          exitFrame()
+          exitScope()
         }
         EVEmpty
       } 
@@ -306,14 +316,24 @@ class TreeEmulator extends Log with TreeVisitor[EmulatingValue, EmulatingValue] 
 
   private[this] def doWithElif(statement: IfStatement, payload: EmulatingValue): (Boolean, EmulatingValue) = {
     val elifs = statement.elif()
-    for(i <- 0 until elifs.size()){
-      val oneElif = elifs.get(i)
-      if(oneElif.condition().accept(this, payload).toBool){
-        return (true, oneElif.block().accept(this, payload))
+    val length = elifs.size()
+    @tailrec // replace for loop as tailrec function
+    def handleUntilSatisfied(loc: Int): (Boolean, EmulatingValue) = 
+    {
+      val current = elifs.get(loc)
+      if(loc >= length) (false, EVEmpty)
+      else if(current.condition().accept(this, payload).toBool)
+      {
+        createScope()
+        val v = (true, current.block().accept(this, payload))
+        exitScope()
+        v
       }
+      else handleUntilSatisfied(loc + 1) 
     }
-    (false, EmulatingValue.EVEmpty)
+    handleUntilSatisfied(0)
   }
+
   override def visitArr(arr: ArrExpression, payload: EmulatingValue) : EmulatingValue =
     EmulatingValue{ 
       copyList{ 
