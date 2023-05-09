@@ -8,7 +8,7 @@ import com.silence.vmy.LCompiler
 
 trait ConstFold extends PerCompileUnitTVisitor {
   import EmulatingValue._
-  private val constExpressionEvaluator = new TreeEmulator(new EmulatorContext(), LCompiler)
+  private val constExpressionEvaluator = new TreeEmulator(new CompileContext(), LCompiler)
   override def leaveUnary(expression: Unary, t : ContextType): Tree = {
     unfoldUnary(expression, t)
   }

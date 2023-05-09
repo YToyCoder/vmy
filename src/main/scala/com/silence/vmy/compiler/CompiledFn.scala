@@ -72,6 +72,7 @@ case class CompiledFn(
     else new CompiledFn(name, params, ret, _body, upvalues, position)
 
   override def toString(): String = s">> compiled fun << \n${fnDeclToString(this)}" 
+  def compileFinish(): Unit = compiledFlag = true
 }
 
 object CompileUnit 

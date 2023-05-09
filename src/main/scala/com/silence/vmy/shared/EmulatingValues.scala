@@ -8,7 +8,12 @@ import com.silence.vmy.shared.EmulatingValue.EVEmpty.mkOrderingOps
 import com.silence.vmy.runtime.VmyRuntimeException
 import com.silence.vmy.runtime.VmyFunctions
 import com.silence.vmy.compiler.tree._
+import com.silence.vmy.compiler.CompiledFn
+import com.silence.vmy.compiler.Compiler
+import com.silence.vmy.compiler.Compilers.CompileUnit
+import com.silence.vmy.compiler.CompileContext
 import com.silence.vmy.evaluate.TreeEmulator
+import com.silence.vmy.compiler.CompileUnit.wrapAsCompileUnit
 
 import java.util.List
 import java.util.ArrayList
@@ -261,6 +266,26 @@ object EmulatingValue {
   case class EVFunction(value: FunctionDecl) extends BaseEV {
     override def toString(): String = 
       s"Fn(${value.name}) => ${if(value.ret == null) "?" else value.ret.typeId}"
+    def compiled = 
+      value match 
+      {
+        case fn: CompiledFn => (fn.asInstanceOf[CompiledFn]).compiled
+        case _ => false
+      }
+    def tryCompile(compiler: Compiler[CompileContext], context: CompileContext): CompileUnit=
+    {
+      value match 
+      {
+        case _: CompiledFn => 
+        {
+          println("try - compile ")
+          val fn = value.asInstanceOf[CompiledFn]
+          if(fn.compiled) fn
+          else compiler.compile(context, fn)
+        }
+        case _ => compiler.compile(context, wrapAsCompileUnit(value))
+      }
+    }
   }
   case class RetValue(_value: EmulatingValue) extends BaseEV {
     // type ValueType = EmulatingValue

@@ -2,6 +2,8 @@ package com.silence.vmy.evaluate
 
 import com.silence.vmy.compiler.tree.Tree.Tag
 import com.silence.vmy.compiler.tree._
+import com.silence.vmy.compiler.Compiler
+import com.silence.vmy.compiler.CompileContext
 import com.silence.vmy.tools.Log
 import com.silence.vmy.compiler.{Modifiers, Tokens}
 import com.silence.vmy.shared.EmulatingValue.{RetValue, initValue}
@@ -39,7 +41,10 @@ object TreeEmulator {
   }
 }
 
-class TreeEmulator(private val context: EmulatorContext) 
+class TreeEmulator(
+  private val context: CompileContext, 
+  private val compiler: Compiler[CompileContext]
+  )
   extends Log 
   with TreeVisitor[EmulatingValue, EmulatingValue]  {
 
@@ -169,6 +174,7 @@ class TreeEmulator(private val context: EmulatorContext)
 
   override def visitRoot(root: Root, payload: EmulatingValue): EmulatingValue = {
     createFrame()
+    val body = root.body
     val returnValue = root.body().accept(this, payload)
     exitFrame()
     returnValue
@@ -205,13 +211,17 @@ class TreeEmulator(private val context: EmulatorContext)
       case Some(fnTreeKeeper) if (fnTreeKeeper.isInstanceOf[EVFunction]) => {
         if(debug) { log(s"Fn : ${call.callId} is user defined") }
         createFrame()
-        val fnTree = fnTreeKeeper.asInstanceOf[EVFunction].value
+        // val fnTree = fnTreeKeeper.asInstanceOf[EVFunction].value 
+        val compiledFn = fnTreeKeeper.asInstanceOf[EVFunction].tryCompile(compiler, context)
+        val fnTree = compiledFn.node.asInstanceOf[FunctionDecl] 
         val paramsValues = paramsEval()
         // declare variable with initvalue
         for(i <- 0 until fnTree.params.size){
           if(i < paramsValues.size){
+            // declared in function
             fnTree.params.get(i).accept(this, paramsValues.get(i)) 
-          }else fnTree.params.get(i).accept(this, EVEmpty)
+          }else // not declared in function
+            fnTree.params.get(i).accept(this, EVEmpty)
         }
         // eval body
         val result = fnTreeKeeper.asInstanceOf[EVFunction].value.body.accept(this, null)

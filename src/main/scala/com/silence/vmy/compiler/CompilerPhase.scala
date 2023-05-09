@@ -32,10 +32,9 @@ trait CompilerPhase extends Phase[CompileContext]
       {
         val rootNode = root.asInstanceOf[Root] 
         val body = rootNode.body.accept(visitor, context).asInstanceOf[BlockStatement]
-        if(body == rootNode.body) root
-        else
-          new CompiledFn("main", java.util.List.of(), null, body, null, body.position)
+        new CompiledFn("main", java.util.List.of(), null, body, null, body.position)
       }
+      case node => node.accept(visitor, context)
     }
   }
 
@@ -66,27 +65,48 @@ object PerEvaluatingPhase
 {
   override def run(context: CompileContext, unit: CompileUnit) =
   {
-    unit match
+    unit.node match
     {
-      case CompiledFn(name, _, _, _, _, _) if name == "main" => 
+      case _fn @ CompiledFn(name, _, _, _, _, _) if name == "main" => 
       {
-        val allDeclaration = unit.node
-        val mainFnCall = CallExpr(
-          -1, 
-          null, 
-          "main", 
-          new ListExpr(-1, null, java.util.List.of())
-        ) 
-        new RootCompileUnit(new BlockStatement(java.util.List.of(allDeclaration, mainFnCall), -1))
+        val fn = _fn.asInstanceOf[CompiledFn]
+        if(!fn.compiled) 
+        {
+          fn.compileFinish()
+          val mainFnCall = CallExpr(
+            -1, 
+            null, 
+            "main", 
+            new ListExpr(-1, null, java.util.List.of())
+          ) 
+          new RootCompileUnit(new BlockStatement(java.util.List.of(fn, mainFnCall), -1))
+        }
+        else unit
       }
       case _ => unit
     }
   }
 
-  class RootCompileUnit(body: Tree) 
-    extends Trees.CompileUnit (body)
+  class RootCompileUnit(_body: Tree) 
+    extends Trees.CompileUnit (_body)
     with CompileUnit {
       def compiled() = true
       def node() = this
     }
+}
+
+object CompileFinishPhase
+  extends PerCompileUnitTVisitor
+  with CompilerPhase
+{
+  override def run(context: CompileContext, unit: CompileUnit) =
+  {
+    unit match
+    {
+      case fn: CompiledFn => 
+        (fn.asInstanceOf[CompiledFn]).compileFinish()
+        fn
+      case _ => unit
+    }
+  }
 }
