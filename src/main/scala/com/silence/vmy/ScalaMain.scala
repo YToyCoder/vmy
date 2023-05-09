@@ -6,6 +6,35 @@ import com.silence.vmy.compiler.CompileContext
 import com.silence.vmy.tools.Eval
 import com.silence.vmy.tools.Log
 import com.silence.vmy.compiler.ConstFold
+import com.silence.vmy.compiler.tree._
+import com.silence.vmy.compiler.Compiler
+import com.silence.vmy.compiler.Compilers.CompileUnit
+import com.silence.vmy.compiler.ConstFoldPhase
+import com.silence.vmy.compiler.CompilerPhase
+import com.silence.vmy.compiler.PerEvaluatingPhase
+import com.silence.vmy.compiler.CompileUnit.wrapAsCompileUnit
+
+import scala.annotation.tailrec
+
+object LCompiler extends Compiler[CompileContext] 
+{
+  val phases: List[CompilerPhase] = 
+    ConstFoldPhase :: 
+    PerEvaluatingPhase ::
+    Nil
+  def compile(context: CompileContext, unit: CompileUnit) =
+  {
+    @tailrec
+    def doPhases(phases: List[CompilerPhase], unit: CompileUnit): CompileUnit= 
+      phases match 
+      {
+        case Nil => unit
+        case phase :: rest => 
+          doPhases(rest, phase.run(context, unit))
+      }
+    doPhases(phases, unit)
+  }
+}
 
 object ScalaMain extends Log {
 
@@ -13,19 +42,20 @@ object ScalaMain extends Log {
     if( debug ) {
       println(s"parsing script ${script}")
     }
-    val ast = Eval.parsing(script, true)
+    val ast = wrapAsCompileUnit(Eval.parsing(script, true))
     val context = new CompileContext()
-    val foldTree = ast.accept(new ConstFold() {}, context)
+    // val foldTree = ast.accept(new ConstFold() {}, context)
+    val compiledTree = LCompiler.compile(context, ast)
     if(debug) {
       log("origin tree => \n" + ast.toString)
       log("#" * 20)
-      log("fold tree => \n" + foldTree.toString)
+      log("compiled tree => \n" + compiledTree.toString)
       log("parsing finished")
       log("starting eval ...")
     }
     val emulator = new TreeEmulator(context)
     emulator.debug = debug
-    foldTree.accept(emulator, null)
+    compiledTree.node().accept(emulator, null)
     if(debug)
       log("eval finished")
   }
