@@ -53,7 +53,7 @@ object ScalaMain extends Log {
       log("parsing finished")
       log("starting eval ...")
     }
-    val emulator = new TreeEmulator(context)
+    val emulator = new TreeEmulator(context, LCompiler)
     emulator.debug = debug
     compiledTree.node().accept(emulator, null)
     if(debug)
