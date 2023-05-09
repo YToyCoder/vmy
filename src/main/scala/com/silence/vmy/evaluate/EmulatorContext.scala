@@ -21,7 +21,7 @@ class EmulatorContext extends Context
 
   def enterFrame(): Frame = 
   {
-    TopFrame = Frame(TopFrame)
+    TopFrame = FnFrame(TopFrame)
     TopFrame
   }
 
