@@ -5,6 +5,7 @@ fun function(){
 }
 
 fun type(m: Int): Double {
+  let a = 1 + 2 + 4
   return 0.0
 }
 
