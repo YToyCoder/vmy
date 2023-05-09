@@ -55,17 +55,17 @@ public interface FunctionDecl extends Statement {
   default String fnDeclToString(FunctionDecl fn)
   {
     if(fn == null) return "null"; 
-      StringBuilder sb = new StringBuilder("(");
-      for(int i=0; i<params().size() - 1; i++){
-        VariableDecl decl = params().get(0);
-        sb.append(decl + ",");
-      }
-      if(params().size() > 0) {
-        sb.append(params().get(params().size() - 1));
-      }
-      sb.append(") => " + (Objects.isNull(ret()) ? "?" : ret().typeId()));
-      return "Fn: " + sb.toString() + "{\n" +
-        body().toString() + "\n" +
-        "}";
+    StringBuilder sb = new StringBuilder("(");
+    for(int i=0; i<params().size() - 1; i++){
+      VariableDecl decl = params().get(0);
+      sb.append(decl + ",");
+    }
+    if(params().size() > 0) {
+      sb.append(params().get(params().size() - 1));
+    }
+    sb.append(") => " + (Objects.isNull(ret()) ? "?" : ret().typeId()));
+    return "Fn(" + name() + "): " + sb.toString() + "{\n" +
+      body().toString() + "\n" +
+      "}";
   }
 }
