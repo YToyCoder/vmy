@@ -31,7 +31,7 @@ public abstract class Trees {
 
     @Override public Tree body() { return body; }
     @Override public Tag tag() { return Tag.Root; }
-    @Override public String toString() { return Objects.isNull(body) ?"null" : body.toString(); }
+    @Override public String toString() { return Objects.isNull(body) ?"null" : ">>root<< \n" + body.toString(); }
   }
   public static CompileUnit createCompileUnit(Tree content){ return new CompileUnit(content); }
 
