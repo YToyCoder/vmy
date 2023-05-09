@@ -320,7 +320,7 @@ class TreeEmulator(private val context: EmulatorContext)
     @tailrec // replace for loop as tailrec function
     def handleUntilSatisfied(loc: Int): (Boolean, EmulatingValue) = 
     {
-      val current = elifs.get(loc)
+      val current = if(loc < length) elifs.get(loc) else null
       if(loc >= length) (false, EVEmpty)
       else if(current.condition().accept(this, payload).toBool)
       {
