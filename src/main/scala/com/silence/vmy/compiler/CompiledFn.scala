@@ -47,7 +47,7 @@ class UpValues(private val uvs: UpValue*)
   }
 }
 
-class CompiledFn(
+case class CompiledFn(
   val name: String, 
   val params: java.util.List[VariableDecl], 
   val ret: TypeExpr, 
@@ -71,7 +71,7 @@ class CompiledFn(
     if(_body == body()) this
     else new CompiledFn(name, params, ret, _body, upvalues, position)
 
-  override def toString(): String = fnDeclToString(this)
+  override def toString(): String = s">> compiled fun << \n${fnDeclToString(this)}" 
 }
 
 object CompileUnit 
@@ -103,8 +103,7 @@ object CompileUnit
 trait PerCompileUnitTVisitor extends TVisitor[CompileContext]
 {
   type ContextType = CompileContext
-  override def enterFunctionDecl(fn: FunctionDecl, context: CompileContext) = 
-    context.getCurrentVisitor != this
+  override def enterFunctionDecl(fn: FunctionDecl, context: CompileContext) = false 
 }
 
 class CompileContext extends EmulatorContext 
