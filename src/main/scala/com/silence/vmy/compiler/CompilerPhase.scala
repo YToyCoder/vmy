@@ -66,14 +66,21 @@ object PerEvaluatingPhase
 {
   override def run(context: CompileContext, unit: CompileUnit) =
   {
-    val allDeclaration = unit.node
-    val mainFnCall = CallExpr(
-      -1, 
-      null, 
-      "main", 
-      new ListExpr(-1, null, java.util.List.of())
-    ) 
-    new RootCompileUnit(new BlockStatement(java.util.List.of(allDeclaration, mainFnCall), -1))
+    unit match
+    {
+      case CompiledFn(name, _, _, _, _, _) if name == "main" => 
+      {
+        val allDeclaration = unit.node
+        val mainFnCall = CallExpr(
+          -1, 
+          null, 
+          "main", 
+          new ListExpr(-1, null, java.util.List.of())
+        ) 
+        new RootCompileUnit(new BlockStatement(java.util.List.of(allDeclaration, mainFnCall), -1))
+      }
+      case _ => unit
+    }
   }
 
   class RootCompileUnit(body: Tree) 
