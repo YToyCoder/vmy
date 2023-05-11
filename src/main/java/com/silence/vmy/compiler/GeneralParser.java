@@ -520,6 +520,10 @@ public class GeneralParser extends Log implements Parser{
     Token arrayToken = next_must(TokenKind.ArrOpen);
     ignoreEmptyLineOrComments();
     List<Expression> elements = new ArrayList<>();
+    if(peekTok(tokenkindIsEqual(TokenKind.ArrClose))){
+      next();
+      return new ArrExpression(elements, arrayToken.start());
+    }
     elements.add(theExpression());
     ignoreEmptyLineOrComments();
     if(debug){
@@ -532,7 +536,7 @@ public class GeneralParser extends Log implements Parser{
       ignoreEmptyLineOrComments();
     }
     next_must(TokenKind.ArrClose);
-    return new ArrExpression(elements, Tag.Arr, arrayToken.start());
+    return new ArrExpression(elements, arrayToken.start());
   }
 
    // unary = one

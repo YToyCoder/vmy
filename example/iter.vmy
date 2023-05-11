@@ -20,3 +20,10 @@ fun loop() {
 }
 
 println(loop())
+
+let k = []
+
+for i in range(10){
+    k + i
+}
+

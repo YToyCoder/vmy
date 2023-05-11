@@ -5,10 +5,10 @@ import java.util.ArrayList;
 
 public record ArrExpression(
   List<Expression> elements, 
-  Tag tag, 
   long position
   ) implements Expression{
 
+  @Override public Tag tag() { return Tag.Arr; }
   @Override public <R, T> R accept(TreeVisitor<R, T> visitor, T payload) { return visitor.visitArr(this, payload); }
 
   @Override
@@ -29,7 +29,7 @@ public record ArrExpression(
       }
       elems.add(mayChanged);
     }
-    return anyChanged ? new ArrExpression(elems, tag, position) : this;
+    return anyChanged ? new ArrExpression(elems,position) : this;
   }
 
   @Override public
