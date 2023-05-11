@@ -130,7 +130,6 @@ object UpValuePhase
     else 
       doWithTopNode(unit.node(), context, this) match {
         case fn @ CompiledFn(name, params, ret, body, upvalues, position) => 
-          println(s"phase upvalue ${upvalues}")
           if fn.compiled() then fn
           else
             CompiledFn(name, params, ret, body, getUpvalues(), position)
@@ -140,5 +139,9 @@ object UpValuePhase
 
   override def enterVisit(context: CompileContext, unit: CompileUnit): CompileUnit = 
     cleanVariable()
+    if(unit.isInstanceOf[CompiledFn])
+    {
+      unit.asInstanceOf[CompiledFn].params.forEach(_.accept(this, context))
+    }
     unit
 }

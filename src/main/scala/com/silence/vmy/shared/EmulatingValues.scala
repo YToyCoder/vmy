@@ -334,7 +334,7 @@ class Scope(pre: Scope) {
   val variables: mutable.Map[String, EmulatingValue] = mutable.Map()
   def preOne: Scope = pre
   def lookup(name: String): Option[EmulatingValue] = {
-    val variable = variables.getOrElse(
+    val variable: EmulatingValue = variables.getOrElse(
       name,
       pre match {
         case null => null
@@ -345,10 +345,10 @@ class Scope(pre: Scope) {
           }
         }
       }
-    ) 
+    )
     variable match {
       case null => None
-      case variable => Some(variable.asInstanceOf[EmulatingValue])
+      case variable => Some(variable)
     }
   }
 
