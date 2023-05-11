@@ -313,6 +313,14 @@ class TreeEmulator(
     }
   }
 
+  private def unwrapIfIsUpvalue(value: EmulatingValue): EmulatingValue =
+    value match
+      case upvalue @ UpValue(_, _) => 
+        upvalue.variable_value match
+          case None => EVEmpty
+          case Some(value) => value
+      case _ => value
+
   override def visitForStatement(statement: ForStatement, payload: EmulatingValue): EmulatingValue = {
     if(debug) {
       log("enter ForStatement")
@@ -320,7 +328,7 @@ class TreeEmulator(
   // create new frame for for-statement
     val heads = statement.heads
     // heads.stream().forEach(declareVariableForId _)
-    val result: EmulatingValue = statement.arrId.accept(this, payload) match {
+    val result: EmulatingValue = unwrapIfIsUpvalue(statement.arrId.accept(this, payload)) match {
       case EVList(value) => {
         // declare all variables : element id  and index id 
         for(index <- 0 until value.size){

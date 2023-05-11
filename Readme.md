@@ -97,3 +97,32 @@ a()
 a()
 
 ```
+
+##### 2.3.5 for
+
+*use for with array or range-function*
+```
+
+for i in range(10){
+  println("range " ++ i)
+}
+
+for value, index in range(10){
+    println("range " ++ value ++ " index " ++ index)
+}
+
+let arr = [1,2,3,4]
+
+for i in arr {
+    println(i)
+}
+
+let k = []
+
+for i in range(10){
+    k + i
+}
+
+println(k)
+
+```

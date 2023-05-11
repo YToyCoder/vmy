@@ -9,8 +9,6 @@ import scala.collection.mutable
 import com.silence.vmy.runtime.VmyFunctions
 import java.{util => ju}
 
-case class VariableAndType(val name: String, val tId: String) {}
-
 // todo scope
 class VariableDeclarationAndUpValuesChecking extends PerCompileUnitTVisitor
 {
