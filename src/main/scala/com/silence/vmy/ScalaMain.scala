@@ -36,7 +36,8 @@ object LCompiler extends Compiler[CompileContext]
         case phase :: rest => 
           doPhases(rest, phase.run(context, unit))
       }
-    doPhases(phases, unit)
+    if(unit.compiled()) unit
+    else doPhases(phases, unit)
   }
 }
 

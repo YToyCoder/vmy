@@ -129,7 +129,7 @@ object UpValuePhase
     if(unit == null || unit.node() == null) null
     else 
       doWithTopNode(unit.node(), context, this) match {
-        case fn @ CompiledFn(name, params, ret, body, upvalues, position) => 
+        case fn @ CompiledFn(name, params, ret, body, _, position) => 
           if fn.compiled() then fn
           else
             CompiledFn(name, params, ret, body, getUpvalues(), position)

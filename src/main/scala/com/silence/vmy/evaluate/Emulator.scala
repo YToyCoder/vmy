@@ -53,7 +53,8 @@ object UpValueCompiler extends Compiler[CompileContext]
 {
 
   def compile(context: CompileContext, unit: CompileUnit) =
-    UpValuePhase.run(context, unit)
+    if(unit.compiled()) unit
+    else UpValuePhase.run(context, unit)
 }
 
 class TreeEmulator(
