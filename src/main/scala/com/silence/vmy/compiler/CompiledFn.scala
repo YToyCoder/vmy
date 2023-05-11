@@ -13,7 +13,7 @@ import scala.annotation.tailrec
 import com.silence.vmy.shared.EmulatingValue.BaseEV
 import com.silence.vmy.shared.EmulatingValue.valueType
 
-class UpValue(private val n: String, private val s: Scope) extends BaseEV
+case class UpValue(private val n: String, private val s: Scope) extends BaseEV
 {
 
   override def value: valueType = 

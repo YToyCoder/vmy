@@ -40,16 +40,24 @@ sealed trait EmulatingValue extends Ordering[EmulatingValue]{
 
 object EmulatingValue {
   type valueType = 
-    PrimaryOpSupportType 
-    | String 
-    | Boolean 
-    | EmulatingValue 
-    | FunctionDecl 
-    | ArrayT /* array */
-    | ObjType
+    PrimaryOpSupportType | 
+    String | 
+    Boolean | 
+    EmulatingValue | 
+    FunctionDecl | 
+    ArrayT /* array */ | 
+    ObjType
   type PrimaryOpSupportType = Int | Double | Long 
   type ArrayT = List[EmulatingValue]
   type ObjType = Map[String, EmulatingValue]
+  def isListOrObj(value: EmulatingValue): Boolean = 
+    value match
+      case EVList(_) | EVObj(_) => true
+      case _ => false
+  def upvalueIsListOrObj(value: UpValue): Boolean = 
+    value.variable_value match
+      case None => false
+      case Some(upv) => isListOrObj(upv)
   def apply(value: valueType): BaseEV = apply(value, null)
   // must value use 
   def apply(value: valueType, name: String): BaseEV = apply(value, name, true)

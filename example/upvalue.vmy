@@ -3,10 +3,12 @@ fn upvalue()
 {
   println("call upvalue")
   let a = 1
+  let c = {name:"b-name"}
   fn inup() {
     let b = a
     println(b)
     a += 4 
+    let k = c("name")
     println("a is => " ++ a)
   }
   return inup

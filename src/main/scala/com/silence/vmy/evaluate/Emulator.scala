@@ -28,6 +28,7 @@ import com.silence.vmy.compiler.CompiledFn
 import com.silence.vmy.compiler.CompileUnit.wrapAsCompileUnit
 import com.silence.vmy.compiler.UpValuePhase
 import com.silence.vmy.compiler.Compilers.CompileUnit
+import com.silence.vmy.compiler.UpValue
 
 object TreeEmulator {
   case class Frame(pre: Frame) extends Scope(pre) 
@@ -222,6 +223,20 @@ class TreeEmulator(
       a
     }
     if(debug) log(s"visiting call ${call.callId()}")
+
+    def listOrObjCall(obj: EmulatingValue): EmulatingValue = 
+      if(debug) log(s"Fn : ${call.callId} is arr method")
+      call.params.body.size() match {
+        case 1 => 
+          callJavaNative(
+            VmyFunctions.ElementGetter, 
+            listConcat(new ArrayList(List.of(obj)),paramsEval()))
+        case 2 => 
+          callJavaNative(
+            VmyFunctions.ElementUpdate,
+            listConcat(new ArrayList(List.of(obj)), paramsEval()))
+        case _ => throw new VmyRuntimeException(s"EVList have no ${call.callId} method")
+      }
     lookupVariable(call.callId()) match {
       // function in frame
       case Some(fnTreeKeeper) if (fnTreeKeeper.isInstanceOf[EVFunction]) => {
@@ -252,20 +267,16 @@ class TreeEmulator(
        *  1. element get
        *  2. update
        **/
+
       case Some(value) if value.isInstanceOf[EVList] || value.isInstanceOf[EVObj] => {
-        if(debug) log(s"Fn : ${call.callId} is arr method")
-        call.params.body.size() match {
-          case 1 => 
-            callJavaNative(
-              VmyFunctions.ElementGetter, 
-              listConcat(new ArrayList(List.of(value)),paramsEval()))
-          case 2 => 
-            callJavaNative(
-              VmyFunctions.ElementUpdate,
-              listConcat(new ArrayList(List.of(value)), paramsEval()))
-          case _ => throw new VmyRuntimeException(s"EVList have no ${call.callId} method")
-        }
+        listOrObjCall(value)
       }
+      case Some(value)
+        if value.isInstanceOf[UpValue] && EmulatingValue.upvalueIsListOrObj(value.asInstanceOf[UpValue]) =>
+        value.asInstanceOf[UpValue].variable_value 
+          match
+            case Some(upvalue) => listOrObjCall(upvalue)
+            case None =>  EVEmpty // should be not reach
       // function defined in java
       case _ => {
         if(debug) log(s"Fn : ${call.callId} is java native method")

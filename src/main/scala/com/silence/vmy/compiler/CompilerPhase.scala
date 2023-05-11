@@ -130,6 +130,7 @@ object UpValuePhase
     else 
       doWithTopNode(unit.node(), context, this) match {
         case fn @ CompiledFn(name, params, ret, body, upvalues, position) => 
+          println(s"phase upvalue ${upvalues}")
           if fn.compiled() then fn
           else
             CompiledFn(name, params, ret, body, getUpvalues(), position)
