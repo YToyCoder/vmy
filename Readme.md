@@ -64,3 +64,36 @@ a(0) = 100 # [100, 2, 3]
 let a = [1,2]
 a += 3 # [1,2,3]
 ```
+
+##### 2.3.3 obj
+
+"VmyObj"
+```
+let a = {name: "Tom", }
+fn GetName() 
+{
+    return a("name")
+}
+GetName()
+
+a("GetName") = GetName
+
+```
+
+##### 2.3.4 closure support (闭包)
+
+```
+fn outfn()
+{
+    let variable = 1.0
+    fn infn() {
+        variable += 4
+        println("variable is => " ++ variable)
+    }
+    return fn
+}
+val a = outfn()
+a()
+a()
+
+```
