@@ -11,6 +11,7 @@ import com.silence.vmy.runtime.VmyRuntimeException
 import com.silence.vmy.runtime.VmyFunctions
 import com.silence.vmy.shared.EmulatingValue.EVEmpty.mkOrderingOps
 import com.silence.vmy.shared._
+import com.silence.vmy.compiler.CompileUnit.wrapAsCompiledFn
 
 import math.Fractional.Implicits.infixFractionalOps
 import math.Integral.Implicits.infixIntegralOps
@@ -23,6 +24,10 @@ import java.util.Map
 
 import scala.annotation.tailrec
 import scala.collection.mutable
+import com.silence.vmy.compiler.CompiledFn
+import com.silence.vmy.compiler.CompileUnit.wrapAsCompileUnit
+import com.silence.vmy.compiler.UpValuePhase
+import com.silence.vmy.compiler.Compilers.CompileUnit
 
 object TreeEmulator {
   case class Frame(pre: Frame) extends Scope(pre) 
@@ -38,7 +43,16 @@ object TreeEmulator {
       {
         TopScope = TopScope.preOne
       }
+    
+    def fnBody: Option[CompiledFn] = null
   }
+}
+
+object UpValueCompiler extends Compiler[CompileContext]
+{
+
+  def compile(context: CompileContext, unit: CompileUnit) =
+    UpValuePhase.run(context, unit)
 }
 
 class TreeEmulator(
@@ -50,7 +64,7 @@ class TreeEmulator(
 
   import EmulatingValue.{EVEmpty, EVFunction, EVList, EVObj, Zero}
   var debug: Boolean = false
-  private def createFrame() : TreeEmulator.Frame = context.enterFrame()
+  private def createFrame(fn: CompiledFn) : TreeEmulator.Frame = context.enterFrame(fn)
   private def exitFrame() : Unit = context.leaveFrame()
   private def createScope() = context.enterScope()
   private def exitScope() = context.leaveScope()
@@ -169,11 +183,13 @@ class TreeEmulator(
 
   override def visitFunctionDecl(function: FunctionDecl, payload: EmulatingValue): EmulatingValue = {
     val name = function.name()
-    declareVariable(name, function)
+    // declareVariable(name, function)
+    val compiledfn = UpValueCompiler.compile(context, wrapAsCompileUnit(function))
+    declareVariable(name, wrapAsCompiledFn(compiledfn.node()))
   }
 
   override def visitRoot(root: Root, payload: EmulatingValue): EmulatingValue = {
-    createFrame()
+    createFrame(wrapAsCompiledFn(root))
     val body = root.body
     val returnValue = root.body().accept(this, payload)
     exitFrame()
@@ -210,10 +226,10 @@ class TreeEmulator(
       // function in frame
       case Some(fnTreeKeeper) if (fnTreeKeeper.isInstanceOf[EVFunction]) => {
         if(debug) { log(s"Fn : ${call.callId} is user defined") }
-        createFrame()
         // val fnTree = fnTreeKeeper.asInstanceOf[EVFunction].value 
-        val compiledFn = fnTreeKeeper.asInstanceOf[EVFunction].tryCompile(compiler, context)
-        val fnTree = compiledFn.node.asInstanceOf[FunctionDecl] 
+        val fnTree = fnTreeKeeper.asInstanceOf[EVFunction].value
+        // val fnTree = compiledFn.node.asInstanceOf[FunctionDecl] 
+        createFrame(wrapAsCompiledFn(fnTree))
         val paramsValues = paramsEval()
         // declare variable with initvalue
         for(i <- 0 until fnTree.params.size){

@@ -10,14 +10,21 @@ import com.silence.vmy.evaluate._
 import EmulatingValue.{EVEmpty, EVFunction, EVList, EVObj, Zero}
 
 import scala.annotation.tailrec
+import com.silence.vmy.shared.EmulatingValue.BaseEV
+import com.silence.vmy.shared.EmulatingValue.valueType
 
-class UpValue(private val n: String, private val s: Scope) 
+class UpValue(private val n: String, private val s: Scope) extends BaseEV
 {
-  def name = n
-  def scope = s
+
+  override def value: valueType = 
+    variable_value match
+      case None => EVEmpty
+      case Some(value) => value.value
+
+  override def name = n
   def variable_value = 
     s.lookup(n)
-  def update(newValue: EmulatingValue): EmulatingValue = {
+  override def update(newValue: EmulatingValue): EmulatingValue = {
     variable_value match 
     {
       case None => EVEmpty
@@ -28,7 +35,7 @@ class UpValue(private val n: String, private val s: Scope)
 
 }
 
-class UpValues(private val uvs: UpValue*) 
+class UpValues(private val uvs: Array[UpValue]) 
 {
   def find(name: String): Option[UpValue] = 
   {
@@ -45,6 +52,16 @@ class UpValues(private val uvs: UpValue*)
       case _    => doFind(0)
     }
   }
+
+  override def toString(): String = 
+    uvs match
+      case null => "null"
+      case _ => uvs.mkString
+
+}
+object UpValues 
+{
+  def apply(uvs: Array[UpValue]) = new UpValues(uvs)
 }
 
 case class CompiledFn(
@@ -78,20 +95,23 @@ case class CompiledFn(
 object CompileUnit 
 {
   def wrapAsCompileUnit(node: Tree): CompileUnit = 
+    wrapAsCompiledFn(node)
+
+  def wrapAsCompiledFn(node: Tree) = 
   {
     node match 
     {
-      case e: CompiledFn => e
-      case e: FunctionDecl => 
+      case fn: CompiledFn => fn
+      case fn: FunctionDecl => 
       {
-        val fndecl = e.asInstanceOf[FunctionDecl]
+        val fndecl = fn.asInstanceOf[FunctionDecl]
         new CompiledFn( 
           fndecl.name, fndecl.params, 
           fndecl.ret, fndecl.body, 
           null, fndecl.position)
       }
-      case e: Root => 
-        val fndecl = e.asInstanceOf[Root]
+      case r: Root => 
+        val fndecl = r.asInstanceOf[Root]
         new CompiledFn( 
           "main", java.util.List.of(), 
           null, fndecl.body.asInstanceOf[BlockStatement], 
@@ -105,6 +125,14 @@ trait PerCompileUnitTVisitor extends TVisitor[CompileContext]
 {
   type ContextType = CompileContext
   override def enterFunctionDecl(fn: FunctionDecl, context: CompileContext) = false 
+
+  private def defaultVisit() = {}
+
+  def enterVisit(context: CompileContext, unit: CompileUnit): CompileUnit= 
+    unit
+  def leaveVisit(context: CompileContext, unit: CompileUnit): CompileUnit=
+    unit
+
 }
 
 class CompileContext extends EmulatorContext 

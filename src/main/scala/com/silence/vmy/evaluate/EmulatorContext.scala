@@ -3,8 +3,13 @@ package com.silence.vmy.evaluate
 import com.silence.vmy.shared._
 import com.silence.vmy.compiler.Context
 import com.silence.vmy.evaluate.TreeEmulator.Frame
+import com.silence.vmy.compiler.UpValue
+import com.silence.vmy.compiler.CompiledFn
 
-class FnFrame(pre: Frame) extends Frame(pre) {}
+class FnFrame(pre: Frame, fn: CompiledFn) extends Frame(pre) 
+{
+  override def fnBody: Option[CompiledFn] = Some(fn)
+}
 
 class EmulatorContext extends Context
 {
@@ -19,9 +24,9 @@ class EmulatorContext extends Context
     vv
   }
 
-  def enterFrame(): Frame = 
+  def enterFrame(fn: CompiledFn): Frame = 
   {
-    TopFrame = FnFrame(TopFrame)
+    TopFrame = FnFrame(TopFrame, fn)
     TopFrame
   }
 
@@ -35,12 +40,26 @@ class EmulatorContext extends Context
     this
   }
 
+  def lookupVariableAsUpValue(name: String): Option[UpValue] = 
+    TopFrame match {
+      case null => None
+      case frame => frame.wrapAsUpValue(name)
+    }
+
   def enterScope() = TopFrame.enterScope()
   def leaveScope() = TopFrame.leaveScope()
 
   def lookupVariable(name: String): Option[EmulatingValue] = 
     TopFrame match {
       case null => None
-      case frame => frame.lookup(name)
+      case frame => 
+        frame.fnBody match
+          case Some(fn) if fn.upvalues != null => 
+            fn.upvalues.find(name) 
+              match 
+                case s @ Some(_) => s
+                case _ => frame.lookup(name)
+          case _ => 
+            frame.lookup(name)
     }
 }

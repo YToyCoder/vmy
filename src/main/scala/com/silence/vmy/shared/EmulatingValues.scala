@@ -22,6 +22,7 @@ import java.util.Map
 
 import scala.annotation.tailrec
 import scala.collection.mutable
+import com.silence.vmy.compiler.UpValue
 
 sealed trait EmulatingValue extends Ordering[EmulatingValue]{
   def value: EmulatingValue.valueType
@@ -100,7 +101,7 @@ object EmulatingValue {
 
   abstract class BaseEV extends EmulatingValue{
     private var n: String = _
-    private var scope: Scope = _
+    protected var _scope: Scope = _
     private var updatable: Boolean = true
     def immutable(): BaseEV = {
       updatable = false
@@ -117,7 +118,7 @@ object EmulatingValue {
 
       other match {
         case v: BaseEV =>
-          scope = v.scope
+          _scope = v._scope
           updatable = v.updatable
         case _ =>
       }
@@ -127,24 +128,24 @@ object EmulatingValue {
     def name: String = n
 
     override def update(v: EmulatingValue): EmulatingValue = {
-      if(scope == null) {
+      if(_scope == null) {
         throw new Exception(s"variable-update-error=>no scope for variable ${name}")
       }
       if(!this.updatable)
         throw new VmyRuntimeException(s"const variable (${name}) can't updated")
 
-      scope.lookup(name) match {
+      _scope.lookup(name) match {
         case None => throw new VmyRuntimeException("not in scope")
         case Some(value) => {
-          scope(name) = v copyPropsFrom value
+          _scope(name) = v copyPropsFrom value
           v
         }
       }
     }
 
     def updateScope(s: Scope): Scope = {
-      val old = scope
-      scope = s
+      val old = _scope
+      _scope = s
       old
     }
 
@@ -272,20 +273,27 @@ object EmulatingValue {
         case fn: CompiledFn => (fn.asInstanceOf[CompiledFn]).compiled
         case _ => false
       }
-    def tryCompile(compiler: Compiler[CompileContext], context: CompileContext): CompileUnit=
-    {
-      value match 
-      {
-        case _: CompiledFn => 
-        {
-          println("try - compile ")
-          val fn = value.asInstanceOf[CompiledFn]
-          if(fn.compiled) fn
-          else compiler.compile(context, fn)
-        }
-        case _ => compiler.compile(context, wrapAsCompileUnit(value))
-      }
-    }
+    // def tryCompile(compiler: Compiler[CompileContext], context: CompileContext): CompileUnit=
+    // {
+    //   value match 
+    //   {
+    //     case _: CompiledFn => 
+    //     {
+    //       println("try - compile ")
+    //       val fn = value.asInstanceOf[CompiledFn]
+    //       if(fn.compiled) fn
+    //       else compiler.compile(context, fn)
+    //     }
+    //     case _ => compiler.compile(context, wrapAsCompileUnit(value))
+    //   }
+    // }
+
+    // def lookupUpValue(name: String): Option[UpValue] = 
+    // {
+    //   _scope match 
+    //     case null => None
+    //     case _    => _scope.wrapAsUpValue(name)
+    // }
   }
   case class RetValue(_value: EmulatingValue) extends BaseEV {
     // type ValueType = EmulatingValue
@@ -333,6 +341,15 @@ class Scope(pre: Scope) {
     variable match {
       case null => None
       case variable => Some(variable.asInstanceOf[EmulatingValue])
+    }
+  }
+
+  def wrapAsUpValue(name: String): Option[UpValue] =
+  {
+    variables.get(name) match {
+      case None if pre != null => pre.wrapAsUpValue(name)
+      case Some(value) => Some(new UpValue(name, this))
+      case _ => None
     }
   }
 

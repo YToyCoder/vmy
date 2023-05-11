@@ -27,13 +27,13 @@ if(comp > 0){
 }
 let arr = [1, 2, 3]
 val ar = [1 * 2 + 3 - (10 / 3 + 9 * 0.2), "arr"]
-val a = [
+val arrr = [
   fun a() { return "in array function" } ,
   fun b() {
     return "fn=>b"
   }
 ]
-val f = a(0)
+val f = arrr(0)
 println(f() ++ "??")
 arr += 2
 println(arr)

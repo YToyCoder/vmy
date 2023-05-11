@@ -6,7 +6,9 @@ import Compilers.CompileUnit
 import com.silence.vmy.compiler.CompileUnit.wrapAsCompileUnit
 
 
-trait CompilerPhase extends Phase[CompileContext] 
+trait CompilerPhase 
+  extends Phase[CompileContext] 
+  with PerCompileUnitTVisitor
 {
 
   def doWithTopNode(node: Tree, context: CompileContext, visitor: PerCompileUnitTVisitor): Tree = 
@@ -26,18 +28,24 @@ trait CompilerPhase extends Phase[CompileContext]
         val body = fn.body.accept(visitor, context).asInstanceOf[BlockStatement]
         if(body == fn.body) node
         else
-          new CompiledFn(fn.name, fn.params, fn.ret, body, null, fn.position)
+          new CompiledFn(fn.name, fn.params, fn.ret, body, UpValues(null), fn.position)
       }
       case root: Root => 
       {
         val rootNode = root.asInstanceOf[Root] 
         val body = rootNode.body.accept(visitor, context).asInstanceOf[BlockStatement]
-        new CompiledFn("main", java.util.List.of(), null, body, null, body.position)
+        new CompiledFn("main", java.util.List.of(), null, body, UpValues(null), body.position)
       }
       case node => node.accept(visitor, context)
     }
   }
 
+  final override def run(context: CompileContext, unit: CompileUnit) =
+  {
+    leaveVisit(context, phaseAction(context, enterVisit(context, unit)))
+  }
+
+  def phaseAction(context: CompileContext, unit: CompileUnit): CompileUnit 
 }
 
 object ConstFoldPhase 
@@ -45,7 +53,7 @@ object ConstFoldPhase
   with CompilerPhase 
 {
   // failed => null
-  override def run(context: CompileContext, unit: CompileUnit) = 
+  override def phaseAction(context: CompileContext, unit: CompileUnit) = 
   {
     if(unit == null || unit.node() == null) null
     else {
@@ -63,7 +71,7 @@ object PerEvaluatingPhase
   extends PerCompileUnitTVisitor
   with CompilerPhase
 {
-  override def run(context: CompileContext, unit: CompileUnit) =
+  override def phaseAction(context: CompileContext, unit: CompileUnit) =
   {
     unit.node match
     {
@@ -99,7 +107,7 @@ object CompileFinishPhase
   extends PerCompileUnitTVisitor
   with CompilerPhase
 {
-  override def run(context: CompileContext, unit: CompileUnit) =
+  override def phaseAction(context: CompileContext, unit: CompileUnit) =
   {
     unit match
     {
@@ -109,4 +117,27 @@ object CompileFinishPhase
       case _ => unit
     }
   }
+}
+
+object UpValuePhase 
+  extends VariableDeclarationAndUpValuesChecking 
+  with CompilerPhase
+{
+
+  override def phaseAction(context: CompileContext, unit: CompileUnit) =
+  {
+    if(unit == null || unit.node() == null) null
+    else 
+      doWithTopNode(unit.node(), context, this) match {
+        case fn @ CompiledFn(name, params, ret, body, upvalues, position) => 
+          if fn.compiled() then fn
+          else
+            CompiledFn(name, params, ret, body, getUpvalues(), position)
+        case node => wrapAsCompileUnit(node)
+      }
+  }
+
+  override def enterVisit(context: CompileContext, unit: CompileUnit): CompileUnit = 
+    cleanVariable()
+    unit
 }

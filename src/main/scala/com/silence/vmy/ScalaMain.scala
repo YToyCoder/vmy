@@ -12,6 +12,7 @@ import com.silence.vmy.compiler.Compilers.CompileUnit
 import com.silence.vmy.compiler.ConstFoldPhase
 import com.silence.vmy.compiler.CompilerPhase
 import com.silence.vmy.compiler.CompileFinishPhase
+import com.silence.vmy.compiler.UpValuePhase
 import com.silence.vmy.compiler.PerEvaluatingPhase
 import com.silence.vmy.compiler.CompileUnit.wrapAsCompileUnit
 
@@ -21,7 +22,8 @@ object LCompiler extends Compiler[CompileContext]
 {
   val phases: List[CompilerPhase] = 
     ConstFoldPhase :: 
-    PerEvaluatingPhase ::
+      // UpValuePhase ::
+      PerEvaluatingPhase ::
     CompileFinishPhase ::
     Nil
   def compile(context: CompileContext, unit: CompileUnit) =

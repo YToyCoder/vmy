@@ -1,0 +1,17 @@
+
+fn upvalue()
+{
+  println("call upvalue")
+  let a = 1
+  fn inup() {
+    let b = a
+    println(b)
+    a += 4 
+    println("a is => " ++ a)
+  }
+  return inup
+}
+
+let fnc = upvalue()
+fnc()
+fnc()
