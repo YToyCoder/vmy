@@ -281,27 +281,6 @@ object EmulatingValue {
         case fn: CompiledFn => (fn.asInstanceOf[CompiledFn]).compiled
         case _ => false
       }
-    // def tryCompile(compiler: Compiler[CompileContext], context: CompileContext): CompileUnit=
-    // {
-    //   value match 
-    //   {
-    //     case _: CompiledFn => 
-    //     {
-    //       println("try - compile ")
-    //       val fn = value.asInstanceOf[CompiledFn]
-    //       if(fn.compiled) fn
-    //       else compiler.compile(context, fn)
-    //     }
-    //     case _ => compiler.compile(context, wrapAsCompileUnit(value))
-    //   }
-    // }
-
-    // def lookupUpValue(name: String): Option[UpValue] = 
-    // {
-    //   _scope match 
-    //     case null => None
-    //     case _    => _scope.wrapAsUpValue(name)
-    // }
   }
   case class RetValue(_value: EmulatingValue) extends BaseEV {
     // type ValueType = EmulatingValue
@@ -315,7 +294,6 @@ object EmulatingValue {
   object EVEmpty extends BaseEV {
     override def value = null 
     override def toString(): String = "Null" 
-      // throw new Exception("EVEmpty!")
   }
 
 
