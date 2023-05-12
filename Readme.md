@@ -23,6 +23,7 @@
 11. 函数声明 : function
 12. 局部变量 : local variable
 13. VmyObject : Vmy结构对象支持， 字面量初始化，成员获取和更新
+14. closure(闭包)
 
 ##### 2.2 计划支持的特点
 2. 'import' feature , 引用其他文件
