@@ -90,7 +90,7 @@ fn outfn()
         variable += 4
         println("variable is => " ++ variable)
     }
-    return fn
+    return infn
 }
 val a = outfn()
 a()
