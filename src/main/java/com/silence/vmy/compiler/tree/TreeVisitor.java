@@ -18,4 +18,6 @@ public interface TreeVisitor<R,T> {
   R visitArr(ArrExpression arr, T t);
   R visitForStatement(ForStatement forStatement, T t);
   R visitVmyObject(VmyObject forStatement, T t);
+  R visitImport(ImportState state, T t);
+  R visitExport(ExportState state, T t);
 }

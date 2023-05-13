@@ -403,4 +403,14 @@ class TreeEmulator(
       }
     }
   }
+
+  override def visitExport(state: ExportState, payload: EmulatingValue): EmulatingValue = 
+  {
+    null
+  }
+
+  override def visitImport(state: ImportState, payload: EmulatingValue): EmulatingValue =
+  {
+    null
+  }
 }

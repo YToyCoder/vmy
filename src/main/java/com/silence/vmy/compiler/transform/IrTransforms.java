@@ -167,6 +167,18 @@ public abstract class IrTransforms {
     public Tree visitVmyObject(VmyObject forStatement,Object t){
       throw new UnsupportedOperationException("Unimplemented method 'visitArr'");
     }
+
+    @Override
+    public Tree visitImport(ImportState state, Object t) {
+      // TODO Auto-generated method stub
+      throw new UnsupportedOperationException("Unimplemented method 'visitImport'");
+    }
+
+    @Override
+    public Tree visitExport(ExportState state, Object t) {
+      // TODO Auto-generated method stub
+      throw new UnsupportedOperationException("Unimplemented method 'visitExport'");
+    }
   }
 
 }

@@ -53,6 +53,12 @@ public abstract class TVisitor<T> {
   public boolean enterVmyObject(VmyObject obj, T t) { return enterDefault(obj, t); }
   public Tree leaveVmyObject(VmyObject obj, T t) { return leaveDefault(obj, t); }
 
+  public boolean enterImport(ImportState state, T t) { return enterDefault(state, t); }
+  public Tree leaveImport(ImportState state, T t) { return leaveDefault(state, t); }
+
+  public boolean enterExport(ExportState state, T t) { return enterDefault(state, t); }
+  public Tree leaveExport(ExportState state, T t) { return leaveDefault(state, t); }
+
   protected boolean enterDefault(Tree tree, T t) { return true; }
   protected Tree leaveDefault(Tree tree, T t) { return tree; }
 

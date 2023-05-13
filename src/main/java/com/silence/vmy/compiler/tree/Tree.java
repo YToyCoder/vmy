@@ -57,7 +57,10 @@ public interface Tree {
 		Elif,
 		Else,
 		/** loop */
-		For
+		For,
+		// 
+		Import,
+		Export
 	};
 
 	static String opTag2String(Tag tag){
