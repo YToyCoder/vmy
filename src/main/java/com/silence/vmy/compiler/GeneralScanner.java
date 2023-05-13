@@ -147,7 +147,6 @@ public class GeneralScanner implements Lexer{
     return createTok(kind, charInFile.location(), charInFile.location() + 1);
   }
 
-  // 字母开头
   protected Tokens.Token handle_alphabetic_start(){
     // ID Fun Val Let
     // If Elif Else While For
@@ -176,6 +175,10 @@ public class GeneralScanner implements Lexer{
         case "true"  -> createToken.apply(Tokens.TokenKind.True);
         case "false"  -> createToken.apply(Tokens.TokenKind.False);
         case "in" -> createToken.apply(Tokens.TokenKind.In);
+        case "import" -> createToken.apply(Tokens.TokenKind.Import);
+        case "export" -> createToken.apply(Tokens.TokenKind.Export);
+        case "from" -> createToken.apply(Tokens.TokenKind.From);
+        case "as" -> createToken.apply(Tokens.TokenKind.As);
         default -> createPayloadTok(
             Tokens.TokenKind.Id,
             startChar.location(),
