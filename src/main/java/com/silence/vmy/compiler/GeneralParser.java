@@ -3,6 +3,7 @@ package com.silence.vmy.compiler;
 import com.silence.vmy.compiler.Tokens.Token;
 import com.silence.vmy.compiler.Tokens.TokenKind;
 import com.silence.vmy.compiler.tree.*;
+import com.silence.vmy.compiler.tree.ImportState.ImportExp;
 import com.silence.vmy.compiler.tree.Tree.Tag;
 import com.silence.vmy.runtime.VmyRuntimeException;
 import com.silence.vmy.tools.Utils;
@@ -143,6 +144,95 @@ public class GeneralParser extends Log implements Parser{
         compileBlock(TokenKind.LBrace, TokenKind.RBrace),
         decl.start()
     );
+  }
+
+  // toplevelStatement = ImportStatement 
+  //                   | ExportStatement   
+  //                   | VarDecl "=" expr4
+  //                   | ifStatement
+  //                   | for-statement
+  //                   | Update
+  //                   | e_fun
+  //                   | call
+  // example code:
+  // import Module from "uri"
+  // let a = 1
+  // fn function(){}
+  // export a
+  // export { a as ConstA , function }
+  private Statement toplevelStatement(){
+    if(peekTok(tokenkindIsEqual(TokenKind.Import))){
+      return parsingImport();
+    }
+    return null;
+  }
+
+  // ImportStatement = "import" NameOrAlias "from" stringliteral
+  //                 | "import" ObjNameOrAlias "from" stringliteral
+  // NameOrAlias = id | id "as" id
+  // ObjNameOrAlias = "{" NameOrAlias restNameOrAlias "}"
+  // restNameOrAlias = [ "," NameOrAlias ]
+  private Statement parsingImport(){
+    Token im = next_must(TokenKind.Import);
+    if(!peekTok(tokenkindIsEqual(TokenKind.LBrace))){
+      ImportExp exp = parsingImportExp(); 
+      Token uriTok = next_must(TokenKind.StringLiteral);
+      return ImportState.create(uriTok.payload(), exp, im.start());
+    }
+    List<ImportExp> elems = parsingObjStyleImportExp();
+    Token uriTok = next_must(TokenKind.StringLiteral);
+    return ImportState.create(uriTok.payload(), elems, im.start());
+  }
+  
+  private ImportExp parsingImportExp(){
+    var nameOrAlias = parsingNameOrAlias();
+    ImportExp exp = createFromNameAndAlias(nameOrAlias); 
+    return exp;
+  }
+
+  private ImportExp createFromNameAndAlias(NameAndAlias nameOrAlias){
+    if(!nameOrAlias.hasAlias()){
+      return ImportState.createImportExp(nameOrAlias.name.name, nameOrAlias.name.location); 
+    }else {
+      return ImportState.createImportExp(nameOrAlias.name.name, nameOrAlias.alias.name, nameOrAlias.name.location);
+    }
+  }
+
+  private List<ImportExp> parsingObjStyleImportExp(){
+    var obj = parsingObjStyleNameAndAlias();
+    List<NameAndAlias> elems = obj.elems();
+    List<ImportExp> res = new ArrayList<>(elems.size());
+    for(var el : elems){
+      res.add(createFromNameAndAlias(el));
+    }
+    return res;
+  }
+
+  private static record NameAndLoc(String name, long location) {}
+  private static record NameAndAlias(NameAndLoc name, NameAndLoc alias) {
+    public boolean hasAlias(){ return alias != null;}
+  }
+  private static record ObjStyleNameAndAlias(List<NameAndAlias> elems, long position){}
+
+  // name => a
+  // alias => a as Alias
+  private NameAndAlias parsingNameOrAlias(){
+    Token name = null;
+    Token alias = null;
+    name = next_must(TokenKind.Id);
+    if(!peekTok(tokenkindIsEqual(TokenKind.As))){
+      return new NameAndAlias(new NameAndLoc(name.payload(), name.start()), null);
+    }
+    next_must(TokenKind.As);
+    alias = next_must(TokenKind.Id);
+    return 
+      new NameAndAlias(
+        new NameAndLoc(name.payload(), name.start()), 
+        new NameAndLoc(alias.payload(), alias.start()));
+  }
+
+  private ObjStyleNameAndAlias parsingObjStyleNameAndAlias(){
+    return null;
   }
 
   // expr = "(" ")" | "(" expr2 ")"
