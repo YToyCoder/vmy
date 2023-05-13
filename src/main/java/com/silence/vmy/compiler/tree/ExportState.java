@@ -9,6 +9,19 @@ public class ExportState implements Statement
   private List<ExportExp> exports;
   private Kind _kind;
 
+  private ExportState(long position, List<ExportExp> exports, Kind _kind) {
+    this.position = position;
+    this.exports = exports;
+    this._kind = _kind;
+  }
+
+  public static ExportState create(ExportExp exp, long position){
+    return new ExportState(position, List.of(exp), Kind.One);
+  }
+  public static ExportState create(List<ExportExp> exp, long position){
+    return new ExportState(position, exp, Kind.Obj);
+  }
+
   private static enum Kind {
     One,
     Obj

@@ -296,7 +296,7 @@ class TreeEmulator(
 
   override def visitIfStatement(statement: IfStatement, payload: EmulatingValue): EmulatingValue = {
     val ifStatement = statement.ifStatement()
-    ifStatement.condition().accept(this, payload) match {
+    unwrapIfIsUpvalue(ifStatement.condition().accept(this, payload)) match {
       case e if e != EVEmpty && e.toBool => 
         createScope()
         val v = ifStatement.block().accept(this, payload)

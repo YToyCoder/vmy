@@ -3,6 +3,7 @@ package com.silence.vmy.compiler;
 import com.silence.vmy.compiler.Tokens.Token;
 import com.silence.vmy.compiler.Tokens.TokenKind;
 import com.silence.vmy.compiler.tree.*;
+import com.silence.vmy.compiler.tree.ExportState.ExportExp;
 import com.silence.vmy.compiler.tree.ImportState.ImportExp;
 import com.silence.vmy.compiler.tree.Tree.Tag;
 import com.silence.vmy.runtime.VmyRuntimeException;
@@ -75,6 +76,10 @@ public class GeneralParser extends Log implements Parser{
     ensureLookahead(0);
     return hasTok() && tk.test(token().kind());
   }
+  TokenKind peekToken(){
+    ensureLookahead(0);
+    return hasTok() ? token().kind() : null;
+  }
 
   boolean peekTok(Predicate<Tokens.TokenKind> tk, Predicate<Tokens.TokenKind> tk1){
     ensureLookahead(2);
@@ -123,7 +128,7 @@ public class GeneralParser extends Log implements Parser{
 
   private Predicate<TokenKind> tokenkindIsEqual(TokenKind tk){ return tokenkind -> tokenkind == tk; }
   @Override public 
-  Root parse() { return Trees.createCompileUnit(hasTok() ? compileBlock(TokenKind.EOF) : emptyBlock() ); }
+  Root parse() { return Trees.createCompileUnit(hasTok() ? parsingTopLevel() : emptyBlock() ); }
   private BlockStatement emptyBlock() { return new BlockStatement(List.of(), 0); }
 
 
@@ -146,6 +151,23 @@ public class GeneralParser extends Log implements Parser{
     );
   }
 
+  private BlockStatement parsingTopLevel(){
+    final long pos = token().start();
+    ignoreEmptyLineOrComments();
+    List<Tree> toplevelStatement = new LinkedList<>();
+    while(
+      hasTok() && 
+      !peekTok(tokenkindIsEqual(TokenKind.EOF))){
+      
+      ignoreEmptyLineOrComments();
+      toplevelStatement.add(toplevelStatement());
+      ignoreEmptyLineOrComments();
+    }
+    ignoreEmptyLineOrComments();
+    next_must(TokenKind.EOF);
+    return new BlockStatement(toplevelStatement, pos);
+  }
+
   // toplevelStatement = ImportStatement 
   //                   | ExportStatement   
   //                   | VarDecl "=" expr4
@@ -160,11 +182,65 @@ public class GeneralParser extends Log implements Parser{
   // fn function(){}
   // export a
   // export { a as ConstA , function }
-  private Statement toplevelStatement(){
-    if(peekTok(tokenkindIsEqual(TokenKind.Import))){
-      return parsingImport();
+  private Expression toplevelStatement(){
+    return switch (peekToken()){
+      case Import -> parsingImport();
+      case Export -> parsingExport();
+      case Let, Val -> parsingVarDecl();
+      case For -> parsingForStatement();
+      case If -> if_statement();
+      case Fun -> compileFunc();
+      default -> {
+        // call or Update
+        var exp = theExpression();
+        if(exp instanceof CallExpr call){
+          var params = call.params();
+          if(params.body().size() == 1 && peekTok(tokenkindIsEqual(TokenKind.Assignment))){
+            next_must(TokenKind.Assignment);
+            var value = expression();
+            // change to arrUpdate
+            yield CallExpr.create(
+                call.position(), 
+                call.callId(), 
+                new ListExpr<>(params.position(), params.tag(), List.of(params.body().get(0), value)));
+          }
+        }
+        yield exp;
+      }
+    };
+  }
+
+  // ExportStatement = "export" NameOrAlias
+  //                 | "export" ObjNameOrAlias
+  private Statement parsingExport(){
+    Token export = next_must(TokenKind.Export);
+    if(!peekTok(tokenkindIsEqual(TokenKind.LBrace))){
+      return ExportState.create(parsingExportExp(), export.start());
     }
-    return null;
+    return ExportState.create(parsingExportObj(), export.start());
+  }
+
+  private ExportExp parsingExportExp(){
+    var nameOrAlias = parsingNameOrAlias();
+    return createExportExp(nameOrAlias);
+  }
+
+  private List<ExportExp> parsingExportObj(){
+    List<ExportExp> res = new ArrayList<>();
+    ObjStyleNameAndAlias obj = parsingObjStyleNameAndAlias();
+    List<NameAndAlias> elems = obj.elems();
+    for(NameAndAlias el : elems){
+      res.add(createExportExp(el));
+    }
+    return res;
+  }
+
+  private ExportExp createExportExp(NameAndAlias nameOrAlias){
+    if(!nameOrAlias.hasAlias()){
+      return ExportState.createExport(nameOrAlias.name.name, nameOrAlias.name.location); 
+    }else {
+      return ExportState.createExport(nameOrAlias.name.name, nameOrAlias.alias.name, nameOrAlias.name.location);
+    }
   }
 
   // ImportStatement = "import" NameOrAlias "from" stringliteral
@@ -473,28 +549,9 @@ public class GeneralParser extends Log implements Parser{
    // arrUpdate = identifier "(" expression ")" Assignment expression
   private Expression expression(){
     if( /* variable declaration */
-        peekTok(tk -> tk == TokenKind.Let || tk == TokenKind.Val))
-    {
-      Tokens.Token decl = next();
-      if(peekTok(tk -> tk != TokenKind.Id))
-        error(token().toString());
-      Tokens.Token id = next();
-      Modifiers modifiers = switch (decl.kind()){
-        case Val -> new Modifiers.Builder()
-            .Const()
-            .build();
-        case Let -> new Modifiers.Builder().build();
-        default -> Modifiers.Empty;
-      };
-      TypeExpr type = peekTok(tk -> tk == TokenKind.Colon) ? parsingType() : null;
-      if(peekTok(tk -> tk == TokenKind.Assignment)){
-        var assign = next();
-        return new AssignmentExpression(
-            new VariableDecl(id.payload(), modifiers, type,id.start()),
-            expr3(),
-            assign.start()
-        );
-      }
+      peekTok(tk -> tk == TokenKind.Let || tk == TokenKind.Val)
+    ){
+      return parsingVarDecl();
     }
 
     // return expression
@@ -527,6 +584,31 @@ public class GeneralParser extends Log implements Parser{
       }
     }
     return theExpression;
+  }
+
+  private Expression parsingVarDecl(){
+    Tokens.Token decl = next();
+    if(peekTok(tk -> tk != TokenKind.Id))
+      error(token().toString());
+    Tokens.Token id = next();
+    Modifiers modifiers = switch (decl.kind()){
+      case Val -> new Modifiers.Builder()
+          .Const()
+          .build();
+      case Let -> new Modifiers.Builder().build();
+      default -> Modifiers.Empty;
+    };
+    TypeExpr type = peekTok(tk -> tk == TokenKind.Colon) ? parsingType() : null;
+    if(peekTok(tk -> tk == TokenKind.Assignment)){
+      var assign = next();
+      return new AssignmentExpression(
+          new VariableDecl(id.payload(), modifiers, type,id.start()),
+          expr3(),
+          assign.start()
+      );
+    } else {
+      return new VariableDecl(id.payload(), modifiers, type, id.start());
+    }
   }
 
   // one = identifier
@@ -779,7 +861,7 @@ public class GeneralParser extends Log implements Parser{
   /**
    * call = identifier expr
    */
-  private Expression call(){
+  private CallExpr call(){
     Tokens.Token id = next_must(TokenKind.Id);
     ListExpr<? extends Expression> params = expr();
     return CallExpr.create(id.start(), id.payload(), params);
