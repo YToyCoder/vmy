@@ -81,6 +81,11 @@ public class Tokens {
     Comma, // ,
     Dot, // .
     Annotation, // #
+
+    Import,
+    From, // 
+    Export,
+    As
   }
 
 }
