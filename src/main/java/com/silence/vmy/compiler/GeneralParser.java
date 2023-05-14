@@ -193,6 +193,9 @@ public class GeneralParser extends Log implements Parser{
       default -> {
         // call or Update
         var exp = theExpression();
+        if(exp == null) {
+          throw new RuntimeException("not support this expression start by " + token() );
+        }
         if(exp instanceof CallExpr call){
           var params = call.params();
           if(params.body().size() == 1 && peekTok(tokenkindIsEqual(TokenKind.Assignment))){
@@ -252,12 +255,15 @@ public class GeneralParser extends Log implements Parser{
     Token im = next_must(TokenKind.Import);
     if(!peekTok(tokenkindIsEqual(TokenKind.LBrace))){
       ImportExp exp = parsingImportExp(); 
-      Token uriTok = next_must(TokenKind.StringLiteral);
-      return ImportState.create(uriTok.payload(), exp, im.start());
+      return ImportState.create(parsingImportUri(), exp, im.start());
     }
     List<ImportExp> elems = parsingObjStyleImportExp();
-    Token uriTok = next_must(TokenKind.StringLiteral);
-    return ImportState.create(uriTok.payload(), elems, im.start());
+    return ImportState.create(parsingImportUri(),elems, im.start());
+  }
+
+  private String parsingImportUri(){
+    next_must(TokenKind.From);
+    return next_must(TokenKind.StringLiteral).payload();
   }
   
   private ImportExp parsingImportExp(){
