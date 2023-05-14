@@ -1,0 +1,6 @@
+
+import Util from "vmy"
+
+let b = 1
+
+export b as BInt
