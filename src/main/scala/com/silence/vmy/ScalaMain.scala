@@ -60,7 +60,7 @@ object ScalaMain extends Log {
     }
     val emulator = new TreeEmulator(context, LCompiler)
     emulator.debug = debug
-    compiledTree.node().accept(emulator, null)
+    emulator.run(compiledTree.node())
     if(debug)
       log("eval finished")
   }

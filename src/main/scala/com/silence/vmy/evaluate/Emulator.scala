@@ -72,6 +72,10 @@ class TreeEmulator(
   private def exitScope() = context.leaveScope()
   private def lookupVariable(id: String) = context.lookupVariable(id)
 
+  def run(ast: Tree) = {
+    ast.accept(this, EVEmpty)
+  }
+
   private def declareVariable(name: String, initValue: EmulatingValue.valueType, mutable: Boolean): EmulatingValue = 
     context.declareVariable(name, initValue, mutable)
 
