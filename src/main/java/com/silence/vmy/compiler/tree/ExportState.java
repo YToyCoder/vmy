@@ -47,7 +47,7 @@ public class ExportState implements Statement
 
   @Override
   public <R, T> R accept(TreeVisitor<R, T> visitor, T payload) {
-    throw new UnsupportedOperationException("Unimplemented method 'accept'");
+    return visitor.visitExport(this, payload);
   }
 
   @Override

@@ -54,7 +54,7 @@ public class ImportState implements Statement
   @Override public Tag tag() { return Tag.Import; }
   @Override
   public <R, T> R accept(TreeVisitor<R, T> visitor, T payload) {
-    throw new UnsupportedOperationException("Unimplemented method 'accept'");
+    return visitor.visitImport(this, payload);
   }
   @Override
   public <T> Tree accept(TVisitor<T> visitor, T t) {
