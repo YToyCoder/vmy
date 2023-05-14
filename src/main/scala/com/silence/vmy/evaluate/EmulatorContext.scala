@@ -5,10 +5,24 @@ import com.silence.vmy.compiler.Context
 import com.silence.vmy.evaluate.TreeEmulator.Frame
 import com.silence.vmy.compiler.UpValue
 import com.silence.vmy.compiler.CompiledFn
+import com.silence.vmy.evaluate.TreeEmulator.ExportValue
 
 class FnFrame(pre: Frame, fn: CompiledFn) extends Frame(pre) 
 {
   override def fnBody: Option[CompiledFn] = Some(fn)
+}
+
+class RootFrame(pre: Frame) extends Frame(pre)
+{
+  override def wrapAsExport(name: String): Option[ExportValue] = {
+    lookupInScope(name).map(ExportValue(_, name))
+  }
+}
+
+object RootFrame{
+  def unapply(frame: Frame): Option[Frame] = 
+    if(frame.isInstanceOf[RootFrame]) Some(frame.pre)
+    else None
 }
 
 class EmulatorContext extends Context

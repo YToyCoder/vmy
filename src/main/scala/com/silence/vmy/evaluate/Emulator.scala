@@ -44,9 +44,13 @@ object TreeEmulator {
       {
         TopScope = TopScope.preOne
       }
-    
+
+    def wrapAsExport(name: String): Option[ExportValue] = None 
+
     def fnBody: Option[CompiledFn] = None
   }
+
+  case class ExportValue(private val _in_scope: Scope, private val name: String)
 }
 
 object UpValueCompiler extends Compiler[CompileContext]

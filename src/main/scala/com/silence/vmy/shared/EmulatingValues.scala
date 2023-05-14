@@ -343,6 +343,13 @@ class Scope(pre: Scope) {
     variables(name) = value
     this
   }
+
+  protected def lookupInScope(name: String): Option[Scope] = {
+    variables.get(name) match
+      case None => 
+        pre match
+          case null => None
+          case _ => pre.lookupInScope(name)
+      case Some(value) => Some(this)
+  }
 }
-
-
