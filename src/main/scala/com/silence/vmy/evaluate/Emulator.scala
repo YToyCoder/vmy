@@ -45,7 +45,7 @@ object TreeEmulator {
         TopScope = TopScope.preOne
       }
     
-    def fnBody: Option[CompiledFn] = null
+    def fnBody: Option[CompiledFn] = None
   }
 }
 
