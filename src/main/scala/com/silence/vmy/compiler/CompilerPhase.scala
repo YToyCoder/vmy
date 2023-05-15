@@ -4,6 +4,10 @@ import com.silence.vmy.compiler.tree._
 import com.silence.vmy.evaluate.EmulatorContext
 import com.silence.vmy.compiler.CompileUnit.wrapAsCompileUnit
 import Compilers.CompileUnit
+import com.silence.vmy.compiler.RootCompileUnit
+
+import java.{util as ju}
+import java.util.stream.Collectors
 
 
 trait CompilerPhase 
@@ -28,9 +32,19 @@ trait CompilerPhase
           new CompiledFn(fn.name, fn.params, fn.ret, body, UpValues(null), fn.position)
       }
       case root: Root => {
-        val rootNode = root.asInstanceOf[Root] 
-        val body = rootNode.body.accept(visitor, context).asInstanceOf[BlockStatement]
-        new CompiledFn("main", java.util.List.of(), null, body, UpValues(null), body.position)
+        root.body() match 
+          // extract import and export
+          case body : BlockStatement => {
+            val (imports, exports, block) = extracte_import_and_export(body)
+            val changedBody = block.accept(visitor, context).asInstanceOf[BlockStatement]
+            val fn = new CompiledFn("main", java.util.List.of(), null, changedBody, UpValues(null), body.position)
+            new RootCompileUnit(fn, -1, imports, exports)
+          }
+          case body => {
+            val changedBody = body.accept(visitor, context).asInstanceOf[BlockStatement]
+            val fn = new CompiledFn("name", ju.List.of(), null, changedBody, UpValues(null), body.position())
+            new RootCompileUnit(fn, -1)
+          }
       }
       case node => node.accept(visitor, context)
     }
@@ -38,6 +52,17 @@ trait CompilerPhase
 
   final override def run(context: CompileContext, unit: CompileUnit) = {
     leaveVisit(context, phaseAction(context, enterVisit(context, unit)))
+  }
+
+  private def extracte_import_and_export(block: BlockStatement): (ju.List[ImportState],ju.List[ExportState], BlockStatement) = {
+    def is_export_or_import(tree: Tree): Boolean = 
+      tree.isInstanceOf[ImportState] || tree.isInstanceOf[ExportState]
+        // val (is, not) = 
+    val group = block.exprs().stream().collect(Collectors.groupingBy(is_export_or_import))
+    val import_or_export = group.get(true).stream().collect(Collectors.groupingBy(_.isInstanceOf[ImportState]))
+    ( import_or_export.get(true).asInstanceOf[ju.List[ImportState]], 
+      import_or_export.get(false).asInstanceOf[ju.List[ExportState]], 
+      new BlockStatement(group.get(false), block.position()))
   }
 
   def phaseAction(context: CompileContext, unit: CompileUnit): CompileUnit 
@@ -65,13 +90,19 @@ object PerEvaluatingPhase
   with CompilerPhase
 {
   override def phaseAction(context: CompileContext, unit: CompileUnit) = {
+    val (imports, exports) = try_to_get_import_export(unit)
     unit.node match {
       case _fn @ CompiledFn(name, _, _, _, _, _) if name == "main" => {
         val fn = _fn.asInstanceOf[CompiledFn]
         if(!fn.compiled) {
           fn.compileFinish()
           val mainFnCall = CallExpr( -1, null, "main", new ListExpr(-1, null, java.util.List.of())) 
-          new RootCompileUnit(new BlockStatement(java.util.List.of(fn, mainFnCall), -1))
+          // val (exports, imports, block) = extracte_import_and_export(fn.body)
+          new RootCompileUnit(
+            new BlockStatement(java.util.List.of(fn, mainFnCall), -1),
+            -1,
+            imports,
+            exports)
         }
         else unit
       }
@@ -79,12 +110,13 @@ object PerEvaluatingPhase
     }
   }
 
-  class RootCompileUnit(_body: Tree) 
-    extends Trees.CompileUnit (_body)
-    with CompileUnit {
-      def compiled() = true
-      def node() = this
-    }
+  // only try RootCompileUnit
+  private def try_to_get_import_export(unit: CompileUnit): (ju.List[ImportState], ju.List[ExportState]) = {
+    unit match 
+      case root: RootCompileUnit => (root.imports(), root.exports())
+      case _ => (ju.List.of(), ju.List.of())
+  }
+
 }
 
 object CompileFinishPhase

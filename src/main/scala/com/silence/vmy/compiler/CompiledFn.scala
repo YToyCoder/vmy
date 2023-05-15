@@ -12,6 +12,7 @@ import com.silence.vmy.shared.EmulatingValue.valueType
 import EmulatingValue.{EVEmpty, EVFunction, EVList, EVObj, Zero}
 
 import scala.annotation.tailrec
+import java.{util => ju}
 
 case class UpValue(private val n: String, private val s: Scope) extends BaseEV
 {
@@ -124,14 +125,18 @@ object CompileUnit
 class RootCompileUnit(
   val body: Tree, 
   val position: Long, 
+  private val _i: ju.List[ImportState] = ju.List.of(),
+  private val _e: ju.List[ExportState] = ju.List.of(),
   private var compiledFlag: Boolean = false)
   extends Root
   with CompileUnit
-{
+{ 
   override def tag(): Tag = Tag.Root
   override def node(): Tree = body
   override def compiled(): Boolean = compiledFlag
   def compileFinish(): Unit = compiledFlag = true
+  override def exports(): ju.List[ExportState] = _e
+  override def imports(): ju.List[ImportState] = _i
 
   override def accept[T](visitor: TVisitor[T], t: T): Tree = 
     if(visitor.enterRoot(this, t))
@@ -140,7 +145,7 @@ class RootCompileUnit(
 
   private def setBody(_body: Tree): RootCompileUnit = 
     if(_body == body) this
-    else new RootCompileUnit(_body, position, compiledFlag)
+    else new RootCompileUnit(_body, position, imports(), exports(), compiledFlag)
 
   override def accept[R, T](visitor: TreeVisitor[R, T], payload: T): R = 
     visitor.visitRoot(this, payload)

@@ -43,12 +43,15 @@ object TreeEmulator {
         TopScope = TopScope.preOne
       }
 
-    def wrapAsExport(name: String): Option[ExportValue] = None 
+    def wrapAsExport(name: String, as: String): Option[ExportValue] = None 
 
     def fnBody: Option[CompiledFn] = None
   }
 
-  case class ExportValue(private val _in_scope: Scope, private val name: String)
+  case class ExportValue(private val _in_scope: Scope, private val _n: String) {
+    def apply() = _in_scope.lookup(_n)
+    def name() = _n 
+  }
 }
 
 object UpValueCompiler extends Compiler[CompileContext] {
@@ -67,6 +70,7 @@ class TreeEmulator(
 
   import EmulatingValue.{EVEmpty, EVFunction, EVList, EVObj, Zero}
   var debug: Boolean = false
+  private val cached_mdoules : mutable.Map[String, VmyModule] = mutable.Map()
   private def createRootFrame() = context.enterRootFrame()
   private def exitRootFrame() = context.leaveRootFrame()
   private def createFrame(fn: CompiledFn) : TreeEmulator.Frame = context.enterFrame(fn)
@@ -74,6 +78,11 @@ class TreeEmulator(
   private def createScope() = context.enterScope()
   private def exitScope() = context.leaveScope()
   private def lookupVariable(id: String) = context.lookupVariable(id)
+  private def cache_module(module: VmyModule) = 
+    if(module != null && !cached_mdoules.contains(module.name)){
+      cached_mdoules.addOne((module.name, module))
+      true
+    }else false
 
   def run(ast: Tree) = ast.accept(this, EVEmpty)
 
@@ -196,11 +205,13 @@ class TreeEmulator(
   }
 
   override def visitRoot(root: Root, payload: EmulatingValue): EmulatingValue = {
-    // createFrame(wrapAsCompiledFn(root))
     createRootFrame()
     val body = root.body
     val returnValue = root.body().accept(this, payload)
-    exitRootFrame()
+    exitRootFrame() match
+      case None => 
+      case Some(module) => 
+        if(!cache_module(module)) println(s"cache module(${module.name}) failed, it may exists!")
     returnValue
   }
 
@@ -410,7 +421,21 @@ class TreeEmulator(
 
   override def visitExport(state: ExportState, payload: EmulatingValue): EmulatingValue = 
   {
-    null
+    def rg(ex: ExportState.ExportExp) = {
+      if(ex.hasAlias()){
+        context.register_export(ex.name(), ex.alias())
+      }else {
+        context.register_export(ex.name(), ex.name())
+      }
+    }
+    if(state.isOne()) {
+      val ex = state.getOne()
+      rg(ex)
+    }else {
+      val ex_s = state.getAll()
+      ex_s.forEach(rg)
+    }
+    EVEmpty
   }
 
   override def visitImport(state: ImportState, payload: EmulatingValue): EmulatingValue =
