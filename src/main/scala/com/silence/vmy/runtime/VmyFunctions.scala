@@ -17,10 +17,8 @@ object VmyFunctions{
   def runNative(fn: VmyFunction, params: List[EmulatingValue]) : EmulatingValue = {
     fn(params)
   }
-  def tryRun(name: String, params: List[EmulatingValue]): EmulatingValue = 
-  {
-    lookupFn(name) match 
-    {
+  def tryRun(name: String, params: List[EmulatingValue]): EmulatingValue = {
+    lookupFn(name) match {
       case Some(fn) => fn(params)
       case None => throw new VmyRuntimeException(s"not found fn ${name}")
     }

@@ -109,8 +109,7 @@ class TypeChecker extends TVisitor[Context] {
           case null => // first returned type 
             realtype 
           case _ => 
-            biggerType(realtype, retType) match 
-            {
+            biggerType(realtype, retType) match {
               case NullExistType => 
               {
                 println(s"return type error: type ${realtype} not match ${retType}")

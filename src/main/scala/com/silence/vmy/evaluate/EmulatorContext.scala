@@ -30,8 +30,7 @@ class EmulatorContext extends Context
   private var TopFrame: Frame = _
   type VariableType = EmulatingValue.valueType
 
-  def declareVariable(name: String, initValue: VariableType, mutable: Boolean) = 
-  {
+  def declareVariable(name: String, initValue: VariableType, mutable: Boolean) = {
     val vv /* variable and value */= EmulatingValue(initValue, name, mutable)
     vv.updateScope(TopFrame.TopScope)
     TopFrame.update(name, vv)
@@ -48,16 +47,13 @@ class EmulatorContext extends Context
       case RootFrame(pre) => TopFrame = pre
       case _ => throw new RuntimeException("root frame not match type RootFrame")
 
-  def enterFrame(fn: CompiledFn): Frame = 
-  {
+  def enterFrame(fn: CompiledFn): Frame = {
     TopFrame = FnFrame(TopFrame, fn)
     TopFrame
   }
 
-  def leaveFrame(): this.type =
-  {
-    TopFrame match 
-    {
+  def leaveFrame(): this.type = {
+    TopFrame match {
       case null | Frame(null) => // do nothing
       case Frame(preOne) => TopFrame = preOne
     }

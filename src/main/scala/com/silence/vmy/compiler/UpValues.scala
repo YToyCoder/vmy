@@ -10,30 +10,26 @@ import com.silence.vmy.runtime.VmyFunctions
 import java.{util => ju}
 
 // todo scope
-class VariableDeclarationAndUpValuesChecking extends PerCompileUnitTVisitor
-{
+class VariableDeclarationAndUpValuesChecking extends PerCompileUnitTVisitor {
   private var topScope = Scope(null)
   private val upvalues : mutable.Map[String,UpValue] = mutable.Map()
   protected def cleanVariable(): Unit = topScope = Scope(null)
   private def enterScope() = topScope = Scope(topScope)
-  private def leaveScope() = 
-  {
+  private def leaveScope() = {
     topScope match 
       case null => 
       case Scope(pre) => 
         topScope = pre
   }
 
-  case class Scope(pre: Scope) 
-  {
+  case class Scope(pre: Scope) {
     private val vars: mutable.Set[String] = mutable.Set()
     def declareVar(name: String): Boolean = 
       if (contains(name)) then false
       else 
         vars.add(name)
         true
-    def contains(name: String): Boolean = 
-    {
+    def contains(name: String): Boolean = {
       if(vars.contains(name)) then true
       else 
         pre match
@@ -42,8 +38,7 @@ class VariableDeclarationAndUpValuesChecking extends PerCompileUnitTVisitor
     }
   }
 
-  private def localExists(name:String): Boolean = 
-  {
+  private def localExists(name:String): Boolean = {
     val localVarExists = 
     topScope match 
       case null => false
@@ -60,8 +55,7 @@ class VariableDeclarationAndUpValuesChecking extends PerCompileUnitTVisitor
       case null => false
       case _ => topScope.declareVar(name)
 
-  override def leaveIdExpr(exp: IdExpr, context: CompileContext): Tree = 
-  {
+  override def leaveIdExpr(exp: IdExpr, context: CompileContext): Tree = {
     val id = exp.name()
     if(!localExists(id)) 
       tryFindUpValueAndCache(id, context) 
@@ -82,38 +76,33 @@ class VariableDeclarationAndUpValuesChecking extends PerCompileUnitTVisitor
     }
   }
 
-  override def leaveFunctionDecl(fndecl: FunctionDecl, context: CompileContext): Tree =
-  {
-    // todo
+  override def leaveFunctionDecl(fndecl: FunctionDecl, context: CompileContext): Tree = {
     if( null != fndecl)
       declare(fndecl.name())
     fndecl
   }
 
-  private def typeExpToString(texp: TypeExpr): String =
-  {
+  private def typeExpToString(texp: TypeExpr): String = {
     texp match
       case null => ""
       case _    => texp.typeId()
   }
 
-  override def leaveVariableDecl(exp: VariableDecl, context: CompileContext) : Tree =
-  { 
+  override def leaveVariableDecl(exp: VariableDecl, context: CompileContext) : Tree = { 
     val variableName = exp.name()
     if(declare(variableName)) exp
     else throw new RuntimeException(s"redeclare variable ${variableName}")
   }
 
-  def getUpvalues() : UpValues =
-  {
+  def getUpvalues() : UpValues = {
     UpValues {
       upvalues
       .map((name, upvalue) => upvalue)
       .toArray
     } 
   }
-  private def handleCondition(state: ConditionStatement, context: CompileContext) = 
-  {
+
+  private def handleCondition(state: ConditionStatement, context: CompileContext) = {
     state match 
       case null => 
       case _ => 
@@ -123,8 +112,7 @@ class VariableDeclarationAndUpValuesChecking extends PerCompileUnitTVisitor
         leaveScope()
   }
 
-  override def enterIfStatement(ifStatement: IfStatement, context: CompileContext): Boolean = 
-  {
+  override def enterIfStatement(ifStatement: IfStatement, context: CompileContext): Boolean = {
     ifStatement match
       case null => 
       case _ =>
@@ -142,8 +130,7 @@ class VariableDeclarationAndUpValuesChecking extends PerCompileUnitTVisitor
     false
   }
 
-  override def enterForStatement(state: ForStatement, context: CompileContext): Boolean =
-  {
+  override def enterForStatement(state: ForStatement, context: CompileContext): Boolean = {
     enterScope()
     if(state.heads() != null){
       state.heads().forEach{ id =>
@@ -156,15 +143,13 @@ class VariableDeclarationAndUpValuesChecking extends PerCompileUnitTVisitor
     true
   }
 
-  override def leaveForStatement(state: ForStatement, context: CompileContext): Tree = 
-  {
+  override def leaveForStatement(state: ForStatement, context: CompileContext): Tree = {
     leaveScope()
     state
   }
 
   // todo:
-  override def leaveCallExpr(call: CallExpr, context: CompileContext): Tree = 
-  {
+  override def leaveCallExpr(call: CallExpr, context: CompileContext): Tree = {
     if(!localExists(call.callId())) 
       tryFindUpValueAndCache(call.callId(), context)
     call

@@ -5,13 +5,13 @@ import com.silence.vmy.compiler.tree._
 import com.silence.vmy.compiler.Compilers.CompileUnit
 import com.silence.vmy.compiler.tree.Tree.Tag
 import com.silence.vmy.shared.EmulatingValue
-import com.silence.vmy.evaluate._
+import com.silence.vmy.evaluate._ 
+import com.silence.vmy.shared.EmulatingValue.BaseEV
+import com.silence.vmy.shared.EmulatingValue.valueType
 
 import EmulatingValue.{EVEmpty, EVFunction, EVList, EVObj, Zero}
 
 import scala.annotation.tailrec
-import com.silence.vmy.shared.EmulatingValue.BaseEV
-import com.silence.vmy.shared.EmulatingValue.valueType
 
 case class UpValue(private val n: String, private val s: Scope) extends BaseEV
 {

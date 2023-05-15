@@ -36,13 +36,10 @@ object TreeEmulator {
   {
     var TopScope: Scope = this
     def enterScope() = 
-    {
       TopScope = Scope(TopScope)
-    }
 
     def leaveScope(): Unit = 
-      if (TopScope != this)
-      {
+      if (TopScope != this) {
         TopScope = TopScope.preOne
       }
 
@@ -54,8 +51,7 @@ object TreeEmulator {
   case class ExportValue(private val _in_scope: Scope, private val name: String)
 }
 
-object UpValueCompiler extends Compiler[CompileContext]
-{
+object UpValueCompiler extends Compiler[CompileContext] {
 
   def compile(context: CompileContext, unit: CompileUnit) =
     if(unit.compiled()) unit
@@ -79,9 +75,7 @@ class TreeEmulator(
   private def exitScope() = context.leaveScope()
   private def lookupVariable(id: String) = context.lookupVariable(id)
 
-  def run(ast: Tree) = {
-    ast.accept(this, EVEmpty)
-  }
+  def run(ast: Tree) = ast.accept(this, EVEmpty)
 
   private def declareVariable(name: String, initValue: EmulatingValue.valueType, mutable: Boolean): EmulatingValue = 
     context.declareVariable(name, initValue, mutable)
@@ -254,9 +248,7 @@ class TreeEmulator(
       // function in frame
       case Some(fnTreeKeeper) if (fnTreeKeeper.isInstanceOf[EVFunction]) => {
         if(debug) { log(s"Fn : ${call.callId} is user defined") }
-        // val fnTree = fnTreeKeeper.asInstanceOf[EVFunction].value 
         val fnTree = fnTreeKeeper.asInstanceOf[EVFunction].value
-        // val fnTree = compiledFn.node.asInstanceOf[FunctionDecl] 
         createFrame(wrapAsCompiledFn(fnTree))
         val paramsValues = paramsEval()
         // declare variable with initvalue
@@ -309,11 +301,12 @@ class TreeEmulator(
   override def visitIfStatement(statement: IfStatement, payload: EmulatingValue): EmulatingValue = {
     val ifStatement = statement.ifStatement()
     unwrapIfIsUpvalue(ifStatement.condition().accept(this, payload)) match {
-      case e if e != EVEmpty && e.toBool => 
+      case e if e != EVEmpty && e.toBool => {
         createScope()
         val v = ifStatement.block().accept(this, payload)
         exitScope()
         v
+      }
       case _ => {
         val (elifResult, content) = doWithElif(statement, payload)
         if(elifResult) 
@@ -340,7 +333,6 @@ class TreeEmulator(
     } 
   // create new frame for for-statement
     val heads = statement.heads
-    // heads.stream().forEach(declareVariableForId _)
     val result: EmulatingValue = returning{ 
       unwrapIfIsUpvalue(statement.arrId.accept(this, payload)) match {
         case EVList(value) => {
@@ -351,7 +343,6 @@ class TreeEmulator(
             declareVariable(heads.get(0).name, value.get(index), false)
             if(statement.isWithIndex()){
               // assign index
-              // val indexAssignExpression = createAssignment(heads.get(1), indexExpr)
               if(debug){
                 log(s"set index variale ")
               }
@@ -369,7 +360,7 @@ class TreeEmulator(
           EVEmpty
         } 
         case e => throw new VmyRuntimeException(s"${e.name} not support for iterate")
-    }
+      }
     }
     result
   }
@@ -382,8 +373,7 @@ class TreeEmulator(
     {
       val current = if(loc < length) elifs.get(loc) else null
       if(loc >= length) (false, EVEmpty)
-      else if(current.condition().accept(this, payload).toBool)
-      {
+      else if(current.condition().accept(this, payload).toBool) {
         createScope()
         val v = (true, current.block().accept(this, payload))
         exitScope()

@@ -14,6 +14,7 @@ import com.silence.vmy.compiler.Compilers.CompileUnit
 import com.silence.vmy.compiler.CompileContext
 import com.silence.vmy.evaluate.TreeEmulator
 import com.silence.vmy.compiler.CompileUnit.wrapAsCompileUnit
+import com.silence.vmy.compiler.UpValue
 
 import java.util.List
 import java.util.ArrayList
@@ -22,7 +23,6 @@ import java.util.Map
 
 import scala.annotation.tailrec
 import scala.collection.mutable
-import com.silence.vmy.compiler.UpValue
 
 sealed trait EmulatingValue extends Ordering[EmulatingValue]{
   def value: EmulatingValue.valueType
@@ -74,7 +74,7 @@ object EmulatingValue {
       case e: FunctionDecl => EVFunction(e)
       case e: RetValue => RetValue(e)
       case e: ArrayT => EVList(e) 
-      case e: ObjType => EVObj(e)
+      case e: ObjType => EVObj(e) 
       case e: EmulatingValue => apply(e.value) // rec
     }
     ret.setName(name) // set name
@@ -123,12 +123,10 @@ object EmulatingValue {
     // override def compare(other: EmulatingValue): Int = (this - other).toInt
     override def copyPropsFrom(other: EmulatingValue): EmulatingValue = {
       n = other.name
-
-      other match {
-        case v: BaseEV =>
-          _scope = v._scope
-          updatable = v.updatable
-        case _ =>
+      if(other.isInstanceOf[BaseEV]){
+        val source = other.asInstanceOf[BaseEV]
+        _scope = source._scope
+        updatable = source.updatable
       }
       this
     }

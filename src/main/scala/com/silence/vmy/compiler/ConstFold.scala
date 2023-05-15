@@ -31,8 +31,7 @@ trait ConstFold extends PerCompileUnitTVisitor {
     }
   }
 
-  private def toStringAndKind(v: EmulatingValue): (String, LiteralExpression.Kind) = 
-  {
+  private def toStringAndKind(v: EmulatingValue): (String, LiteralExpression.Kind) = {
     import LiteralExpression.Kind
     var kind = v match {
       case e: EVInt => Kind.Int
@@ -44,8 +43,7 @@ trait ConstFold extends PerCompileUnitTVisitor {
     }
     (v.toString, kind)
   }
-  override def leaveBinary(exp: BinaryOperateExpression, t: ContextType) = 
-  { 
+  override def leaveBinary(exp: BinaryOperateExpression, t: ContextType) = { 
     try {
       val evaluatedValue = exp.accept(constExpressionEvaluator, null)
       val (literal, kind) = toStringAndKind(evaluatedValue)

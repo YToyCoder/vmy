@@ -2,8 +2,8 @@ package com.silence.vmy.compiler
 
 import com.silence.vmy.compiler.tree._
 import com.silence.vmy.evaluate.EmulatorContext
-import Compilers.CompileUnit
 import com.silence.vmy.compiler.CompileUnit.wrapAsCompileUnit
+import Compilers.CompileUnit
 
 
 trait CompilerPhase 
@@ -13,25 +13,21 @@ trait CompilerPhase
 
   def doWithTopNode(node: Tree, context: CompileContext, visitor: PerCompileUnitTVisitor): Tree = 
   {
-    node match 
-    {
-      case CompiledFn(name, params, ret, body, ups, position) => 
-      {
+    node match {
+      case CompiledFn(name, params, ret, body, ups, position) => {
         val validatedBody = body.accept(visitor, context).asInstanceOf[BlockStatement]
         if (validatedBody != body) 
           new CompiledFn(name, params, ret, validatedBody, ups, position)
         else node
       }
-      case declFn : FunctionDecl => 
-      {
+      case declFn : FunctionDecl => {
         val fn = declFn.asInstanceOf[FunctionDecl]
         val body = fn.body.accept(visitor, context).asInstanceOf[BlockStatement]
         if(body == fn.body) node
         else
           new CompiledFn(fn.name, fn.params, fn.ret, body, UpValues(null), fn.position)
       }
-      case root: Root => 
-      {
+      case root: Root => {
         val rootNode = root.asInstanceOf[Root] 
         val body = rootNode.body.accept(visitor, context).asInstanceOf[BlockStatement]
         new CompiledFn("main", java.util.List.of(), null, body, UpValues(null), body.position)
@@ -40,8 +36,7 @@ trait CompilerPhase
     }
   }
 
-  final override def run(context: CompileContext, unit: CompileUnit) =
-  {
+  final override def run(context: CompileContext, unit: CompileUnit) = {
     leaveVisit(context, phaseAction(context, enterVisit(context, unit)))
   }
 
@@ -57,11 +52,9 @@ object ConstFoldPhase
   {
     if(unit == null || unit.node() == null) null
     else {
-      doWithTopNode(unit.node, context, this) match 
-      {
+      doWithTopNode(unit.node, context, this) match {
         case unit: CompileUnit => unit
         case node => wrapAsCompileUnit(node)
-        // handle by node
       }
     } 
   } 
@@ -71,22 +64,13 @@ object PerEvaluatingPhase
   extends PerCompileUnitTVisitor
   with CompilerPhase
 {
-  override def phaseAction(context: CompileContext, unit: CompileUnit) =
-  {
-    unit.node match
-    {
-      case _fn @ CompiledFn(name, _, _, _, _, _) if name == "main" => 
-      {
+  override def phaseAction(context: CompileContext, unit: CompileUnit) = {
+    unit.node match {
+      case _fn @ CompiledFn(name, _, _, _, _, _) if name == "main" => {
         val fn = _fn.asInstanceOf[CompiledFn]
-        if(!fn.compiled) 
-        {
+        if(!fn.compiled) {
           fn.compileFinish()
-          val mainFnCall = CallExpr(
-            -1, 
-            null, 
-            "main", 
-            new ListExpr(-1, null, java.util.List.of())
-          ) 
+          val mainFnCall = CallExpr( -1, null, "main", new ListExpr(-1, null, java.util.List.of())) 
           new RootCompileUnit(new BlockStatement(java.util.List.of(fn, mainFnCall), -1))
         }
         else unit
@@ -107,10 +91,8 @@ object CompileFinishPhase
   extends PerCompileUnitTVisitor
   with CompilerPhase
 {
-  override def phaseAction(context: CompileContext, unit: CompileUnit) =
-  {
-    unit match
-    {
+  override def phaseAction(context: CompileContext, unit: CompileUnit) = {
+    unit match {
       case fn: CompiledFn => 
         (fn.asInstanceOf[CompiledFn]).compileFinish()
         fn
@@ -124,8 +106,7 @@ object UpValuePhase
   with CompilerPhase
 {
 
-  override def phaseAction(context: CompileContext, unit: CompileUnit) =
-  {
+  override def phaseAction(context: CompileContext, unit: CompileUnit) = {
     if(unit == null || unit.node() == null) null
     else 
       doWithTopNode(unit.node(), context, this) match {
@@ -139,8 +120,7 @@ object UpValuePhase
 
   override def enterVisit(context: CompileContext, unit: CompileUnit): CompileUnit = 
     cleanVariable()
-    if(unit.isInstanceOf[CompiledFn])
-    {
+    if(unit.isInstanceOf[CompiledFn]) {
       unit.asInstanceOf[CompiledFn].params.forEach(_.accept(this, context))
     }
     unit
