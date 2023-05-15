@@ -121,6 +121,31 @@ object CompileUnit
   }
 }
 
+class RootCompileUnit(
+  val body: Tree, 
+  val position: Long, 
+  private var compiledFlag: Boolean = false)
+  extends Root
+  with CompileUnit
+{
+  override def tag(): Tag = Tag.Root
+  override def node(): Tree = body
+  override def compiled(): Boolean = compiledFlag
+  def compileFinish(): Unit = compiledFlag = true
+
+  override def accept[T](visitor: TVisitor[T], t: T): Tree = 
+    if(visitor.enterRoot(this, t))
+      visitor.leaveRoot(setBody(body.accept(visitor, t)), t)
+    else this
+
+  private def setBody(_body: Tree): RootCompileUnit = 
+    if(_body == body) this
+    else new RootCompileUnit(_body, position, compiledFlag)
+
+  override def accept[R, T](visitor: TreeVisitor[R, T], payload: T): R = 
+    visitor.visitRoot(this, payload)
+}
+
 trait PerCompileUnitTVisitor extends TVisitor[CompileContext]
 {
   type ContextType = CompileContext
