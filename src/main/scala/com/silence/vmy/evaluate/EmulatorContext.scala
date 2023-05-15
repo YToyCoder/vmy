@@ -38,6 +38,16 @@ class EmulatorContext extends Context
     vv
   }
 
+  def enterRootFrame() = 
+    TopFrame match
+      case null => TopFrame = RootFrame(null)
+      case _ => throw new RuntimeException("root frame should not have pre frame")
+  def leaveRootFrame() = 
+    TopFrame match 
+      case null => ()
+      case RootFrame(pre) => TopFrame = pre
+      case _ => throw new RuntimeException("root frame not match type RootFrame")
+
   def enterFrame(fn: CompiledFn): Frame = 
   {
     TopFrame = FnFrame(TopFrame, fn)

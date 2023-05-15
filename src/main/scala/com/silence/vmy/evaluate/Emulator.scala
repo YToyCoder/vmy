@@ -70,6 +70,8 @@ class TreeEmulator(
 
   import EmulatingValue.{EVEmpty, EVFunction, EVList, EVObj, Zero}
   var debug: Boolean = false
+  private def createRootFrame() = context.enterRootFrame()
+  private def exitRootFrame() = context.leaveRootFrame()
   private def createFrame(fn: CompiledFn) : TreeEmulator.Frame = context.enterFrame(fn)
   private def exitFrame() : Unit = context.leaveFrame()
   private def createScope() = context.enterScope()
@@ -199,10 +201,11 @@ class TreeEmulator(
   }
 
   override def visitRoot(root: Root, payload: EmulatingValue): EmulatingValue = {
-    createFrame(wrapAsCompiledFn(root))
+    // createFrame(wrapAsCompiledFn(root))
+    createRootFrame()
     val body = root.body
     val returnValue = root.body().accept(this, payload)
-    exitFrame()
+    exitRootFrame()
     returnValue
   }
 
@@ -221,7 +224,7 @@ class TreeEmulator(
       .map(_.accept(this, null))
       .toList()
     def callJavaNative(fnName: String, params: List[EmulatingValue]): EmulatingValue = {
-       VmyFunctions.lookupFn(fnName) match {
+      VmyFunctions.lookupFn(fnName) match {
         case Some(fn) => VmyFunctions.runNative(fn, params)
         case None => 
           throw new VmyRuntimeException(s"not exists function : ${call.callId()}")
