@@ -12,6 +12,11 @@ import com.silence.vmy.runtime.VmyFunctions
 import com.silence.vmy.shared.EmulatingValue.EVEmpty.mkOrderingOps
 import com.silence.vmy.shared._
 import com.silence.vmy.compiler.CompileUnit.wrapAsCompiledFn
+import com.silence.vmy.compiler.CompiledFn
+import com.silence.vmy.compiler.CompileUnit.wrapAsCompileUnit
+import com.silence.vmy.compiler.UpValuePhase
+import com.silence.vmy.compiler.Compilers.CompileUnit
+import com.silence.vmy.compiler.UpValue
 
 import math.Fractional.Implicits.infixFractionalOps
 import math.Integral.Implicits.infixIntegralOps
@@ -24,11 +29,7 @@ import java.util.Map
 
 import scala.annotation.tailrec
 import scala.collection.mutable
-import com.silence.vmy.compiler.CompiledFn
-import com.silence.vmy.compiler.CompileUnit.wrapAsCompileUnit
-import com.silence.vmy.compiler.UpValuePhase
-import com.silence.vmy.compiler.Compilers.CompileUnit
-import com.silence.vmy.compiler.UpValue
+import scala.util.control.NonLocalReturns._
 
 object TreeEmulator {
   case class Frame(pre: Frame) extends Scope(pre) 
@@ -340,33 +341,35 @@ class TreeEmulator(
   // create new frame for for-statement
     val heads = statement.heads
     // heads.stream().forEach(declareVariableForId _)
-    val result: EmulatingValue = unwrapIfIsUpvalue(statement.arrId.accept(this, payload)) match {
-      case EVList(value) => {
-        // declare all variables : element id  and index id 
-        for(index <- 0 until value.size){
-          createScope() 
-          val indexExpr = LiteralExpression.ofStringify(index.toString, LiteralExpression.Kind.Int)
-          declareVariable(heads.get(0).name, value.get(index), false)
-          if(statement.isWithIndex()){
-            // assign index
-            // val indexAssignExpression = createAssignment(heads.get(1), indexExpr)
-            if(debug){
-              log(s"set index variale ")
+    val result: EmulatingValue = returning{ 
+      unwrapIfIsUpvalue(statement.arrId.accept(this, payload)) match {
+        case EVList(value) => {
+          // declare all variables : element id  and index id 
+          for(index <- 0 until value.size){
+            createScope() 
+            val indexExpr = LiteralExpression.ofStringify(index.toString, LiteralExpression.Kind.Int)
+            declareVariable(heads.get(0).name, value.get(index), false)
+            if(statement.isWithIndex()){
+              // assign index
+              // val indexAssignExpression = createAssignment(heads.get(1), indexExpr)
+              if(debug){
+                log(s"set index variale ")
+              }
+              // eval index assignment
+              declareVariable(heads.get(1).name, indexExpr.accept(this, payload))
             }
-            // eval index assignment
-            declareVariable(heads.get(1).name, indexExpr.accept(this, payload))
-          }
-          statement.body.accept(this, payload) match{
-            case e : RetValue => {
-              return e
+            statement.body.accept(this, payload) match{
+              case e : RetValue => {
+                throwReturn(e) // return e
+              }
+              case _ => 
             }
-            case _ => 
+            exitScope()
           }
-          exitScope()
-        }
-        EVEmpty
-      } 
-      case e => throw new VmyRuntimeException(s"${e.name} not support for iterate")
+          EVEmpty
+        } 
+        case e => throw new VmyRuntimeException(s"${e.name} not support for iterate")
+    }
     }
     result
   }
