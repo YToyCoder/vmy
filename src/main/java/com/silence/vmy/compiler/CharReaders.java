@@ -76,7 +76,7 @@ public class CharReaders {
 
     private FromFileCharReader(String name) throws FileNotFoundException {
       this.name = name;
-      file = new RandomAccessFile(name, "rw");
+      file = new RandomAccessFile(name, "r");
     }
 
     private void checkAndSet(){
