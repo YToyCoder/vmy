@@ -5,4 +5,5 @@ public interface Lexer {
   boolean hasNext();
   Tokens.Token peek();
   Tokens.Token last();
+  String file_name();
 }

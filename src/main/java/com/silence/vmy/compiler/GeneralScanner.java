@@ -11,6 +11,7 @@ public class GeneralScanner implements Lexer{
   private final String fileName;
   protected Tokens.Token tok;
   protected Tokens.Token pre;
+  @Override public String file_name() { return fileName; }
 
   public GeneralScanner(String fileNameOrContent, boolean is_file) throws FileNotFoundException {
     this.fileName = fileNameOrContent;

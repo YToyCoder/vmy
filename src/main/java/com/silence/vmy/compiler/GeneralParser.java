@@ -26,6 +26,8 @@ public class GeneralParser extends Log implements Parser{
   private Tokens.Token pre;
   private boolean debug = false;
   private List<Tokens.Token> savedTokens = new LinkedList<>();
+  @Override 
+  public String file_name() { return lexer.file_name(); }
 
   GeneralParser(Lexer _lexer, boolean debug){
     this.lexer = _lexer;

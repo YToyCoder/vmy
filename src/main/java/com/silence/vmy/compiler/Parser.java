@@ -7,4 +7,5 @@ import com.silence.vmy.compiler.tree.Root;
  */
 public interface Parser {
   Root parse();
+  default String file_name() { return ""; }
 }
