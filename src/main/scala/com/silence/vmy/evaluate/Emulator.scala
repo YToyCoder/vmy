@@ -30,6 +30,7 @@ import java.util.Map
 import scala.annotation.tailrec
 import scala.collection.mutable
 import scala.util.control.NonLocalReturns._
+import com.silence.vmy.evaluate.TreeEmulator.ExportValue
 
 object TreeEmulator {
   case class Frame(pre: Frame) extends Scope(pre) 
@@ -83,6 +84,14 @@ class TreeEmulator(
       cached_mdoules.addOne((module.name, module))
       true
     }else false
+  private def lookup_module(name: String): Option[VmyModule] = 
+    cached_mdoules.get(name)
+
+  private def lookup_export_in_module(name: String, module: String) : Option[ExportValue] = {
+    lookup_module(module) match
+      case None => None
+      case Some(value) => value.vmy_export(name)
+  }
 
   def run(ast: Tree) = ast.accept(this, EVEmpty)
 
@@ -440,6 +449,10 @@ class TreeEmulator(
 
   override def visitImport(state: ImportState, payload: EmulatingValue): EmulatingValue =
   {
-    null
+    if(state == null) EVEmpty
+    else {
+      // todo : find module or else load module
+      null
+    }
   }
 }
