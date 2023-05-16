@@ -8,6 +8,7 @@ import com.silence.vmy.compiler.RootCompileUnit
 
 import java.{util as ju}
 import java.util.stream.Collectors
+import java.util.ArrayList
 
 
 trait CompilerPhase 
@@ -97,9 +98,12 @@ object PerEvaluatingPhase
         if(!fn.compiled) {
           fn.compileFinish()
           val mainFnCall = CallExpr( -1, null, "main", new ListExpr(-1, null, java.util.List.of())) 
-          // val (exports, imports, block) = extracte_import_and_export(fn.body)
+          val block_elems = new ArrayList[Tree](imports.size() + exports.size() + 2)
+          block_elems.addAll(imports)
+          block_elems.addAll(exports)
+          block_elems.addAll(ju.List.of(fn, mainFnCall))
           new RootCompileUnit(
-            new BlockStatement(java.util.List.of(fn, mainFnCall), -1),
+            new BlockStatement(block_elems, -1),
             -1,
             imports,
             exports)
