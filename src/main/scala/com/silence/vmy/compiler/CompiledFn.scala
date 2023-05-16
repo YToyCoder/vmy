@@ -40,18 +40,20 @@ class UpValues(private val uvs: Array[UpValue])
 {
   def find(name: String): Option[UpValue] = 
   {
-    val size = uvs.length
-    @tailrec
-    def doFind(loc: Int): Option[UpValue] = {
-      if(loc >= size) None
-      else if(uvs(loc) != null && uvs(loc).name == name) 
-        Some(uvs(loc))
-      else doFind(loc + 1)
-    }
-    uvs match {
-      case null => None
-      case _    => doFind(0)
-    }
+    if(uvs == null) None
+    else 
+      val size = uvs.length
+      @tailrec
+      def doFind(loc: Int): Option[UpValue] = {
+        if(loc >= size) None
+        else if(uvs(loc) != null && uvs(loc).name == name) 
+          Some(uvs(loc))
+        else doFind(loc + 1)
+      }
+      uvs match {
+        case null => None
+        case _    => doFind(0)
+      }
   }
 
   override def toString(): String = 
@@ -75,6 +77,11 @@ case class CompiledFn(
   extends FunctionDecl 
   with CompileUnit
 {
+  private var f: String = ""
+  def setFile(_f:String) = 
+    f = _f
+    this
+  override def file_name() = f
   def tag() = Tag.Fun
   var compiledFlag = false
   override def compiled() = compiledFlag
@@ -96,7 +103,11 @@ case class CompiledFn(
 object CompileUnit 
 {
   def wrapAsCompileUnit(node: Tree): CompileUnit = 
-    wrapAsCompiledFn(node)
+    node match 
+      case r: Root =>  
+        new RootCompileUnit(r.body(), -1)
+        .setFile(r.file_name())
+      case _ => wrapAsCompiledFn(node)
 
   def wrapAsCompiledFn(node: Tree) = 
   {
@@ -117,6 +128,7 @@ object CompileUnit
           "main", java.util.List.of(), 
           null, fndecl.body.asInstanceOf[BlockStatement], 
           null, fndecl.position)
+          .setFile(r.file_name())
       case _ => null
     }
   }
@@ -131,8 +143,13 @@ class RootCompileUnit(
   extends Root
   with CompileUnit
 { 
+  private var _f : String = ""
+  def setFile(file : String ) = 
+    _f = file
+    this
+  override def file_name(): String =  _f
   override def tag(): Tag = Tag.Root
-  override def node(): Tree = body
+  override def node(): Tree = this
   override def compiled(): Boolean = compiledFlag
   def compileFinish(): Unit = compiledFlag = true
   override def exports(): ju.List[ExportState] = _e
@@ -149,6 +166,7 @@ class RootCompileUnit(
 
   override def accept[R, T](visitor: TreeVisitor[R, T], payload: T): R = 
     visitor.visitRoot(this, payload)
+  override def toString(): String = s"root > \n ${ body.toString() }"
 }
 
 trait PerCompileUnitTVisitor extends TVisitor[CompileContext]
