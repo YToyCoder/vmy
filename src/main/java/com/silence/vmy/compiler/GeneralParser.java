@@ -130,7 +130,7 @@ public class GeneralParser extends Log implements Parser{
 
   private Predicate<TokenKind> tokenkindIsEqual(TokenKind tk){ return tokenkind -> tokenkind == tk; }
   @Override public 
-  Root parse() { return Trees.createCompileUnit(hasTok() ? parsingTopLevel() : emptyBlock() ); }
+  Root parse() { return Trees.createCompileUnit(hasTok() ? parsingTopLevel() : emptyBlock(), file_name()); }
   private BlockStatement emptyBlock() { return new BlockStatement(List.of(), 0); }
 
 

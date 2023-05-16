@@ -9,6 +9,7 @@ public abstract class Compilers
   {
     boolean compiled();
     Tree node();
+    String file_name();
   }
 }
 
