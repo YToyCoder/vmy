@@ -8,6 +8,7 @@ import com.silence.vmy.tools.Log
 import com.silence.vmy.compiler.ConstFold
 import com.silence.vmy.compiler.tree._
 import com.silence.vmy.compiler.Compiler
+import com.silence.vmy.compiler.LCompiler
 import com.silence.vmy.compiler.Compilers.CompileUnit
 import com.silence.vmy.compiler.ConstFoldPhase
 import com.silence.vmy.compiler.CompilerPhase
@@ -17,29 +18,6 @@ import com.silence.vmy.compiler.PerEvaluatingPhase
 import com.silence.vmy.compiler.CompileUnit.wrapAsCompileUnit
 
 import scala.annotation.tailrec
-
-object LCompiler extends Compiler[CompileContext] 
-{
-  val phases: List[CompilerPhase] = 
-    ConstFoldPhase :: 
-      // UpValuePhase ::
-      PerEvaluatingPhase ::
-    CompileFinishPhase ::
-    Nil
-  def compile(context: CompileContext, unit: CompileUnit) =
-  {
-    @tailrec
-    def doPhases(phases: List[CompilerPhase], unit: CompileUnit): CompileUnit= 
-      phases match 
-      {
-        case Nil => unit
-        case phase :: rest => 
-          doPhases(rest, phase.run(context, unit))
-      }
-    if(unit.compiled()) unit
-    else doPhases(phases, unit)
-  }
-}
 
 object ScalaMain extends Log {
 
