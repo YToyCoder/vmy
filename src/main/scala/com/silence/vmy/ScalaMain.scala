@@ -18,6 +18,7 @@ import com.silence.vmy.compiler.PerEvaluatingPhase
 import com.silence.vmy.compiler.CompileUnit.wrapAsCompileUnit
 
 import scala.annotation.tailrec
+import java.io.File
 
 object ScalaMain extends Log {
 
@@ -25,14 +26,15 @@ object ScalaMain extends Log {
     if( debug ) {
       println(s"parsing script ${script}")
     }
-    val ast = wrapAsCompileUnit(Eval.parsing(script, true))
+    val file = File(script).getAbsoluteFile()
+    val ast = wrapAsCompileUnit(Eval.parsing(file.getAbsolutePath(), true))
     val context = new CompileContext()
     // val foldTree = ast.accept(new ConstFold() {}, context)
     val compiledTree = LCompiler.compile(context, ast)
     if(debug) {
       log("origin tree => \n" + ast.toString)
-      log("#" * 20)
       log("compiled tree => \n" + compiledTree.toString)
+      log("#" * 20)
       log("parsing finished")
       log("starting eval ...")
     }
