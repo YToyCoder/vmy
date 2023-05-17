@@ -84,6 +84,7 @@ class VmyModule(_s: Scope, val name: String = "") {
   def vmy_export(name: String): Option[ExportValue] = 
     if(name == VmyModule.ExportAll) Some(_ex_s)
     else _ex_s.get(name)
+  override def toString(): String = s"name($name) => ${_ex_s.toString()}"
 }
 
 class EmulatorContext extends Context
@@ -149,12 +150,17 @@ class EmulatorContext extends Context
             frame.lookup(name)
     }
   def register_export(name: String, as: String) : Boolean = 
+    println(s"try register name:$name as:$as")
     TopFrame match
       case null => false
       case frame => 
+        println(s"current frame is ${frame.getClass().getName()}")
+        println(s"frame vars ${frame.toString()}")
         frame.wrapAsExport(name, as) match
           case None => false
-          case Some(value) => true 
+          case Some(value) => 
+            println(s"register name:$name as:$as")
+            true 
   
   def register_import(as: String, _s: ImportValue): Boolean = 
     TopFrame match

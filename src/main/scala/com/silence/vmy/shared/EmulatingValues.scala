@@ -351,4 +351,6 @@ class Scope(pre: Scope) {
           case _ => pre.lookupInScope(name)
       case Some(value) => Some(this)
   }
+
+  override def toString(): String = variables.mkString
 }
