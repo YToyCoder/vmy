@@ -58,6 +58,8 @@ trait CompilerPhase
     leaveVisit(context, phaseAction(context, enterVisit(context, unit)))
   }
 
+  // todo
+  // extract import and export as obj element update
   private def extracte_import_and_export(block: BlockStatement): (ju.List[ImportState],ju.List[ExportState], BlockStatement) = {
     def is_export_or_import(tree: Tree): Boolean = 
       tree.isInstanceOf[ImportState] || tree.isInstanceOf[ExportState]
@@ -110,8 +112,8 @@ object PerEvaluatingPhase
               val mainFnCall = CallExpr( -1, null, "main", new ListExpr(-1, null, java.util.List.of())) 
               val block_elems = new ArrayList[Tree](imports.size() + exports.size() + 2)
               block_elems.addAll(imports)
-              block_elems.addAll(exports)
               block_elems.addAll(ju.List.of(fn, mainFnCall))
+              block_elems.addAll(exports)
               new RootCompileUnit(
                 new BlockStatement(block_elems, -1),
                 -1,
