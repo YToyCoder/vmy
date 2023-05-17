@@ -19,10 +19,11 @@ trait CompilerPhase
   def doWithTopNode(node: Tree, context: CompileContext, visitor: PerCompileUnitTVisitor): Tree = 
   {
     node match {
-      case CompiledFn(name, params, ret, body, ups, position) => {
+      case fn @ CompiledFn(name, params, ret, body, ups, position) => {
         val validatedBody = body.accept(visitor, context).asInstanceOf[BlockStatement]
         if (validatedBody != body) 
-          new CompiledFn(name, params, ret, validatedBody, ups, position)
+          new CompiledFn(name, params, ret, validatedBody, ups, position).setFile(fn.file_name())
+          .setFile(fn.file_name())
         else node
       }
       case declFn : FunctionDecl => {
@@ -40,11 +41,13 @@ trait CompilerPhase
             val changedBody = block.accept(visitor, context).asInstanceOf[BlockStatement]
             val fn = new CompiledFn("main", java.util.List.of(), null, changedBody, UpValues(null), body.position)
             new RootCompileUnit(fn, -1, imports, exports)
+            .setFile(root.file_name())
           }
           case body => {
             val changedBody = body.accept(visitor, context).asInstanceOf[BlockStatement]
             val fn = new CompiledFn("name", ju.List.of(), null, changedBody, UpValues(null), body.position())
             new RootCompileUnit(fn, -1)
+            .setFile(root.file_name())
           }
       }
       case node => node.accept(visitor, context)
@@ -60,9 +63,14 @@ trait CompilerPhase
       tree.isInstanceOf[ImportState] || tree.isInstanceOf[ExportState]
         // val (is, not) = 
     val group = block.exprs().stream().collect(Collectors.groupingBy(is_export_or_import))
-    val import_or_export = group.get(true).stream().collect(Collectors.groupingBy(_.isInstanceOf[ImportState]))
-    ( import_or_export.get(true).asInstanceOf[ju.List[ImportState]], 
-      import_or_export.get(false).asInstanceOf[ju.List[ExportState]], 
+    val ie = group.get(true) 
+    def null_as_list[T](ls: ju.List[T]): ju.List[T] = if(ls == null) ju.List.of() else ls
+    val import_or_export = 
+      (null_as_list(ie))
+      .stream()
+      .collect(Collectors.groupingBy(_.isInstanceOf[ImportState]))
+    ( null_as_list(import_or_export.get(true).asInstanceOf[ju.List[ImportState]]), 
+      null_as_list(import_or_export.get(false).asInstanceOf[ju.List[ExportState]]), 
       new BlockStatement(group.get(false), block.position()))
   }
 
@@ -92,24 +100,29 @@ object PerEvaluatingPhase
 {
   override def phaseAction(context: CompileContext, unit: CompileUnit) = {
     val (imports, exports) = try_to_get_import_export(unit)
-    unit.node match {
-      case _fn @ CompiledFn(name, _, _, _, _, _) if name == "main" => {
-        val fn = _fn.asInstanceOf[CompiledFn]
-        if(!fn.compiled) {
-          fn.compileFinish()
-          val mainFnCall = CallExpr( -1, null, "main", new ListExpr(-1, null, java.util.List.of())) 
-          val block_elems = new ArrayList[Tree](imports.size() + exports.size() + 2)
-          block_elems.addAll(imports)
-          block_elems.addAll(exports)
-          block_elems.addAll(ju.List.of(fn, mainFnCall))
-          new RootCompileUnit(
-            new BlockStatement(block_elems, -1),
-            -1,
-            imports,
-            exports)
+    unit match {
+      case root: RootCompileUnit => 
+        root.body match {
+          case _fn @ CompiledFn(name, _, _, _, _, _) if name == "main" => {
+            val fn = _fn.asInstanceOf[CompiledFn]
+            if(!fn.compiled) {
+              fn.compileFinish()
+              val mainFnCall = CallExpr( -1, null, "main", new ListExpr(-1, null, java.util.List.of())) 
+              val block_elems = new ArrayList[Tree](imports.size() + exports.size() + 2)
+              block_elems.addAll(imports)
+              block_elems.addAll(exports)
+              block_elems.addAll(ju.List.of(fn, mainFnCall))
+              new RootCompileUnit(
+                new BlockStatement(block_elems, -1),
+                -1,
+                imports,
+                exports)
+                .setFile(root.file_name())
+            }
+            else unit
+          }
+          case _ => unit
         }
-        else unit
-      }
       case _ => unit
     }
   }
@@ -150,6 +163,7 @@ object UpValuePhase
           if fn.compiled() then fn
           else
             CompiledFn(name, params, ret, body, getUpvalues(), position)
+            .setFile(fn.file_name())
         case node => wrapAsCompileUnit(node)
       }
   }
