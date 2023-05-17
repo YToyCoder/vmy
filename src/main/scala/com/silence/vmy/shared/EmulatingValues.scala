@@ -23,6 +23,7 @@ import java.util.Map
 
 import scala.annotation.tailrec
 import scala.collection.mutable
+import com.silence.vmy.evaluate.TreeEmulator.ExportValue
 
 sealed trait EmulatingValue extends Ordering[EmulatingValue]{
   def value: EmulatingValue.valueType

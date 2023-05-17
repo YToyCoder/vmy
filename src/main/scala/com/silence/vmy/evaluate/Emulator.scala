@@ -26,11 +26,16 @@ import java.util.List
 import java.util.ArrayList
 import java.util.HashMap
 import java.util.Map
+import java.{util as ju}
 
 import scala.annotation.tailrec
 import scala.collection.mutable
 import scala.util.control.NonLocalReturns._
 import com.silence.vmy.evaluate.TreeEmulator.ExportValue
+import com.silence.vmy.tools.Utils.error
+import java.io.File
+import com.silence.vmy.shared.EmulatingValue.EVEmpty
+import com.silence.vmy.shared.EmulatingValue.EVObj
 
 object TreeEmulator {
   case class Frame(pre: Frame) extends Scope(pre) 
@@ -47,11 +52,38 @@ object TreeEmulator {
     def wrapAsExport(name: String, as: String): Option[ExportValue] = None 
 
     def fnBody: Option[CompiledFn] = None
+    def putImportValue(ix: ImportValue, as: String): Boolean = false
   }
 
-  case class ExportValue(private val _in_scope: Scope, private val _n: String) {
-    def apply() = _in_scope.lookup(_n)
+  case class ExportValue(in_scope: Scope, _n: String) 
+    extends ScopeNamedValue(in_scope, _n){
+    type EleType = ExportValue
+  }
+
+  class ScopeNamedValue(protected val _in_scope: Scope, private val _n: String) { self =>
+    type EleType <: ScopeNamedValue
+    protected val map: mutable.Map[String, EleType] = mutable.Map()
+    def is_ = _in_scope
+    def apply() = 
+      if(_n == "") {
+        val _map: ju.Map[String, EmulatingValue] = ju.HashMap()
+        map.foreach{ (name, s_n) => 
+          s_n.is_.lookup(s_n.name()) match
+            case None => _map.put(name, EVEmpty)
+            case Some(value) => _map.put(name, value)
+        }
+        Some(EVObj(_map))
+      }
+      else _in_scope.lookup(_n)
     def name() = _n 
+    def put(v: EleType, as :String) = {
+      if(map.contains(as)) false
+      else 
+        map.addOne((as, v))
+        true
+    }
+
+    def get(name: String): Option[EleType] = map.get(name)
   }
 }
 
@@ -63,7 +95,7 @@ object UpValueCompiler extends Compiler[CompileContext] {
 }
 
 class TreeEmulator(
-  private val context: CompileContext, 
+  val context: CompileContext, 
   private val compiler: Compiler[CompileContext]
   )
   extends Log 
@@ -72,7 +104,8 @@ class TreeEmulator(
   import EmulatingValue.{EVEmpty, EVFunction, EVList, EVObj, Zero}
   var debug: Boolean = false
   private val cached_mdoules : mutable.Map[String, VmyModule] = mutable.Map()
-  private def createRootFrame() = context.enterRootFrame()
+  private val loader: Loader = new Loader(this)
+  private def createRootFrame(_f: String) = context.enterRootFrame(_f)
   private def exitRootFrame() = context.leaveRootFrame()
   private def createFrame(fn: CompiledFn) : TreeEmulator.Frame = context.enterFrame(fn)
   private def exitFrame() : Unit = context.leaveFrame()
@@ -214,7 +247,7 @@ class TreeEmulator(
   }
 
   override def visitRoot(root: Root, payload: EmulatingValue): EmulatingValue = {
-    createRootFrame()
+    createRootFrame(root.file_name())
     val body = root.body
     val returnValue = root.body().accept(this, payload)
     exitRootFrame() match
@@ -447,12 +480,49 @@ class TreeEmulator(
     EVEmpty
   }
 
+  private def get_current_dir() : String = {
+    println(s"get dir -> cur ${context.current_file().getAbsolutePath()}")
+    context.current_file().getAbsoluteFile().getParent()
+  }
+
   override def visitImport(state: ImportState, payload: EmulatingValue): EmulatingValue =
   {
     if(state == null) EVEmpty
     else {
       // todo : find module or else load module
-      null
+      val uri = s"${get_current_dir()}/${state.uri()}"
+      def getModule() = 
+        lookup_module(uri) match
+          case None => 
+            loader.load(uri) 
+            lookup_module(uri) match
+              case None => None
+              case s @ Some(value) => s
+          case s @ Some(value) => s 
+      def export_as_import(ex: ExportValue, as: String): ImportValue =
+        new ImportValue(ex.in_scope, ex.name(), as) 
+      def register_one_import(module: VmyModule, name: String, as: String): Unit=
+        module.vmy_export(name) match
+          case Some(ex) => context.register_import(as, export_as_import(ex, as))
+          case None => 
+
+      getModule() match {
+        case None => 
+          error(s"module not found ${uri} ${cached_mdoules.map(_._1).mkString}")
+          System.exit(0)
+        case Some(module) => {
+          if(state.isImportAsOne())
+            val one = state.oneImport()
+            register_one_import(module, VmyModule.ExportAll , if(one.hasAlias()) one.alias() else one.name())
+          else if(state.isElementImport()) {
+            state.elemImport().forEach{ ix =>
+              if(ix.hasAlias()) register_one_import(module, ix.name(), ix.alias())
+              else register_one_import(module, ix.name(), ix.name())
+            }
+          }
+        }
+      }
+      EVEmpty
     }
   }
 }
