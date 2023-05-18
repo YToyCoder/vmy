@@ -19,6 +19,7 @@ fun loop() {
 
 }
 
+println("import => " ++ __import)
 println(loop())
 
 let k = []
@@ -30,9 +31,15 @@ for i in range(10){
 export k
 
 let a = __G
-println("__G => " ++ a)
+a("name") = "global"
+println("__G => " ++ __G)
+println("a => " ++ __G)
 println("export => " ++ __export)
 
 export loop
 println("export => " ++ __export)
+
+println("a is equal global " ++ (a == __G))
+println("a name" ++ a("name"))
+println(__G)
 # export k

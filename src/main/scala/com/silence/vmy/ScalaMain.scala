@@ -19,6 +19,8 @@ import com.silence.vmy.compiler.CompileUnit.wrapAsCompileUnit
 
 import scala.annotation.tailrec
 import java.io.File
+import com.silence.vmy.shared.EmulatingValue.EVGlobal
+import com.silence.vmy.shared.EmulatingValue.EVObj
 
 object ScalaMain extends Log {
 
@@ -47,6 +49,7 @@ object ScalaMain extends Log {
 
   def main(args: Array[String]): Unit = {
     val (debug, files) = handleArgs(args)
+    // println(s"EVGlobal is EVObj => ${EVGlobal.isInstanceOf[EVObj]}")
     for(file <- files)
       evalScript(file, debug)
   }
