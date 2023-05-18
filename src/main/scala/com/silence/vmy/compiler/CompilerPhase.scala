@@ -111,9 +111,10 @@ object PerEvaluatingPhase
               fn.compileFinish()
               val mainFnCall = CallExpr( -1, null, "main", new ListExpr(-1, null, java.util.List.of())) 
               val block_elems = new ArrayList[Tree](imports.size() + exports.size() + 2)
-              block_elems.addAll(imports)
+              // block_elems.addAll(imports)
+              block_elems.add(decl_export_variable())
               block_elems.addAll(ju.List.of(fn, mainFnCall))
-              block_elems.addAll(exports)
+              // block_elems.addAll(exports)
               new RootCompileUnit(
                 new BlockStatement(block_elems, -1),
                 -1,
@@ -134,6 +135,19 @@ object PerEvaluatingPhase
     unit match 
       case root: RootCompileUnit => (root.imports(), root.exports())
       case _ => (ju.List.of(), ju.List.of())
+  }
+
+  // in vmy , there is a variable exists in global called __G
+  // it's a const value and obj 
+  // all vmy module will be in __G
+  // for example:
+  // there is a module named "C:/class.vmy"
+  // we can looking it by call : val m = __G("C:/class.vmy")
+  // at end of each file exec, we will manually register it all export as an obj in __G named by it's absolute path name
+  // at begin of each file exec, we will manually register a variable name called __export
+  // when executing the file code, we will put every export in __export's member
+  private def decl_export_variable(): Tree = {
+    new AssignmentExpression(new VariableDecl("__export", Modifiers.Const, null, 0), new VmyObject(ju.HashMap(), 0), 0)
   }
 
 }

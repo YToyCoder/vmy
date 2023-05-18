@@ -20,6 +20,7 @@ import java.util.List
 import java.util.ArrayList
 import java.util.HashMap
 import java.util.Map
+import java.{util as ju}
 
 import scala.annotation.tailrec
 import scala.collection.mutable
@@ -294,6 +295,16 @@ object EmulatingValue {
     override def value = null 
     override def toString(): String = "Null" 
   }
+  object GlobalMap extends ju.HashMap[String, EmulatingValue] {
+    override def get(key: Object): EmulatingValue = 
+      if(key == "__G") EVGlobal
+      else super.get(key)
+    
+    override def put(key: String, value: EmulatingValue) = 
+      if(key == "__G")  EVGlobal
+      else super.put(key, value)
+  }
+  object EVGlobal extends EVObj(GlobalMap) {}
 
 
   def reverse(v: EmulatingValue): EmulatingValue = {

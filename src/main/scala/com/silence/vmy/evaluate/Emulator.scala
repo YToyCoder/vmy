@@ -485,7 +485,7 @@ class TreeEmulator(
   }
 
   private def get_current_dir() : String = {
-    println(s"get dir -> cur ${context.current_file().getAbsolutePath()}")
+    // println(s"get dir -> cur ${context.current_file().getAbsolutePath()}")
     context.current_file().getAbsoluteFile().getParent()
   }
 

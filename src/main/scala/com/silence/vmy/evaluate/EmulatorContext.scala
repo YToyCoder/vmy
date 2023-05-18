@@ -13,6 +13,7 @@ import scala.collection.mutable
 import java.{util as ju}
 import com.silence.vmy.evaluate.TreeEmulator.ScopeNamedValue
 import java.io.File
+import com.silence.vmy.shared.EmulatingValue.EVGlobal
 
 class FnFrame(pre: Frame, fn: CompiledFn) extends Frame(pre) 
 {
@@ -87,6 +88,8 @@ class VmyModule(_s: Scope, val name: String = "") {
   override def toString(): String = s"name($name) => ${_ex_s.toString()}"
 }
 
+// __G
+
 class EmulatorContext extends Context
 {
   private var TopFrame: Frame = _
@@ -137,7 +140,8 @@ class EmulatorContext extends Context
   def leaveScope() = TopFrame.leaveScope()
 
   def lookupVariable(name: String): Option[EmulatingValue] = 
-    TopFrame match {
+    if(name == "__G") Some(EVGlobal)
+    else TopFrame match {
       case null => None
       case frame => 
         frame.fnBody match
@@ -150,18 +154,18 @@ class EmulatorContext extends Context
             frame.lookup(name)
     }
   def register_export(name: String, as: String) : Boolean = 
-    println(s"try register name:$name as:$as")
+    // println(s"try register name:$name as:$as")
     TopFrame match
       case null => false
       case frame => 
-        println(s"current frame is ${frame.getClass().getName()}")
-        println(s"frame vars ${frame.toString()}")
+        // println(s"current frame is ${frame.getClass().getName()}")
+        // println(s"frame vars ${frame.toString()}")
         frame.wrapAsExport(name, as) match
           case None => false
           case Some(value) => 
-            println(s"register name:$name as:$as")
+            // println(s"register name:$name as:$as")
             true 
-  
+
   def register_import(as: String, _s: ImportValue): Boolean = 
     TopFrame match
       case frame @ RootFrame(_) => 

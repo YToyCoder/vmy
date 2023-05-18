@@ -115,7 +115,7 @@ public class GeneralScanner implements Lexer{
         case ' ' -> { nextChar(); yield fetchToken();}
         // TODO: 2022/12/
         default -> {
-          if(peekChar.isAlphabetic()){
+          if(peekChar.isAlphabetic() || peekChar.charIs('_')){
             yield handle_alphabetic_start();
           }
           throw new IllegalStateException("Unexpected value: %c/%d, row: %d, col: %d".formatted(
@@ -155,7 +155,7 @@ public class GeneralScanner implements Lexer{
     StringBuilder builder = new StringBuilder();
     CharReaders.CharInFile startChar = peekChar();
     // build till not alphabetic
-    while (hasChar() && peekChar().isAlphabetic()){
+    while (hasChar() && (peekChar().isAlphabetic() || peekChar().charIs('_'))){
       builder.append(nextChar().c());
     }
     // case _ , like name_age
