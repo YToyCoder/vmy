@@ -215,7 +215,6 @@ class TreeEmulator(
 
   override def visitVariableDecl(expression: VariableDecl, payload: EmulatingValue): EmulatingValue = {
     val name = expression.name()
-    println(s"decl variable $name")
     val variable_type = expression.t()
     val initv = payload match {
       case null => 
@@ -256,7 +255,7 @@ class TreeEmulator(
     exitRootFrame() match
       case None => 
       case Some(module) => 
-        println(s"${module.toString()}")
+        // println(s"${module.toString()}")
         if(!cache_module(module)) println(s"cache module(${module.name}) failed, it may exists!")
     returnValue
   }

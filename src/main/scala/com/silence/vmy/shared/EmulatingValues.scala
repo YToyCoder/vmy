@@ -54,7 +54,7 @@ object EmulatingValue {
   type ObjType = Map[String, EmulatingValue]
   def isListOrObj(value: EmulatingValue): Boolean = 
     value match
-      case EVList(_) | EVObj(_) => true
+      case EVList(_) | EVObj(_) | EVGlobal => true
       case _ => false
   def upvalueIsListOrObj(value: UpValue): Boolean = 
     value.variable_value match
@@ -132,7 +132,10 @@ object EmulatingValue {
       }
       this
     }
-    override def toString() = value.toString()
+
+    override def toString() = 
+      // println(s"is global ${this == EVGlobal} call toString")
+      value.toString()
     def name: String = n
 
     override def update(v: EmulatingValue): EmulatingValue = {
@@ -287,24 +290,35 @@ object EmulatingValue {
     override def value = _value.value
   }
   case class EVList(value: ArrayT) extends BaseEV {
-    override def toString() = s"[${value.stream().map(_.toString).reduce(_ + "," + _).get}]"
+    override def toString() = s"[${value.stream().map(_.toString).reduce(_ + "," + _).orElse("")}]"
   }
 
-  case class EVObj(value: ObjType) extends BaseEV {}
+  case class EVObj(_map: ObjType) extends BaseEV {
+    override def value: ObjType = _map
+  }
   object EVEmpty extends BaseEV {
     override def value = null 
     override def toString(): String = "Null" 
   }
-  object GlobalMap extends ju.HashMap[String, EmulatingValue] {
+  class GlobalMap extends HashMap[String, EmulatingValue] {
     override def get(key: Object): EmulatingValue = 
       if(key == "__G") EVGlobal
       else super.get(key)
-    
-    override def put(key: String, value: EmulatingValue) = 
+
+    override def put(key: String, _v: EmulatingValue) = 
       if(key == "__G")  EVGlobal
-      else super.put(key, value)
+      else super.put(key, _v)
   }
-  object EVGlobal extends EVObj(GlobalMap) {}
+
+  object EVGlobal extends EVObj(new GlobalMap) {
+
+    override def update(v: EmulatingValue): EmulatingValue = 
+      this
+
+    override def toString(): String = 
+      println("call global toString")
+      value.toString()
+  }
 
 
   def reverse(v: EmulatingValue): EmulatingValue = {
