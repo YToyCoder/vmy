@@ -175,6 +175,7 @@ object PerEvaluatingPhase
               val block_elems = new ArrayList[Tree](imports.size() + exports.size() + 2)
               // block_elems.addAll(imports)
               block_elems.add(decl_export_variable())
+              block_elems.add(decl_import_variable())
               block_elems.addAll(ju.List.of(fn, mainFnCall))
               // block_elems.addAll(exports)
               // block_elems.addAll(transform_export(exports))
@@ -206,11 +207,19 @@ object PerEvaluatingPhase
   // for example:
   // there is a module named "C:/class.vmy"
   // we can looking it by call : val m = __G("C:/class.vmy")
-  // at end of each file exec, we will manually register it all export as an obj in __G named by it's absolute path name
-  // at begin of each file exec, we will manually register a variable name called __export
+  // At end of each file exec, we will manually register it all export as an obj in __G named by it's absolute path name
+  // At begin of each file exec, we will manually register a variable name called __export
   // when executing the file code, we will put every export in __export's member
-  private def decl_export_variable(): Tree = {
-    new AssignmentExpression(new VariableDecl("__export", Modifiers.Const, null, 0), new VmyObject(ju.HashMap(), 0), 0)
+  //
+  // At begin of each file exec, we will register a variable named __import,
+  // all import obj will be as its member
+  // and we will transform each import as an import and a list of variable decl which value is 
+  // the member of __import's member named the module
+  private def decl_export_variable(): Tree = const_object_variable_decl("__export")
+  private def decl_import_variable(): Tree = const_object_variable_decl("__import")
+
+  private def const_object_variable_decl(name: String): AssignmentExpression = {
+    new AssignmentExpression(new VariableDecl(name, Modifiers.Const, null, 0), new VmyObject(ju.HashMap(), 0), 0)
   }
 
 }
