@@ -16,6 +16,55 @@ trait CompilerPhase
   with PerCompileUnitTVisitor
 {
 
+  // convert one export
+  private def transform_export(ex: ExportState): ju.List[Tree] = {
+      val one_ex = ex
+      val exs = ju.ArrayList[Tree]()
+      if(one_ex.isOne()){
+        val exp = one_ex.getOne();
+        ju.List.of(transform_export_exp_as_update_expression(exp))
+      }
+      else if(one_ex.isObjForm()){
+        val exps = one_ex.getAll()
+        exps.forEach{ e => 
+          exs.add{ transform_export_exp_as_update_expression(e) }
+        }
+        exs
+      }
+      else ju.List.of()
+  }
+
+  // there will be two type of expression
+  // 1. 
+  // export id  => __export(id) = id
+  // 2.
+  // export id as new_name => __export(new_name) = id
+  private def transform_export_exp_as_update_expression(ex_exp: ExportState.ExportExp): CallExpr = {
+    val as = if(ex_exp.hasAlias()) ex_exp.alias() else ex_exp.name() 
+    update_expression("__export", as, id_expression(ex_exp.name()))
+  }
+
+  private def id_expression(id: String): IdExpr = {
+    new IdExpr(0, Tree.Tag.Id, id)
+  }
+
+  // it will be generate expression like => id(el, v_exp)
+  private def update_expression(id: String, el: String, v_exp: Expression): CallExpr = {
+      CallExpr.create(
+        0, 
+        id, 
+        new ListExpr[Expression](
+          0, 
+          null,
+          ju.List.of(string_literal_expression(el), v_exp)
+        )
+      ) 
+  }
+
+  private def string_literal_expression(literal: String): LiteralExpression = {
+    LiteralExpression.ofStringify(literal, LiteralExpression.Kind.String)
+  }
+
   def doWithTopNode(node: Tree, context: CompileContext, visitor: PerCompileUnitTVisitor): Tree = 
   {
     node match {
@@ -39,7 +88,7 @@ trait CompilerPhase
           case body : BlockStatement => {
             val (imports, exports, block) = extracte_import_and_export(body)
             val changedBody = block.accept(visitor, context).asInstanceOf[BlockStatement]
-            val fn = new CompiledFn("main", java.util.List.of(), null, changedBody, UpValues(null), body.position)
+            val fn = new CompiledFn("main", java.util.List.of(), null, transform_export(changedBody), UpValues(null), body.position)
             new RootCompileUnit(fn, -1, imports, exports)
             .setFile(root.file_name())
           }
@@ -58,6 +107,18 @@ trait CompilerPhase
     leaveVisit(context, phaseAction(context, enterVisit(context, unit)))
   }
 
+  private def transform_export(block: BlockStatement): BlockStatement = {
+    def do_transform(tree: Tree): ju.List[Tree] = 
+      tree match 
+        case ex: ExportState => transform_export(ex) 
+        case _ => ju.List.of(tree)
+    val exp_list = ju.ArrayList[Tree]()
+    block.exprs().forEach{ el =>
+      exp_list.addAll(do_transform(el))
+    }
+    new BlockStatement(exp_list, block.position())
+  }
+
   // todo
   // extract import and export as obj element update
   private def extracte_import_and_export(block: BlockStatement): (ju.List[ImportState],ju.List[ExportState], BlockStatement) = {
@@ -73,7 +134,8 @@ trait CompilerPhase
       .collect(Collectors.groupingBy(_.isInstanceOf[ImportState]))
     ( null_as_list(import_or_export.get(true).asInstanceOf[ju.List[ImportState]]), 
       null_as_list(import_or_export.get(false).asInstanceOf[ju.List[ExportState]]), 
-      new BlockStatement(group.get(false), block.position()))
+      // do not move out export and import
+      new BlockStatement(block.exprs(), block.position()))
   }
 
   def phaseAction(context: CompileContext, unit: CompileUnit): CompileUnit 
@@ -115,6 +177,7 @@ object PerEvaluatingPhase
               block_elems.add(decl_export_variable())
               block_elems.addAll(ju.List.of(fn, mainFnCall))
               // block_elems.addAll(exports)
+              // block_elems.addAll(transform_export(exports))
               new RootCompileUnit(
                 new BlockStatement(block_elems, -1),
                 -1,

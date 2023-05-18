@@ -27,8 +27,12 @@ for i in range(10){
     k + i
 }
 
+export k
+
 let a = __G
 println("__G => " ++ a)
 println("export => " ++ __export)
 
+export loop
+println("export => " ++ __export)
 # export k
