@@ -21,8 +21,10 @@ import scala.annotation.tailrec
 import java.io.File
 import com.silence.vmy.shared.EmulatingValue.EVGlobal
 import com.silence.vmy.shared.EmulatingValue.EVObj
+import com.silence.vmy.tools.TreePrinter
 
 object ScalaMain extends Log {
+  private val TreePrinter = new TreePrinter()
 
   private def evalScript(script: String, debug: Boolean) : Unit = {
     if( debug ) {
@@ -33,6 +35,7 @@ object ScalaMain extends Log {
     val context = new CompileContext()
     // val foldTree = ast.accept(new ConstFold() {}, context)
     val compiledTree = LCompiler.compile(context, ast)
+    println(TreePrinter.tree_as_string(compiledTree.node()))
     if(debug) {
       log("origin tree => \n" + ast.toString)
       log("compiled tree => \n" + compiledTree.toString)
