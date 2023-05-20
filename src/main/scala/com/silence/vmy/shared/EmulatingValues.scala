@@ -316,7 +316,7 @@ object EmulatingValue {
       this
 
     override def toString(): String = 
-      println("call global toString")
+      // println("call global toString")
       value.toString()
   }
 

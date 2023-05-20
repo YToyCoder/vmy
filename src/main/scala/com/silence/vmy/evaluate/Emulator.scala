@@ -510,7 +510,7 @@ class TreeEmulator(
         case Some(value) => 
           val ipt = state.oneImport() 
           val ipt_name = if(ipt.hasAlias()) ipt.alias() else ipt.name()
-          println(s"ipt name is => $ipt_name")
+          // println(s"ipt name is => $ipt_name")
           declareVariable(ipt_name, value)
       EVEmpty
     }
