@@ -316,7 +316,24 @@ public class GeneralParser extends Log implements Parser{
   }
 
   private ObjStyleNameAndAlias parsingObjStyleNameAndAlias(){
-    return null;
+    ignoreEmptyLineOrComments();
+    Token startBrace = next_must(TokenKind.LBrace);
+    ignoreEmptyLineOrComments();
+    if(peekTok(tokenkindIsEqual(TokenKind.RBrace))){
+      next();// drop }
+      return new ObjStyleNameAndAlias(List.of(), startBrace.start());
+    }
+    List<NameAndAlias> naas = new ArrayList<>();
+    naas.add(parsingNameOrAlias());
+    while(!peekTok(tokenkindIsEqual(TokenKind.RBrace))){
+      ignoreEmptyLineOrComments();
+      next_must(TokenKind.Comma);
+      ignoreEmptyLineOrComments();
+      naas.add(parsingNameOrAlias());
+      ignoreEmptyLineOrComments();
+    }
+    next_must(TokenKind.RBrace);
+    return new ObjStyleNameAndAlias(naas, startBrace.start());
   }
 
   // expr = "(" ")" | "(" expr2 ")"
