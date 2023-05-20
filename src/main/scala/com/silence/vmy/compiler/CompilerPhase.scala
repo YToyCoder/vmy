@@ -9,6 +9,7 @@ import com.silence.vmy.compiler.RootCompileUnit
 import java.{util as ju}
 import java.util.stream.Collectors
 import java.util.ArrayList
+import scala.collection.mutable
 
 
 trait CompilerPhase 
@@ -88,7 +89,7 @@ trait CompilerPhase
           case body : BlockStatement => {
             val (imports, exports, block) = extracte_import_and_export(body)
             val changedBody = block.accept(visitor, context).asInstanceOf[BlockStatement]
-            val fn = new CompiledFn("main", java.util.List.of(), null, transform_export(changedBody), UpValues(null), body.position)
+            val fn = new CompiledFn("main", java.util.List.of(), null, transform_export_and_import(changedBody), UpValues(null), body.position)
             new RootCompileUnit(fn, -1, imports, exports)
             .setFile(root.file_name())
           }
@@ -107,10 +108,12 @@ trait CompilerPhase
     leaveVisit(context, phaseAction(context, enterVisit(context, unit)))
   }
 
-  private def transform_export(block: BlockStatement): BlockStatement = {
+  private def transform_export_and_import(block: BlockStatement): BlockStatement = {
+    val _import_alias_map: ImportUriAliasMap = mutable.Map()
     def do_transform(tree: Tree): ju.List[Tree] = 
       tree match 
         case ex: ExportState => transform_export(ex) 
+        case ix: ImportState => transform_import(ix, _import_alias_map)
         case _ => ju.List.of(tree)
     val exp_list = ju.ArrayList[Tree]()
     block.exprs().forEach{ el =>
@@ -118,6 +121,7 @@ trait CompilerPhase
     }
     new BlockStatement(exp_list, block.position())
   }
+
 
   // todo
   // extract import and export as obj element update
@@ -136,6 +140,47 @@ trait CompilerPhase
       null_as_list(import_or_export.get(false).asInstanceOf[ju.List[ExportState]]), 
       // do not move out export and import
       new BlockStatement(block.exprs(), block.position()))
+  }
+
+  // >>>>>>>>>>>>>> import <<<<<<<<<<<<<<<<<
+  // import naming alias rules 
+  // all import will named like __vmy_ipt_$count__
+  // $count will be increase by import number
+  // if source file has two import from same uri
+  // there will be one import-alias
+  // the module-name will be transformed as variable declaration and assign to alias_named_variable
+  type ImportUriAliasMap = mutable.Map[String, String]
+  private def transform_import(ix: ImportState, ipt_map: ImportUriAliasMap): ju.List[Tree] = {
+    val tree_ls = ju.ArrayList[Tree]()
+    var ipt: ImportState = ix
+    val uri = ix.uri()
+    var alias_name =  "" // s"__vmy_ipt_${import_count}__"
+    // 
+    if(!(ipt_map contains uri)){
+      val import_count = ipt_map.size
+      alias_name = s"__vmy_ipt_${import_count}__"
+      ipt_map.addOne((uri, alias_name))
+      tree_ls.add(ImportState.create(uri, ImportState.createImportExp(alias_name, 0), 0))
+    }else{
+      alias_name = ipt_map(uri)
+    }
+    // variable declarations
+    val get_ipt_name = (ipt_exp: ImportState.ImportExp) => 
+      if(ipt_exp.hasAlias()) ipt_exp.alias() else ipt_exp.name()
+    if(ix.isImportAsOne()){
+      val ipt_1 = ix.oneImport()
+      tree_ls.add(create_assign_to_decl_variable_exp(get_ipt_name(ipt_1), alias_name))
+    }else if(ix.isElementImport()){
+      val ipt_s = ix.elemImport()
+      ipt_s.forEach{ ipt_1 => 
+        tree_ls.add(create_assign_to_decl_variable_exp(get_ipt_name(ipt_1), alias_name))
+      }
+    }
+    tree_ls
+  }
+
+  private def create_assign_to_decl_variable_exp(variable: String, id: String): Tree = {
+    new AssignmentExpression(new VariableDecl(variable, Modifiers.Const, null, 0), id_expression(id), 0)
   }
 
   def phaseAction(context: CompileContext, unit: CompileUnit): CompileUnit 
@@ -215,6 +260,7 @@ object PerEvaluatingPhase
   // all import obj will be as its member
   // and we will transform each import as an import and a list of variable decl which value is 
   // the member of __import's member named the module
+  // for each import , we will create a new variable to store all export in that module
   private def decl_export_variable(): Tree = const_object_variable_decl("__export")
   private def decl_import_variable(): Tree = const_object_variable_decl("__import")
 
