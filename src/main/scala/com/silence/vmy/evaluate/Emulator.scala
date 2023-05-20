@@ -105,7 +105,7 @@ class TreeEmulator(
 
   import EmulatingValue.{EVEmpty, EVFunction, EVList, EVObj, Zero}
   var debug: Boolean = false
-  private val cached_mdoules : mutable.Map[String, VModule] = mutable.Map()
+  private val cached_mdoules : mutable.Map[String, EVObj] = mutable.Map()
   private val loader: Loader = new Loader(this)
   private def createRootFrame(_f: String) = context.enterRootFrame(_f)
   private def exitRootFrame() = context.leaveRootFrame()
@@ -114,18 +114,18 @@ class TreeEmulator(
   private def createScope() = context.enterScope()
   private def exitScope() = context.leaveScope()
   private def lookupVariable(id: String) = context.lookupVariable(id)
-  private def cache_module(module: VModule) = 
-    if(module != null && !cached_mdoules.contains(module.name)){
-      cached_mdoules.addOne((module.name, module))
-      true
-    }else false
-  private def lookup_module(name: String): Option[VModule] = 
+  private def cache_module(name: String,module: EVObj) = 
+    if(module != null && !cached_mdoules.contains(name))
+      cached_mdoules.addOne((name, module))
+      false
+    else true
+
+  private def lookup_module(name: String): Option[EVObj] = 
+    // println(s"cached modules : $cached_mdoules")
     cached_mdoules.get(name)
 
   private def lookup_export_in_module(name: String, module: String) : Option[ExportValue] = {
-    lookup_module(module) match
-      case None => None
-      case Some(value) => value.vmy_export(name)
+    None
   }
 
   def run(ast: Tree) = ast.accept(this, EVEmpty)
@@ -252,11 +252,14 @@ class TreeEmulator(
     createRootFrame(root.file_name())
     val body = root.body
     val returnValue = root.body().accept(this, payload)
-    exitRootFrame() match
-      case None => 
-      case Some(module) => 
-        // println(s"${module.toString()}")
-        if(!cache_module(module)) println(s"cache module(${module.name}) failed, it may exists!")
+    // do => lookup the variable called __export
+    val current_file = context.current_file().getAbsolutePath() 
+    lookupVariable("__export") match
+      case Some(value) if value.isInstanceOf[EVObj] => 
+        cache_module(current_file, value.asInstanceOf[EVObj])
+      case _ => 
+        throw new RuntimeException(s"cache current module error, not exists object named __export in current file ${current_file}")
+    exitRootFrame()
     returnValue
   }
 
@@ -493,7 +496,7 @@ class TreeEmulator(
     if(state == null) EVEmpty
     else {
       // todo : find module or else load module
-      val uri = s"${get_current_dir()}/${state.uri()}"
+      val uri = s"${get_current_dir()}\\${state.uri()}"
       def getModule() = 
         lookup_module(uri) match
           case None => 
@@ -501,30 +504,14 @@ class TreeEmulator(
             lookup_module(uri) match
               case None => None
               case s @ Some(value) => s
-          case s @ Some(value) => s 
-      def export_as_import(ex: ExportValue, as: String): ImportValue =
-        new ImportValue(ex.in_scope, ex.name(), as) 
-      def register_one_import(module: VModule, name: String, as: String): Unit=
-        module.vmy_export(name) match
-          case Some(ex) => context.register_import(as, export_as_import(ex, as))
-          case None => 
-
-      getModule() match {
+          case s @ Some(value) => s
+      getModule() match 
         case None => 
-          error(s"module not found ${uri} ${cached_mdoules.map(_._1).mkString}")
-          System.exit(0)
-        case Some(module) => {
-          if(state.isImportAsOne())
-            val one = state.oneImport()
-            register_one_import(module, VModule.ExportAll , if(one.hasAlias()) one.alias() else one.name())
-          else if(state.isElementImport()) {
-            state.elemImport().forEach{ ix =>
-              if(ix.hasAlias()) register_one_import(module, ix.name(), ix.alias())
-              else register_one_import(module, ix.name(), ix.name())
-            }
-          }
-        }
-      }
+        case Some(value) => 
+          val ipt = state.oneImport() 
+          val ipt_name = if(ipt.hasAlias()) ipt.alias() else ipt.name()
+          println(s"ipt name is => $ipt_name")
+          declareVariable(ipt_name, value)
       EVEmpty
     }
   }
