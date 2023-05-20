@@ -42,4 +42,9 @@ println("export => " ++ __export)
 println("a is equal global " ++ (a == __G))
 println("a name" ++ a("name"))
 println(__G)
+
+export {
+  loop,
+  arr as Arr
+}
 # export k
