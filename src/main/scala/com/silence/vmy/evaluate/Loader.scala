@@ -12,7 +12,7 @@ import com.silence.vmy.compiler.CompileUnit.wrapAsCompileUnit
 import com.silence.vmy.compiler.LCompiler
 
 class Loader(emulator: TreeEmulator) extends Log {
-  def load(uri: String): Option[VmyModule] = {
+  def load(uri: String): Option[VModule] = {
     doParsing(uri) match
       case None => None
       case Some(value) => 

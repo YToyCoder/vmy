@@ -22,7 +22,7 @@ class FnFrame(pre: Frame, fn: CompiledFn) extends Frame(pre)
 
 class RootFrame(pre: Frame, _f: String) extends Frame(pre)
 {
-  val module: VmyModule = new VmyModule(this, _f)
+  val module: VModule = new VModule(this, _f)
   private val _ix : mutable.Map[String, ImportValue] = mutable.Map() 
   override def wrapAsExport(name: String, as : String): Option[ExportValue] = {
     lookupInScope(name) match
@@ -72,18 +72,18 @@ extends ScopeNamedValue(in_scope, _n){
   override def name(): String = as
 }
 
-object VmyModule {
+object VModule {
   val ExportAll = "#export#all"
 }
 
-class VmyModule(_s: Scope, val name: String = "") {
+class VModule(_s: Scope, val name: String = "") {
   private val _ex_s: ExportValue = new ExportValue(_s, "")
 
   def register_export(ex: ExportValue , as: String): Boolean = {
     _ex_s.put(ex, as)
   }
   def vmy_export(name: String): Option[ExportValue] = 
-    if(name == VmyModule.ExportAll) Some(_ex_s)
+    if(name == VModule.ExportAll) Some(_ex_s)
     else _ex_s.get(name)
   override def toString(): String = s"name($name) => ${_ex_s.toString()}"
 }
@@ -108,7 +108,7 @@ class EmulatorContext extends Context
   def enterRootFrame(_f: String) = 
     c_file = File(_f)
     TopFrame = new RootFrame(TopFrame, _f)
-  def leaveRootFrame(): Option[VmyModule] = 
+  def leaveRootFrame(): Option[VModule] = 
     TopFrame match 
       case null => None
       case root @ RootFrame(pre) => 

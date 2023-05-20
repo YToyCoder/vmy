@@ -105,7 +105,7 @@ class TreeEmulator(
 
   import EmulatingValue.{EVEmpty, EVFunction, EVList, EVObj, Zero}
   var debug: Boolean = false
-  private val cached_mdoules : mutable.Map[String, VmyModule] = mutable.Map()
+  private val cached_mdoules : mutable.Map[String, VModule] = mutable.Map()
   private val loader: Loader = new Loader(this)
   private def createRootFrame(_f: String) = context.enterRootFrame(_f)
   private def exitRootFrame() = context.leaveRootFrame()
@@ -114,12 +114,12 @@ class TreeEmulator(
   private def createScope() = context.enterScope()
   private def exitScope() = context.leaveScope()
   private def lookupVariable(id: String) = context.lookupVariable(id)
-  private def cache_module(module: VmyModule) = 
+  private def cache_module(module: VModule) = 
     if(module != null && !cached_mdoules.contains(module.name)){
       cached_mdoules.addOne((module.name, module))
       true
     }else false
-  private def lookup_module(name: String): Option[VmyModule] = 
+  private def lookup_module(name: String): Option[VModule] = 
     cached_mdoules.get(name)
 
   private def lookup_export_in_module(name: String, module: String) : Option[ExportValue] = {
@@ -504,7 +504,7 @@ class TreeEmulator(
           case s @ Some(value) => s 
       def export_as_import(ex: ExportValue, as: String): ImportValue =
         new ImportValue(ex.in_scope, ex.name(), as) 
-      def register_one_import(module: VmyModule, name: String, as: String): Unit=
+      def register_one_import(module: VModule, name: String, as: String): Unit=
         module.vmy_export(name) match
           case Some(ex) => context.register_import(as, export_as_import(ex, as))
           case None => 
@@ -516,7 +516,7 @@ class TreeEmulator(
         case Some(module) => {
           if(state.isImportAsOne())
             val one = state.oneImport()
-            register_one_import(module, VmyModule.ExportAll , if(one.hasAlias()) one.alias() else one.name())
+            register_one_import(module, VModule.ExportAll , if(one.hasAlias()) one.alias() else one.name())
           else if(state.isElementImport()) {
             state.elemImport().forEach{ ix =>
               if(ix.hasAlias()) register_one_import(module, ix.name(), ix.alias())
