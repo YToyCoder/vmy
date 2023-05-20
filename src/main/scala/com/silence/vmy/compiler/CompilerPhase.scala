@@ -169,18 +169,23 @@ trait CompilerPhase
       if(ipt_exp.hasAlias()) ipt_exp.alias() else ipt_exp.name()
     if(ix.isImportAsOne()){
       val ipt_1 = ix.oneImport()
-      tree_ls.add(create_assign_to_decl_variable_exp(get_ipt_name(ipt_1), alias_name))
+      tree_ls.add(create_assign_to_decl_variable_exp(get_ipt_name(ipt_1), id_expression(alias_name)))
     }else if(ix.isElementImport()){
       val ipt_s = ix.elemImport()
       ipt_s.forEach{ ipt_1 => 
-        tree_ls.add(create_assign_to_decl_variable_exp(get_ipt_name(ipt_1), alias_name))
+        // import {a as b} from uri <= a:name b:alias
+        tree_ls.add(create_assign_to_decl_variable_exp(get_ipt_name(ipt_1), create_get_obj_member( alias_name, ipt_1.name())))
       }
     }
     tree_ls
   }
 
-  private def create_assign_to_decl_variable_exp(variable: String, id: String): Tree = {
-    new AssignmentExpression(new VariableDecl(variable, Modifiers.Const, null, 0), id_expression(id), 0)
+  private def create_get_obj_member(id: String, member: String): Expression = {
+    new CallExpr(0,Tree.Tag.CallExpr, id, new ListExpr[Expression](0, null, ju.List.of(string_literal_expression(member))))
+  }
+
+  private def create_assign_to_decl_variable_exp(variable: String, tree: Expression): Tree = {
+    new AssignmentExpression(new VariableDecl(variable, Modifiers.Const, null, 0), tree, 0)
   }
 
   def phaseAction(context: CompileContext, unit: CompileUnit): CompileUnit 

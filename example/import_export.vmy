@@ -1,11 +1,12 @@
 
 import Util from "iter.vmy"
-import {Arr} from "iter.vmy"
+import {Arr, loop} from "iter.vmy"
 
 let b = 1
 println("import and export")
 println(Util)
 
 println(Arr)
-
+println(loop)
+loop()
 export b as BInt
