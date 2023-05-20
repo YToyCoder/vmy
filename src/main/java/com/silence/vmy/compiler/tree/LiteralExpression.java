@@ -57,7 +57,7 @@ public abstract class LiteralExpression
     }
     @Override public 
     String toString() {
-      return "" + kind + ":" + content; 
+      return "Literal(%s:\"%s\")".formatted(kind, content);
     }
   }
 
