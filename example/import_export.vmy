@@ -1,6 +1,7 @@
 
 import Util from "iter.vmy"
 import {Arr, loop} from "iter.vmy"
+import GP from "general_parser.vmy"
 
 let b = 1
 println("import and export")
