@@ -10,6 +10,7 @@ import java.{util as ju}
 import java.util.stream.Collectors
 import java.util.ArrayList
 import scala.collection.mutable
+import com.silence.vmy.evaluate.RegisterModuleTree
 
 
 trait CompilerPhase 
@@ -87,7 +88,7 @@ trait CompilerPhase
         root.body() match 
           // extract import and export
           case body : BlockStatement => {
-            val changedBody = body.accept(visitor, context).asInstanceOf[BlockStatement]
+            val changedBody = transform_as_export_pre_declaration(body.accept(visitor, context).asInstanceOf[BlockStatement])
             val fn = new CompiledFn("main", java.util.List.of(), null, transform_export_and_import(changedBody), UpValues(null), body.position)
             new RootCompileUnit(fn, -1)
             .setFile(root.file_name())
@@ -111,7 +112,8 @@ trait CompilerPhase
     val _import_alias_map: ImportUriAliasMap = mutable.Map()
     def do_transform(tree: Tree): ju.List[Tree] = 
       tree match 
-        case ex: ExportState => transform_export(ex) 
+        case ex: ExportState => 
+          transform_export(ex) 
         case ix: ImportState => transform_import(ix, _import_alias_map)
         case _ => ju.List.of(tree)
     val exp_list = ju.ArrayList[Tree]()
@@ -120,7 +122,6 @@ trait CompilerPhase
     }
     new BlockStatement(exp_list, block.position())
   }
-
 
   // >>>>>>>>>>>>>> import <<<<<<<<<<<<<<<<<
   // import naming alias rules 
@@ -168,6 +169,51 @@ trait CompilerPhase
     new AssignmentExpression(new VariableDecl(variable, Modifiers.Const, null, 0), tree, 0)
   }
 
+  //
+  private def create_string_literal(literal: String): LiteralExpression = 
+    LiteralExpression.ofStringify(literal, LiteralExpression.Kind.String)
+
+  // generated expression will be like => __export = {a:""}
+  private def assign_extract_export_literal_to_export(obj_literal: VmyObject) =
+    new AssignmentExpression(new IdExpr(0, Tree.Tag.Id, "__export"), obj_literal, 0)
+
+  //extract all export as __export's elements, and transform to object literal, assign to __export variable when it declared
+  private def transform_as_export_pre_declaration(block: BlockStatement):BlockStatement = {
+    // new BlockStatement()
+    val expression_list = ju.ArrayList[Tree]()
+    expression_list.add(assign_extract_export_literal_to_export(extract_export_as_objet_literal(block)))
+    expression_list.addAll(block.exprs())
+    new BlockStatement(expression_list, block.position())
+  }
+  private def extract_export_as_objet_literal(block: BlockStatement): VmyObject = {
+    def transform_one_export(ex: ExportState): ju.Map[String,Expression] = {
+      val one_ex = ex
+      val exs = ju.HashMap[String, Expression]()
+      def get_export_name(ept: ExportState.ExportExp): String =
+        if ept.hasAlias() then ept.alias()
+        else ept.name()
+      if(one_ex.isOne()){
+        val exp = one_ex.getOne();
+        ju.Map.of(get_export_name(exp), create_string_literal("predeclaration for export"))
+      }
+      else if(one_ex.isObjForm()){
+        val exps = one_ex.getAll()
+        exps.forEach{ e => 
+          exs.put(get_export_name(e), create_string_literal("predeclaration for export"))
+        }
+        exs
+      }
+      else ju.Map.of()
+    }
+    val obj_literal: ju.Map[String,Expression] = ju.HashMap() 
+    block.exprs().forEach{ expression => 
+      expression match
+        case ex: ExportState => obj_literal.putAll(transform_one_export(ex))
+        case _ =>
+    }
+    new VmyObject(obj_literal, Tree.Tag.Obj, 0)
+  }
+
   def phaseAction(context: CompileContext, unit: CompileUnit): CompileUnit 
 }
 
@@ -197,7 +243,7 @@ object PerEvaluatingPhase
     unit match {
       case root: RootCompileUnit => 
         root.body match {
-          case _fn @ CompiledFn(name, _, _, _, _, _) if name == "main" => {
+          case _fn @ CompiledFn(name, fn_params, fn_rtype, fn_block, ups, pos) if name == "main" => {
             val fn = _fn.asInstanceOf[CompiledFn]
             if(!fn.compiled) {
               fn.compileFinish()
@@ -206,7 +252,8 @@ object PerEvaluatingPhase
               // block_elems.addAll(imports)
               block_elems.add(decl_export_variable())
               block_elems.add(decl_import_variable())
-              block_elems.addAll(ju.List.of(fn, mainFnCall))
+              block_elems.add(new RegisterModuleTree())
+              block_elems.addAll(ju.List.of(_fn, mainFnCall))
               // block_elems.addAll(exports)
               // block_elems.addAll(transform_export(exports))
               new RootCompileUnit(
@@ -247,7 +294,7 @@ object PerEvaluatingPhase
   private def decl_import_variable(): Tree = const_object_variable_decl("__import")
 
   private def const_object_variable_decl(name: String): AssignmentExpression = {
-    new AssignmentExpression(new VariableDecl(name, Modifiers.Const, null, 0), new VmyObject(ju.HashMap(), 0), 0)
+    new AssignmentExpression(new VariableDecl(name, Modifiers.Empty, null, 0), new VmyObject(ju.HashMap(), 0), 0)
   }
 
 }
