@@ -137,8 +137,6 @@ object CompileUnit
 class RootCompileUnit(
   val body: Tree, 
   val position: Long, 
-  private val _i: ju.List[ImportState] = ju.List.of(),
-  private val _e: ju.List[ExportState] = ju.List.of(),
   private var compiledFlag: Boolean = false)
   extends Root
   with CompileUnit
@@ -152,9 +150,6 @@ class RootCompileUnit(
   override def node(): Tree = this
   override def compiled(): Boolean = compiledFlag
   def compileFinish(): Unit = compiledFlag = true
-  override def exports(): ju.List[ExportState] = _e
-  override def imports(): ju.List[ImportState] = _i
-
   override def accept[T](visitor: TVisitor[T], t: T): Tree = 
     if(visitor.enterRoot(this, t))
       visitor.leaveRoot(setBody(body.accept(visitor, t)), t)
@@ -162,7 +157,7 @@ class RootCompileUnit(
 
   private def setBody(_body: Tree): RootCompileUnit = 
     if(_body == body) this
-    else new RootCompileUnit(_body, position, imports(), exports(), compiledFlag)
+    else new RootCompileUnit(_body, position, compiledFlag)
 
   override def accept[R, T](visitor: TreeVisitor[R, T], payload: T): R = 
     visitor.visitRoot(this, payload)

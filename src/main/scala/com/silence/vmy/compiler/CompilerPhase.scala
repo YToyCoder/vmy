@@ -87,10 +87,9 @@ trait CompilerPhase
         root.body() match 
           // extract import and export
           case body : BlockStatement => {
-            val (imports, exports, block) = extracte_import_and_export(body)
-            val changedBody = block.accept(visitor, context).asInstanceOf[BlockStatement]
+            val changedBody = body.accept(visitor, context).asInstanceOf[BlockStatement]
             val fn = new CompiledFn("main", java.util.List.of(), null, transform_export_and_import(changedBody), UpValues(null), body.position)
-            new RootCompileUnit(fn, -1, imports, exports)
+            new RootCompileUnit(fn, -1)
             .setFile(root.file_name())
           }
           case body => {
@@ -122,25 +121,6 @@ trait CompilerPhase
     new BlockStatement(exp_list, block.position())
   }
 
-
-  // todo
-  // extract import and export as obj element update
-  private def extracte_import_and_export(block: BlockStatement): (ju.List[ImportState],ju.List[ExportState], BlockStatement) = {
-    def is_export_or_import(tree: Tree): Boolean = 
-      tree.isInstanceOf[ImportState] || tree.isInstanceOf[ExportState]
-        // val (is, not) = 
-    val group = block.exprs().stream().collect(Collectors.groupingBy(is_export_or_import))
-    val ie = group.get(true) 
-    def null_as_list[T](ls: ju.List[T]): ju.List[T] = if(ls == null) ju.List.of() else ls
-    val import_or_export = 
-      (null_as_list(ie))
-      .stream()
-      .collect(Collectors.groupingBy(_.isInstanceOf[ImportState]))
-    ( null_as_list(import_or_export.get(true).asInstanceOf[ju.List[ImportState]]), 
-      null_as_list(import_or_export.get(false).asInstanceOf[ju.List[ExportState]]), 
-      // do not move out export and import
-      new BlockStatement(block.exprs(), block.position()))
-  }
 
   // >>>>>>>>>>>>>> import <<<<<<<<<<<<<<<<<
   // import naming alias rules 
@@ -230,10 +210,7 @@ object PerEvaluatingPhase
               // block_elems.addAll(exports)
               // block_elems.addAll(transform_export(exports))
               new RootCompileUnit(
-                new BlockStatement(block_elems, -1),
-                -1,
-                imports,
-                exports)
+                new BlockStatement(block_elems, -1),-1)
                 .setFile(root.file_name())
             }
             else unit
