@@ -37,6 +37,22 @@ import java.io.File
 import com.silence.vmy.shared.EmulatingValue.EVEmpty
 import com.silence.vmy.shared.EmulatingValue.EVObj
 
+// interal tree that use to register a module object
+class RegisterModuleTree(val position: Long = 0) extends Tree {
+  override def accept[R,T](visitor: TreeVisitor[R,T], payload: T): R = 
+    visitor match
+      case vs : ExtendsVisitor[R,T] => vs.visitRegisterModule(this, payload)
+      case _ => null.asInstanceOf[R]
+  override def accept[T](visitor: TVisitor[T], t: T): Tree = this
+  override def tag(): Tag = null
+  override def toString(): String = "Register-Module"
+}
+
+trait ExtendsVisitor[R,T] extends TreeVisitor[R,T] {
+  def visitRegisterModule(tree: RegisterModuleTree, payload: T): R
+}
+
+// 
 object TreeEmulator {
   case class Frame(pre: Frame) extends Scope(pre) 
   {
@@ -53,6 +69,11 @@ object TreeEmulator {
 
     def fnBody: Option[CompiledFn] = None
     def putImportValue(ix: ImportValue, as: String): Boolean = false
+    def exec_file() : String = 
+      pre match
+        case null => ""
+        case _ => pre.exec_file()
+      
   }
 
   case class ExportValue(in_scope: Scope, _n: String) 
@@ -101,13 +122,16 @@ class TreeEmulator(
   private val compiler: Compiler[CompileContext]
   )
   extends Log 
-  with TreeVisitor[EmulatingValue, EmulatingValue]  {
+  with ExtendsVisitor[EmulatingValue, EmulatingValue]  {
+  // with TreeVisitor[EmulatingValue, EmulatingValue]  {
 
   import EmulatingValue.{EVEmpty, EVFunction, EVList, EVObj, Zero}
   var debug: Boolean = false
   private val cached_mdoules : mutable.Map[String, EVObj] = mutable.Map()
   private val loader: Loader = new Loader(this)
-  private def createRootFrame(_f: String) = context.enterRootFrame(_f)
+  private def createRootFrame(_f: String) = 
+    println(s"create frame for $_f")
+    context.enterRootFrame(_f)
   private def exitRootFrame() = context.leaveRootFrame()
   private def createFrame(fn: CompiledFn) : TreeEmulator.Frame = context.enterFrame(fn)
   private def exitFrame() : Unit = context.leaveFrame()
@@ -252,13 +276,6 @@ class TreeEmulator(
     createRootFrame(root.file_name())
     val body = root.body
     val returnValue = root.body().accept(this, payload)
-    // do => lookup the variable called __export
-    val current_file = context.current_file().getAbsolutePath() 
-    lookupVariable("__export") match
-      case Some(value) if value.isInstanceOf[EVObj] => 
-        cache_module(current_file, value.asInstanceOf[EVObj])
-      case _ => 
-        throw new RuntimeException(s"cache current module error, not exists object named __export in current file ${current_file}")
     exitRootFrame()
     returnValue
   }
@@ -281,7 +298,7 @@ class TreeEmulator(
       VmyFunctions.lookupFn(fnName) match {
         case Some(fn) => VmyFunctions.runNative(fn, params)
         case None => 
-          throw new VmyRuntimeException(s"not exists function : ${call.callId()}")
+          throw new VmyRuntimeException(s"not exists function : ${call.callId()}: ${context.current_file().getAbsolutePath()} > ${Tokens.stringifyLocation(call.position())}")
       }
     }
     def listConcat(a: List[EmulatingValue], b : List[EmulatingValue]) = {
@@ -497,6 +514,8 @@ class TreeEmulator(
     else {
       // todo : find module or else load module
       val uri = s"${get_current_dir()}\\${state.uri()}"
+      println(s"current file ${context.current_file().getAbsolutePath()}")
+      println(s"get module file => $uri")
       def getModule() = 
         lookup_module(uri) match
           case None => 
@@ -515,4 +534,15 @@ class TreeEmulator(
       EVEmpty
     }
   }
+
+  override def visitRegisterModule(tree: RegisterModuleTree, payload: EmulatingValue): EmulatingValue = 
+    // do => lookup the variable called __export
+    val current_file = context.current_file().getAbsolutePath() 
+    println(s"register module $current_file")
+    lookupVariable("__export") match
+      case Some(value) if value.isInstanceOf[EVObj] => 
+        cache_module(current_file, value.asInstanceOf[EVObj])
+      case _ => 
+        throw new RuntimeException(s"cache current module error, not exists object named __export in current file ${current_file}")
+    EVEmpty
 }

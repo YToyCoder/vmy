@@ -24,6 +24,7 @@ class RootFrame(pre: Frame, _f: String) extends Frame(pre)
 {
   val module: VModule = new VModule(this, _f)
   private val _ix : mutable.Map[String, ImportValue] = mutable.Map() 
+  override def exec_file(): String =  _f
   override def wrapAsExport(name: String, as : String): Option[ExportValue] = {
     lookupInScope(name) match
       case None => None
@@ -103,7 +104,7 @@ class EmulatorContext extends Context
     vv
   }
 
-  def current_file() = c_file
+  def current_file() = File(TopFrame.exec_file())
 
   def enterRootFrame(_f: String) = 
     c_file = File(_f)
