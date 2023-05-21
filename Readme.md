@@ -127,3 +127,31 @@ for i in range(10){
 println(k)
 
 ```
+
+##### 2.3.6 全局对象
+
+*__G*
+```
+
+println(__G)
+
+```
+
+##### 2.3.6 export
+
+```
+let a = 1
+export a
+
+let ex = {a:"string-literal"}
+
+export ex as EX
+
+fn k() {
+    println("k-fn")
+}
+export {
+    a as A,
+    k
+}
+```
