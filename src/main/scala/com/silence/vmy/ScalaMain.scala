@@ -35,10 +35,10 @@ object ScalaMain extends Log {
     val context = new CompileContext()
     // val foldTree = ast.accept(new ConstFold() {}, context)
     val compiledTree = LCompiler.compile(context, ast)
-    println(TreePrinter.tree_as_string(compiledTree.node()))
     if(debug) {
-      log("origin tree => \n" + ast.toString)
-      log("compiled tree => \n" + compiledTree.toString)
+      log("origin tree => \n" + TreePrinter.tree_as_string(ast.node()))
+      log("compiled tree => \n")
+      log(TreePrinter.tree_as_string(compiledTree.node()))
       log("#" * 20)
       log("parsing finished")
       log("starting eval ...")

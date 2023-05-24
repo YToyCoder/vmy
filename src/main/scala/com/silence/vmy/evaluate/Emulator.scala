@@ -130,7 +130,7 @@ class TreeEmulator(
   private val cached_mdoules : mutable.Map[String, EVObj] = mutable.Map()
   private val loader: Loader = new Loader(this)
   private def createRootFrame(_f: String) = 
-    println(s"create frame for $_f")
+    // println(s"create frame for $_f")
     context.enterRootFrame(_f)
   private def exitRootFrame() = context.leaveRootFrame()
   private def createFrame(fn: CompiledFn) : TreeEmulator.Frame = context.enterFrame(fn)
@@ -538,7 +538,7 @@ class TreeEmulator(
   override def visitRegisterModule(tree: RegisterModuleTree, payload: EmulatingValue): EmulatingValue = 
     // do => lookup the variable called __export
     val current_file = context.current_file().getAbsolutePath() 
-    println(s"register module $current_file")
+    // println(s"register module $current_file")
     lookupVariable("__export") match
       case Some(value) if value.isInstanceOf[EVObj] => 
         cache_module(current_file, value.asInstanceOf[EVObj])
