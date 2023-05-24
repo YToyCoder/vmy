@@ -26,7 +26,6 @@
 14. closure(闭包)
 
 ##### 2.2 计划支持的特点
-2. 'import' feature , 引用其他文件
 
 #### 2.3 example (示例)
 
@@ -154,4 +153,28 @@ export {
     a as A,
     k
 }
+```
+
+##### 2.3.6 import
+
+file => a.vmy
+```
+
+let a = 0
+
+export a
+
+let obj = {name: "name", age: "18"}
+
+export obj as VObj
+```
+
+fille => main.vmy
+```
+
+import {a as A, VObj } from "a.vmy"
+
+println(A)
+println(VObj)
+
 ```
